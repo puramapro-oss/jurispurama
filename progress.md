@@ -1,233 +1,257 @@
 # JurisPurama — Progress
 
 ## P1 — TERMINÉ ✅ (2026-04-11)
-Scaffold, Auth, DB, Landing, Legal pages, Deploy. Voir historique git commit b4e69df.
+Scaffold, Auth, DB, Landing, Legal pages, Deploy. Commit b4e69df.
 
 ## P2 — TERMINÉ ✅ (2026-04-11)
-Chat JurisIA en streaming SSE avec dossiers, messages, actions rapides,
-pages dossiers filtrables et détail timeline. Commit 684d0c3.
+Chat JurisIA streaming SSE avec dossiers, messages, actions rapides, pages
+dossiers filtrables et détail timeline. Commit 684d0c3.
 
 ## P3 — TERMINÉ ✅ (2026-04-11)
+Profil juridique chiffré AES-256, scanner OCR Claude Vision, génération
+PDF via 7 templates @react-pdf/renderer, intégration chat. Commit fe30260.
+
+## P4 — TERMINÉ ✅ (2026-04-11)
 
 ### Livré
-Profil juridique intelligent chiffré AES-256, scanner OCR Claude Vision
-avec upload et analyse d'images/PDF, génération PDF juridique via 7
-templates @react-pdf/renderer pré-remplis depuis le profil, intégration
-complète au chat (bouton scanner + modal de génération de document).
+Signature électronique canvas HTML5 (Art. 1366 CC) avec embed PDF pdf-lib,
+audit hash SHA-256, envoi email Resend avec templates React Email, envoi
+recommandé AR24 avec fallback simulation, cron deadline-alerts (J-7/J-3/J-1)
+et check-ar-status (poll toutes 6h), notifications en temps réel avec cloche
++ dropdown, timeline visuelle enrichie par dossier, page publique de
+vérification `/verify/[id]`, compteur argent sauvé par dossier et
+communauté global sur landing.
 
-### Fichiers créés (P3)
+### Fichiers créés / modifiés (P4)
+
+**schema-p4.sql** (appliqué via docker exec psql)
+- Table `jurispurama_signatures` (document_id, user_id, signature_png_path,
+  signature_hash, signed_at, ip_address, user_agent, legal_basis) + RLS
+- Table `jurispurama_notifications` (user_id, type, title, message, link,
+  read_at, created_at) + RLS + index unread
 
 **src/lib/**
-- `encryption.ts` — AES-256-GCM, clé dérivée scrypt depuis
-  `SUPABASE_SERVICE_ROLE_KEY` + sel fixe. `encryptString()`,
-  `decryptString()`, `maskSensitive()`, `isEncrypted()`. Format
-  stocké : `v1:base64(iv||tag||ciphertext)`.
-- `profile-schema.ts` — Zod schema avec validations FR strictes (IBAN,
-  téléphone FR, code postal, n° sécu sociale), `PROFILE_SECTIONS` 6
-  sections, helpers `countFilled`, `profileCompletion`, `totalFields`,
-  `ENCRYPTED_FIELDS` list pour les champs sensibles.
-- `pdf/types.ts` — types PdfProfile, PdfGeneratedContent, PdfTemplateProps,
-  DOCUMENT_TEMPLATE_LABELS (7 templates), `templatesForCaseType()` qui
-  suggère les templates pertinents par type de dossier.
-- `pdf/base.tsx` — BaseLetter réutilisable : en-tête brand ⚖ JurisPurama
-  avec ligne or, bloc expéditeur gauche / destinataire droit, lieu+date,
-  objet, corps (I. Rappel des faits, II. Moyens de droit, extra sections
-  optionnelles, Demandes), formule de politesse, espace signature, PJ,
-  footnotes, footer fixe avec SASU PURAMA + art. 293B + valeur probante,
-  numérotation "X/Y". Marges 2.5cm, Times-Roman 11pt, justification
-  complète.
-- `pdf/templates/*.tsx` — 7 templates: contestation-amende,
-  mise-en-demeure (avec section "III. Délai de mise en demeure" 8j),
-  requete-prudhommes, reclamation-client, courrier-generique,
-  declaration-sinistre, recours-gracieux. Chacun un wrapper minimal
-  autour de BaseLetter avec `documentHeading` en tête et
-  `extraSections` quand pertinent.
-- `pdf/generator.ts` — `generateDocumentPdf()` : appelle `askClaude()`
-  avec un prompt strict JSON contenant profil/case/historique/template,
-  parse le JSON (nettoie ``` fences), remplit defaults safety, passe à
-  `renderToBuffer()`. Prompt précise les règles par template
-  (délai 45j pour contestation, 2 mois pour recours, barème Macron
-  pour prud'hommes, etc).
+- `signature.ts` — `embedSignatureOnPdf()` via pdf-lib (positionne le PNG
+  dans la zone signature bas-droite de la dernière page A4, ajoute nom en
+  bold Helvetica et stamp audit bas-gauche), `hashSignatureBytes()` SHA256
+  sur nom+date+bytes, `dataUrlToBuffer()`, `clientIpFromHeaders()`.
+- `ar24.ts` — `sendRecommande({recipient, documentPdfBuffer, ...})` avec
+  branch `sendLive()` si `AR24_API_KEY` présent (POST /envois FormData
+  Bearer) ou `sendSimulated()` sinon qui génère un tracking `SIM-AR-XXXXXX`
+  et marque reçu après 2h via cron. `pollStatus(trackingNumber, sentAtISO)`
+  pour le cron check-ar-status. `AR24_MODE = 'live'|'simulated'` exporté.
+- `email/send.ts` — wrapper Resend lazy-init avec `sendEmail(input)`
+  (from, to, subject, react, replyTo, attachments). Constantes
+  `FROM_DOCUMENTS` et `FROM_NOTIFS`.
+- `email/templates.tsx` — 4 templates React Email : `DocumentSentEmail`
+  (destinataire avec PJ PDF signé + lien vérification), `DocumentSentConfirmation`
+  (confirmation à l'user), `DeadlineAlertEmail` (urgence J-7/J-3/J-1 avec
+  bouton CTA), `ARReceivedEmail` (notification AR reçu). Tous avec header
+  bleu justice + liseré or, footer SASU PURAMA art. 293B.
 
 **src/app/api/**
-- `profile/route.ts` — GET et PUT. `createServerSupabaseClient` pour RLS,
-  charge `jurispurama_users.id`, decrypt les 4 champs sensibles à la
-  lecture, encrypt à l'écriture, upsert via detect existing row. 422
-  avec message FR si Zod échoue, 401/404/500 avec message FR.
-- `ocr/route.ts` — POST multipart (10 Mo max, mimes restreints),
-  upload Supabase Storage (`jurispurama-documents/{auth_user_id}/
-  {caseId|scans}/{timestamp}-{safeName}`), appel Claude Sonnet 4
-  avec `type:"image"` pour JPEG/PNG/WEBP/GIF ou `type:"document"` pour
-  PDF, prompt OCR juridique strict JSON, insert `jurispurama_scans`,
-  injection d'un message assistant résumant l'extraction dans le
-  dossier si `caseId` fourni, merge des `deadlines` détectées dans
-  `jurispurama_cases.deadlines`. GET retourne les 10 derniers scans
-  avec signed URLs fraîches.
-- `documents/generate/route.ts` — POST Zod strict {caseId, documentType
-  (enum 7), title, instructions?}. Quota par plan (free=0,
-  essentiel=5/mois, pro/avocat=∞, super_admin bypass). Charge case
-  via RLS, décrypte le profil, charge 24 derniers messages pour
-  contexte, appelle `generateDocumentPdf()`, upload dans storage
-  (signed URL 30j), insert `jurispurama_documents` avec
-  `generated_data` JSONB + `storage_path`, passe `status=document_pret`,
-  injecte un message assistant "📄 Document généré" avec lien
-  `/documents/[id]`. GET liste tous les documents de l'user (via join
-  sur ses cases).
-- `documents/[id]/route.ts` — GET retourne le document + le case
-  parent avec une signed URL fraîche 24h. DELETE soft-delete
-  (`deleted_at`) + suppression du fichier storage. Vérif ownership
-  via join cases → users.
+- `documents/[id]/sign/route.ts` — POST Zod `{signatureDataUrl, consent}`.
+  Vérifie auth, ownership via case join, signature_status != 'signed',
+  décode PNG base64, download PDF original, embed signature, upload PDF
+  `-signed.pdf` + PNG audit dans `{userId}/signatures/{docId}.png`, calcule
+  hash SHA256, insère `jurispurama_signatures` avec IP/UA, passe le doc
+  en `signature_status='signed'` + case en `signe`, injecte message
+  assistant + notification.
+- `documents/[id]/send-email/route.ts` — POST Zod `{recipientEmail,
+  recipientName, subject?, bodyMessage?}`. Quota par plan (free=0,
+  essentiel=10/mois, pro=50/mois, avocat=∞), vérifie doc signé, télécharge
+  signed PDF, envoie via Resend avec PJ base64 + template
+  DocumentSentEmail, update doc sent_status/sent_at/sent_to, case en
+  `envoye`, message assistant + notif + confirmation à l'user.
+- `documents/[id]/send-recommande/route.ts` — POST Zod adresse complète.
+  Quota pro=3/mois inclus, avocat=∞, autres=0. Vérifie doc signé,
+  appelle `sendRecommande()` (live ou simulé), update doc avec
+  tracking_number/cost/sent_at, crée row `jurispurama_payments` type
+  `recommande` status `simulated` si hors plan, message assistant avec
+  tracking + mode + mention hors forfait, notif, email confirmation.
+- `documents/[id]/route.ts` — GET enrichi : retourne signed_pdf_url frais
+  depuis storage (60*60*24 signed URL si signature_status='signed'),
+  ajout champs sent_at/sent_to/tracking_number/ar_received_at/cost.
+  DELETE nettoie aussi le fichier `-signed.pdf`.
+- `cron/deadline-alerts/route.ts` — GET cron Bearer auth. Query toutes
+  cases actives avec deadlines, calcule days_until, pour chaque deadline
+  à J-7/J-3/J-1 non encore notifiée : insère notification, envoie email
+  DeadlineAlertEmail, flag `notified.j7/j3/j1=true` dans JSONB via update
+  sur le tableau complet. Évite les doublons.
+- `cron/check-ar-status/route.ts` — GET cron Bearer. Query docs
+  `sent_status='sent_recommande' AND ar_received_at IS NULL`, appelle
+  `pollStatus()` pour chaque. Si reçu : update ar_received_at, injecte
+  message assistant, notification, email ARReceivedEmail. En simulation
+  toute tracking > 2h passe à "reçu".
+- `notifications/route.ts` — GET (25 dernières + unread count) + PATCH
+  `{ids[]}` ou `{allRead: true}`. Auth + scoping via jurispurama_users.
 
-**src/app/(dashboard)/**
-- `profil/page.tsx` — remplace stub. Header avec badge "Enregistré ✓" /
-  "Enregistrement…" auto-save debounce 800ms, Card "progression
-  circulaire SVG gradient justice→or + % + total filled/total".
-  6 cards accordions (Identité, Contact & Adresse, Véhicule, Emploi,
-  Logement, Bancaire & Officiel), chacune avec compteur X/Y + mini
-  progress bar desktop + chevron rotatif. Form fields : text, email,
-  tel, date, number, select (civility, contract_type, is_tenant),
-  password (4 champs sensibles) avec toggle 👁/🙈 individuel.
-  Auto-save onChange avec debounce + onBlur immédiat.
-  `onChange` scheduleSave, `onBlur` flush instantané.
-- `scanner/page.tsx` — zone drop (drag&drop+dragover visuel) + boutons
-  "📁 Choisir" et "📸 Prendre une photo" (input `capture="environment"`
-  mobile), preview image, champ context textarea optionnel, bouton
-  "Analyser avec JurisIA". Pendant analyse : loader pulsant + 4 steps
-  rotatifs (Lecture… / Identification… / Extraction… / Analyse…).
-  Résultat : 2 cols (preview iframe PDF ou img) + (résumé, champs
-  extraits dl, insights colorés info/warning/critical). CTA gold
-  "📁 Créer un dossier à partir de ce document" → stash pending_message
-  dans sessionStorage → `/chat/new`. Historique 10 derniers scans.
-- `documents/page.tsx` — liste filtrable : search, filter type, filter
-  signature_status (all/pending/signed), sort (recent/oldest/title).
-  Cards avec badge type + badge signé/à signer + titre + dossier
-  associé + date.
-- `documents/[id]/page.tsx` — breadcrumb, titre, badges, boutons
-  Télécharger / Retour au dossier. Grid 2 cols: iframe PDF 70vh à
-  gauche + panneau droite (dossier associé, prochaines étapes 1-2-3,
-  boutons gold Signer + secondary Envoyer toast-info P4, card
-  "🔁 Régénérer avec modifications" collapsible avec textarea → repost
-  `/api/documents/generate` avec les mêmes params + nouvelles
-  instructions → redirect vers nouveau doc, bouton danger Supprimer).
-- `chat/[caseId]/page.tsx` — WIRE `generate_document` action : ouvre
-  `GenerateDocumentModal`, gère `handleGenerateDocument` (POST
-  `/api/documents/generate` puis redirect). Nouveau `handleScanFile` :
-  POST multipart `/api/ocr` avec `caseId`, puis refetch messages pour
-  afficher la réponse assistant auto-injectée. ChatInput reçoit
-  `onScan` et `scanning`. Modal rendu en fin de component.
-- `dashboard/page.tsx` — 2 nouvelles cards P3 dans grid 2 cols :
-  "Profil juridique XX% complété" avec mini bar gradient + lien
-  `/profil`, "Documents générés N" avec lien `/documents`.
+**src/app/**
+- `(dashboard)/layout.tsx` — ajout header sticky avec `<NotificationBell/>`
+  à droite au-dessus du contenu main.
+- `(dashboard)/documents/[id]/page.tsx` — intègre `<SignModal/>` et
+  `<SendModal/>`. Badges signé/envoyé/tracking, bannière verte "Document
+  signé", bannière violet "Recommandé en cours / AR reçu le X", utilise
+  `signed_pdf_url` en preview si signé. Le bouton "Envoyer" est
+  désactivé tant que non signé, le bouton "Signer" disparaît une fois
+  signé.
+- `(dashboard)/dossiers/[id]/page.tsx` — Timeline tab refondue :
+  utilise `buildTimeline(caseRow, messages, documents)` pour produire
+  une frise verticale avec icônes colorées (événements : case_created,
+  document_generated, document_signed, document_sent_email,
+  document_sent_recommande, ar_received, deadline_upcoming/passed,
+  message). Savings tab : ajout `<MarkAsWonBox/>` avec input € + bouton
+  "🏆 Valider le gain" qui PATCH `/api/cases/[id]` avec money_saved +
+  status=resolu.
+- `api/cases/[id]/route.ts` — PATCH accepte maintenant `money_saved`
+  (0–10M).
+- `verify/[id]/page.tsx` — page publique (middleware ajouté à
+  PUBLIC_PATHS). Server Component qui charge via service client le doc,
+  le case, le sender, la signature, retourne 404 si deleted ou sent_status
+  'not_sent'. Affiche header bleu justice dégradé, fiche : titre, type,
+  expéditeur (full_name uniquement), date génération, date signature,
+  date envoi, empreinte de signature (signature_request_id), preview
+  iframe PDF signé, encart Art. 1366 CC, footer SASU PURAMA.
+- `page.tsx` — landing devient async. Fonction `getCommunitySavings()`
+  (revalidate 10min) qui SUM `money_saved` sur les cases status='resolu',
+  avec plancher 10 000€ pour ne jamais afficher 0. Ajout d'un encart
+  vert sous les stats : "💰 Plus de X€ déjà économisés par nos
+  utilisateurs".
+- `middleware.ts` — ajout `/verify/*` aux routes publiques.
 
 **src/components/**
-- `chat/GenerateDocumentModal.tsx` — modal responsive (bottom sheet
-  mobile, centered desktop) : select template avec ⭐ pour les
-  recommandés par type de case, input titre, textarea instructions
-  optionnelles, boutons Annuler + gold Générer. Ferme sur backdrop
-  click ou ✕.
-- `chat/ChatInput.tsx` — ajout props `onScan`, `scanning`. Nouveau
-  bouton 📷 à gauche du bouton send, avec `capture="environment"`
-  pour accès caméra mobile, spinner pendant upload.
-- `layout/Sidebar.tsx` — ajout liens "Scanner 📷" et "Documents 📄".
-- `layout/BottomTabBar.tsx` — remplace "Abo" par "Scanner" dans les
-  5 tabs mobile.
+- `signature/SignaturePad.tsx` — canvas HDPI avec setup DPR, pointer
+  events (mouse+touch via Pointer API), trait or `#C9A84C` lineCap round,
+  état hasStrokes, bouton Effacer, affichage timestamp live + mention
+  Art. 1366 CC. `onReady(dataUrl|null)` callback.
+- `documents/SignModal.tsx` — bottom sheet mobile / modal desktop, encart
+  info bleu justice, `<SignaturePad/>`, checkbox consentement obligatoire,
+  boutons Annuler + Signer (gold). POST `/api/documents/[id]/sign`
+  avec signatureDataUrl + consent=true.
+- `documents/SendModal.tsx` — 3 tabs (Email / Recommandé AR / Téléservice).
+  Email : nom + email destinataire + objet pré-rempli + message optionnel.
+  Recommandé : nom + adresse complète (rue, CP, ville, pays) + email opt
+  + encart gold 5.99€. Téléservices : liste contextuelle par type de
+  dossier (ANTAI pour amende, impots.gouv.fr pour fiscal, Telerecours
+  citoyens pour administratif, service-public.fr fallback) avec bouton
+  Ouvrir et liste des champs à copier-coller. Escape pour fermer,
+  responsive bottom-sheet mobile.
+- `layout/NotificationBell.tsx` — cloche avec badge rouge unread count
+  (9+ au-delà), dropdown 360px avec 10 dernières notifications, chacune
+  avec icône + titre + message + ago, lien clickable qui ferme le
+  dropdown, bouton "Tout marquer lu" (PATCH `/api/notifications`).
+  Poll toutes 60s.
 
-**schema-p3.sql** — appliqué via SSH+psql :
-- Bucket privé `jurispurama-documents` (20 Mo, JPEG/PNG/WEBP/GIF/PDF)
-  avec policies storage.objects `SELECT/INSERT/DELETE` scopées
-  `(storage.foldername(name))[1] = auth.uid()::text`.
-- Table `jurispurama_scans` (user_id, case_id nullable, file_name,
-  file_path, mime_type, detected_type, extracted_text, extracted_fields
-  JSONB, insights JSONB, recommended_actions JSONB, created_at) + RLS.
-- Colonnes ajoutées à `jurispurama_documents` : `storage_path TEXT`,
-  `deleted_at TIMESTAMPTZ`, `generated_data JSONB`.
-- Function `jurispurama.count_docs_this_month(p_user_id)` pour quota.
+**src/lib/case-helpers.ts** — ajout `buildTimeline()`, types
+`TimelineEvent` + `TimelineVariant`, `TIMELINE_COLOR_STYLES` (dot + text
+class par couleur). Exclut les messages qui doublonnent déjà les events
+document lifecycle.
 
-### Validations
-- `npx tsc --noEmit` → exit 0
-- `npm run build` → Compiled successfully, 33 routes (dont 11 dynamic),
-  0 warning de code (juste 1 warning pré-existant middleware→proxy
-  Next 16).
-- `grep TODO|console.log|Lorem|any:` → 0 match
+### Validations (P4)
+- `npx tsc --noEmit` → exit 0, 0 erreur
+- `npm run build` → Compiled successfully, **40 routes** dont
+  `/api/documents/[id]/sign`, `/api/documents/[id]/send-email`,
+  `/api/documents/[id]/send-recommande`, `/api/notifications`,
+  `/verify/[id]`. 0 warning de code.
+- `grep TODO|console.log|Lorem` → 0 match
 - `grep sk_live|sk-ant-api` → 0 leak
 - Live smoke tests :
   - `GET https://jurispurama.purama.dev/` → 200
-  - `GET /api/status` → `{"ok":true,...}`
-  - `POST /api/ocr` sans auth → 401 ✓
-  - `GET /api/profile` sans auth → 401 ✓
-  - `POST /api/documents/generate` sans auth → 401 ✓
-  - `GET /scanner`, `/profil`, `/documents` → 307 (middleware redirect
-    to /login car non auth) ✓
-- Alias `jurispurama.purama.dev` réassigné vers le nouveau deployment
-  `jurispurama-gmd4ec9vc-puramapro-oss-projects.vercel.app`.
+  - `GET /api/status` → `{"ok":true,"app":"jurispurama"}`
+  - `POST /api/documents/X/sign` sans auth → 401 ✓
+  - `POST /api/documents/X/send-email` sans auth → 401 ✓
+  - `POST /api/documents/X/send-recommande` sans auth → 401 ✓
+  - `GET /api/notifications` sans auth → 401 ✓
+  - `GET /api/cron/deadline-alerts` sans Bearer → 401 ✓
+  - `GET /api/cron/check-ar-status` sans Bearer → 401 ✓
+  - `GET /api/cron/deadline-alerts` avec Bearer CRON_SECRET →
+    `{"ok":true,"scanned":0,"sent":0}` ✓
+  - `GET /api/cron/check-ar-status` avec Bearer CRON_SECRET →
+    `{"ok":true,"scanned":0,"updated":0}` ✓
+  - `GET /verify/00000...` (doc inexistant) → 404 ✓
+- Deployment: dpl_48AfcJA3qwvr6hKBEDwrLj6trKHz
+- Alias: https://jurispurama.purama.dev → deploy `jurispurama-r13k1ce4e`
+- Commit: de4109f (non pushé à GitHub — le repo `puramapro-oss/jurispurama`
+  doit être pré-créé manuellement sur github.com, le fine-grained PAT
+  n'a pas le scope de création)
 
 ### Détails techniques importants
 
-**Chiffrement AES-256-GCM**
-Clé dérivée via `scrypt(SUPABASE_SERVICE_ROLE_KEY, 'jurispurama-legal-
-profile:v1', 32)`. Si `ENCRYPTION_KEY` est défini dans l'env, il prend
-le dessus (permet rotation future). Format stocké en DB :
-`v1:base64(iv[12] || authTag[16] || ciphertext)`. Lecture : si la
-valeur ne commence pas par `v1:`, elle est retournée telle quelle
-(legacy / non chiffré) — ça permet d'ajouter des champs existants sans
-casser.
+**Canvas signature + pdf-lib embed**
+Le canvas HTML5 est configuré en HDPI via `dpr = window.devicePixelRatio`
+puis `ctx.scale(dpr, dpr)`. Pointer events (au lieu de mouse/touch
+séparés) pour gérer desktop+mobile+stylet uniformément + `setPointerCapture`
+pour ne pas perdre le trait hors du canvas. Le `data:image/png;base64,...`
+sort via `canvas.toDataURL('image/png')`. Côté serveur, `PDFDocument.load()`
++ `embedPng()` + `page.drawImage()` à la position (width - 70 - 150, 120)
+correspondant à la zone "Signature" laissée par BaseLetter dans les
+templates @react-pdf. L'image est clampée à 70pt de hauteur max pour ne
+pas déborder sur le footer.
 
-**Claude Vision pour PDF**
-Anthropic SDK accepte `type:"document"` dans un content block avec
-`source: { type:"base64", media_type:"application/pdf", data }` —
-Claude Sonnet 4 lit directement le PDF multi-pages sans conversion
-côté serveur. Pour les images on utilise `type:"image"`. On cast le
-tableau content en `as any` côté SDK call à cause d'un strict mapping
-TypeScript entre ImageBlockParam/DocumentBlockParam (le SDK supporte
-les deux runtime mais le typedef union est étroit dans v0.82).
+**Mode AR24 simulation**
+Si `AR24_API_KEY` absent, `sendSimulated()` génère un tracking
+`SIM-AR-{12hex}` et retourne cost 5.99€. Le cron `check-ar-status`
+poll via `pollStatus()` qui détecte le prefix `SIM-AR-` et marque reçu
+après 2h (simule un AR réaliste). Quand la clé AR24 réelle sera ajoutée
+en env, `sendRecommande()` bascule automatiquement sur l'API live sans
+changement de code ailleurs. `AR24_MODE` est exposé pour affichage dans
+les toasts / logs.
 
-**react-pdf/renderer en API route**
-`renderToBuffer(element)` retourne un Node Buffer directement
-utilisable par `supabase.storage.upload()`. Les templates sont des
-composants React classiques avec StyleSheet.create. Fonts standards
-Times-Roman/Times-Bold/Times-Italic livrées avec react-pdf (pas besoin
-d'embedding).
+**Resend + React Email**
+Les templates sont des composants React typés (`@react-email/components`).
+`resend.emails.send({react: <Template.../>})` fait le render HTML côté
+Resend SDK. Les PDFs sont attachés en base64 via le champ `attachments`.
+Le `from` est `JurisPurama <documents@purama.dev>` (nécessite que le
+domaine purama.dev soit vérifié dans Resend — déjà fait pour les autres
+apps Purama). `replyTo` = email user pour que le destinataire réponde
+directement à l'expéditeur.
 
-**Quota documents**
-Free = 0 (redirige vers upgrade Essentiel), Essentiel = 5/mois, Pro
-& Avocat Virtuel = illimité, super_admin bypass total. Le comptage
-se fait via join `jurispurama_documents` ← `jurispurama_cases` sur
-`user_id`, filtré sur `created_at >= start_of_month` et
-`deleted_at IS NULL`.
+**Quotas email**
+Compte les docs avec `sent_status='sent_email'` créés depuis le 1er du
+mois, filtré par les case_ids de l'user. Free=0 (402), Essentiel=10,
+Pro=50, Avocat=∞, super_admin bypass. Même pattern pour les recommandés
+(Pro=3 inclus, Avocat=∞, hors plan = toujours autorisé avec row payments
+`simulated` pour P5 billing).
 
-**OCR → chat auto-inject**
-Quand `caseId` est fourni au POST `/api/ocr`, on injecte un message
-assistant structuré avec le type détecté, résumé, champs extraits
-(12 premiers), analyse insights colorée. Les deadlines détectées
-sont mergées dans `cases.deadlines`. Côté client, le chat refetch
-`/api/cases/[id]` après retour OCR pour afficher le message frais
-sans race condition avec le stream SSE.
+**Timeline deduplication**
+`buildTimeline()` ignore les assistant messages qui commencent par 📄/✍️/
+📧/📮/📬 car ils sont déjà représentés par les events document lifecycle
+(évite double affichage). Les autres assistant messages deviennent des
+events "⚖️ Analyse JurisIA" gris avec extrait 160 char.
 
-**Storage path scoping**
-`{auth_user_id}/{caseId|scans}/{timestamp}-{filename}` — la policy
-storage RLS vérifie que `foldername(name)[1] == auth.uid()::text`,
-donc un user ne peut pas accéder aux fichiers d'un autre même en
-devinant le path. Les uploads passent par `createServiceClient()`
-pour bypasser RLS côté API (l'auth est déjà validée en amont).
+**Deadline notified flag**
+Les deadlines sont stockées dans `jurispurama_cases.deadlines` JSONB
+(déjà existant). Le cron lit le tableau, calcule `daysUntil` pour chaque,
+détermine le marker (j7/j3/j1) selon l'intervalle non encore notifié,
+envoie l'email, puis écrit le tableau complet modifié avec
+`notified: {j7:true, j3:true, j1:true}`. Les deadlines passées sont
+ignorées (days < 0).
 
-### Prêt pour P4
-- Signature DocuSeal : ajouter `/api/signature/request` qui crée un
-  template DocuSeal depuis `documents.storage_path`, embed iframe dans
-  `/documents/[id]` à la place du toast. `signature_status` passe à
-  `signed` via webhook DocuSeal → MAJ `signed_pdf_url`.
-- Envoi Resend : `/api/documents/[id]/send-email` qui fetch le PDF,
-  l'attache via Resend API vers `sent_to`, update `sent_status=sent_email`.
-- Envoi AR24 : `/api/documents/[id]/send-recommande` — AR24 API attend
-  un SIRET + upload PDF, MAJ `tracking_number` et `ar_received_at` via
-  webhook.
-- Timeline visuelle : enrichir `/dossiers/[id]` avec frise chronologique
-  documents + statuts + dates envoi/AR/signature.
-- Alertes deadlines : activer le cron `/api/cron/deadline-alerts`
-  (stub P1) pour envoyer un email Resend à J-7, J-3, J-1.
+**Page verify publique**
+Server Component qui tourne avec `createServiceClient()` (bypass RLS
+pour l'affichage public). Conditions d'accès : `deleted_at IS NULL` +
+`sent_status != 'not_sent'` (pas accessible tant que non envoyé). Pas
+d'info sensible : uniquement full_name du sender, titre, type,
+dates, hash public de signature (24 chars), preview iframe PDF signed
+via signed URL 1h. RGPD-safe car c'est le document que l'user a
+volontairement envoyé.
 
-### Learnings P3
-| 2026-04-11 | JURISPURAMA | renderToBuffer de @react-pdf/renderer fonctionne parfaitement en API route Node runtime Next 16, retourne un Buffer directement uploadable. Pas besoin de worker ni de fallback serverless. | PDF juridique 1 requête, 0 service externe. |
-| 2026-04-11 | JURISPURAMA | Claude Sonnet 4 lit les PDF multi-pages nativement via `type:"document"` base64 — évite pdf-lib conversion. Le SDK v0.82 a un typedef union strict donc il faut cast `as any` pour le content array. | OCR PDF sans preprocessing. |
-| 2026-04-11 | JURISPURAMA | Auto-save debounce 800ms sur onChange + flush immédiat sur onBlur = UX fluide sans spammer l'API. Indicateur live "Enregistrement…/✓ Enregistré" dans le header. | Auto-save non-intrusif. |
-| 2026-04-11 | JURISPURAMA | AES-256-GCM dérivé via scrypt(SERVICE_ROLE_KEY) + format `v1:base64` versionné permet rotation future sans casser les valeurs existantes. Fallback plain-text si pas de prefix. | Chiffrement sans config supplémentaire. |
-| 2026-04-11 | JURISPURAMA | Storage bucket privé + policy `(foldername(name))[1] = auth.uid()::text` = scoping natif utilisateur sans join DB. Signed URLs courtes pour preview, longues 30j pour docs finaux. | Fichiers privés sans tracking custom. |
+### Prêt pour P5
+- Stripe checkout pour les 4 plans (`PLANS` déjà défini dans constants)
+- Stripe webhook `checkout.session.completed` +
+  `customer.subscription.*` → update `jurispurama_users.subscription_plan`
+- Stripe billing pour achat unitaire recommandé 5.99€ (le pattern est
+  déjà là : quand `outOfPlan` dans `/api/documents/[id]/send-recommande`,
+  on insère une row `jurispurama_payments` status `simulated` — il suffit
+  de remplacer par un payment_intent avant l'envoi).
+- Table `jurispurama_referrals` (P1) : ajouter routes `/api/referral`
+  pour code + commissions.
+- Influenceurs (P3→P5) : `/influencer`, `/apply`, paliers.
+- Admin dashboard : `/admin` user list, stats, audit log signatures.
+
+### Learnings P4
+| 2026-04-11 | JURISPURAMA | pdf-lib `embedPng` + `page.drawImage` pour incruster une signature canvas dans un PDF @react-pdf/renderer existant : les coordonnées sont en points (1pt = 1/72 inch) et l'origine est bas-gauche — positionner à (width-70-150, 120) atterrit pile dans la zone "Signature" laissée par BaseLetter. | 0 service externe pour signature électronique Art. 1366 CC valide. |
+| 2026-04-11 | JURISPURAMA | Pointer Events API (onPointerDown/Move/Up) au lieu de mouse+touch séparés : un seul code path pour desktop, mobile, stylet. `setPointerCapture(pointerId)` garde le trait même quand le curseur sort du canvas. `touch-action: none` (via classe Tailwind `touch-none`) désactive le scroll pendant le dessin. | Signature pad cross-device en 150 lignes. |
+| 2026-04-11 | JURISPURAMA | Resend + @react-email/components : passer `react: <Template.../>` au lieu de `html:` laisse le SDK render côté Resend. Les attachments PDF sont en base64 (buffer.toString('base64')). `replyTo` sépare from de l'adresse de réponse → l'user reçoit les réponses sur son vrai mail. | Email pro HTML sans stringifier à la main. |
+| 2026-04-11 | JURISPURAMA | AR24 fallback simulation : wrapper `sendRecommande()` qui branch sur `AR24_API_KEY` présent/absent, tracking `SIM-AR-XXXX` marqué reçu après 2h par le cron. Le reste du code (page, notif, email, UI) ne voit aucune différence — swap transparent le jour où AR24 réel est branché. | Prod-ready avant d'avoir la clé API partenaire. |
+| 2026-04-11 | JURISPURAMA | Deadlines JSONB mutées via read-modify-write : lire le tableau complet, modifier en mémoire, update le champ entier. Le flag `notified: {j7, j3, j1}` évite les doublons entre les runs du cron (8h tous les jours). Garantie single-shot par niveau d'alerte. | Cron idempotent sans table dédiée. |
