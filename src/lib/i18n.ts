@@ -38,7 +38,12 @@ interface TranslationKeys {
     trust: string
     statsDomains: string
     statsTime: string
-    statsSaved: string
+    statsTrial: string
+  }
+  trust: {
+    title: string
+    subtitle: string
+    items: { title: string; desc: string }[]
   }
   demo: {
     title: string
@@ -62,16 +67,6 @@ interface TranslationKeys {
     step3Desc: string
     step4Title: string
     step4Desc: string
-  }
-  testimonials: {
-    title: string
-    subtitle: string
-    t1Text: string
-    t1Author: string
-    t2Text: string
-    t2Author: string
-    t3Text: string
-    t3Author: string
   }
   compare: {
     title: string
@@ -153,16 +148,29 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
       dashboard: 'Mon espace',
     },
     hero: {
-      badge: 'Assistant juridique IA · France',
+      badge: 'Assistant juridique IA · Droit français',
       title: "L'avocat qui ne dort jamais",
       subtitle:
-        "Raconte ton problème. En 3 minutes, tu as un plan d'action + des documents juridiques prêts à signer. Un vrai dossier, pas une consultation.",
-      ctaPrimary: 'Essayer gratuitement',
-      ctaSecondary: 'Voir comment ça marche',
-      trust: "14 jours d'essai gratuit · sans carte bancaire · annulation en 1 clic",
-      statsDomains: '12 domaines juridiques',
-      statsTime: 'Réponse en moins de 30 secondes',
-      statsSaved: 'économisés par nos utilisateurs',
+        "Raconte ton problème en français courant. JurisIA identifie les articles applicables, rédige tes courriers et te guide jusqu'au résultat. Un vrai dossier, pas une consultation.",
+      ctaPrimary: 'Démarrer mon dossier',
+      ctaSecondary: 'Voir une démo',
+      trust: "14 jours d'essai · sans carte bancaire · annulation en 1 clic",
+      statsDomains: 'Domaines du droit',
+      statsTime: 'Réponse moyenne',
+      statsTrial: "Essai sans carte",
+    },
+    trust: {
+      title: 'Pensé pour la confiance',
+      subtitle:
+        "Pas de promesse de chiffres. Des fondations vérifiables, des engagements concrets, conformes au droit français.",
+      items: [
+        { title: 'Hébergé en France', desc: 'Serveurs Hetzner Falkenstein. Tes données ne quittent jamais l\'Europe.' },
+        { title: 'Chiffrement AES-256', desc: 'Profil juridique chiffré au repos. Tu seul peux relire ton dossier.' },
+        { title: 'Articles cités', desc: 'Chaque conseil est sourcé : Code civil, Code du travail, Code de la conso.' },
+        { title: 'Conformité RGPD', desc: 'Export et suppression de tes données en 1 clic. ePrivacy & DORA.' },
+        { title: 'Signature légale', desc: 'Article 1366 du Code civil. Valeur juridique équivalente au manuscrit.' },
+        { title: 'Recommandé AR24', desc: 'Recommandé électronique reconnu par l\'État français — art. L100 CPCE.' },
+      ],
     },
     demo: {
       title: 'Vois JurisIA en action',
@@ -194,19 +202,6 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
       step4Title: 'Envoie en 1 clic',
       step4Desc:
         "Email avec accusé de lecture ou recommandé électronique AR24 — livraison immédiate, suivi en temps réel.",
-    },
-    testimonials: {
-      title: 'Ils ont gagné leur affaire avec JurisPurama',
-      subtitle: "Témoignages authentiques d'utilisateurs — identités réelles anonymisées pour préserver leur vie privée.",
-      t1Text:
-        "J'ai contesté mon amende de 135€ en 3 clics — zéro avocat, zéro courrier postal. L'ANTAI a classé sans suite en 12 jours. Je n'y croyais pas.",
-      t1Author: 'M.L. — Lyon, salarié en informatique',
-      t2Text:
-        "Mon ancien employeur a mis 8 mois à me payer mon solde de tout compte. Mise en demeure générée en 5 minutes, envoyée en recommandé. Paiement reçu 11 jours plus tard.",
-      t2Author: 'S.T. — Nantes, infirmière',
-      t3Text:
-        "Mon propriétaire refusait de me rendre mon dépôt de garantie. JurisIA a rédigé la lettre avec les pénalités de 10% par mois de retard prévues par la loi. J'ai récupéré 1 450€.",
-      t3Author: 'C.B. — Toulouse, étudiante',
     },
     compare: {
       title: 'Avocat classique vs JurisPurama',
@@ -289,16 +284,28 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
       dashboard: 'My workspace',
     },
     hero: {
-      badge: 'AI legal assistant · France',
+      badge: 'AI legal assistant · French law',
       title: 'The lawyer that never sleeps',
       subtitle:
-        'Tell us your problem. In 3 minutes, you get an action plan + signed-ready legal documents. A real case, not a consultation.',
-      ctaPrimary: 'Try for free',
-      ctaSecondary: 'See how it works',
-      trust: '14-day free trial · no credit card · cancel in 1 click',
-      statsDomains: '12 areas of law',
-      statsTime: 'Answers in under 30 seconds',
-      statsSaved: 'saved by our users',
+        'Describe your problem in plain language. JurisIA identifies the applicable laws, drafts your letters and guides you to the outcome. A real case, not a consultation.',
+      ctaPrimary: 'Start my case',
+      ctaSecondary: 'Watch a demo',
+      trust: '14-day trial · no credit card · cancel in 1 click',
+      statsDomains: 'Areas of law',
+      statsTime: 'Average response',
+      statsTrial: 'Trial without card',
+    },
+    trust: {
+      title: 'Built for trust',
+      subtitle: 'No vanity numbers. Verifiable foundations and concrete commitments under French law.',
+      items: [
+        { title: 'Hosted in France', desc: 'Hetzner Falkenstein servers. Your data never leaves Europe.' },
+        { title: 'AES-256 encryption', desc: 'Legal profile encrypted at rest. Only you can read your file.' },
+        { title: 'Cited statutes', desc: 'Every answer is sourced — Civil Code, Labor Code, Consumer Code.' },
+        { title: 'GDPR compliant', desc: '1-click export and deletion. ePrivacy & DORA aligned.' },
+        { title: 'Legal signature', desc: 'Article 1366 of the French Civil Code. Equivalent to handwritten.' },
+        { title: 'Registered AR24', desc: 'Electronic registered mail recognized by French law — art. L100 CPCE.' },
+      ],
     },
     demo: {
       title: 'See JurisIA in action',
@@ -328,19 +335,6 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
       step4Title: 'Send in 1 click',
       step4Desc:
         'Email with read receipt or AR24 registered e-mail — instant delivery, real-time tracking.',
-    },
-    testimonials: {
-      title: 'They won their case with JurisPurama',
-      subtitle: 'Authentic user testimonials — real identities anonymized for privacy.',
-      t1Text:
-        'I contested my €135 fine in 3 clicks — zero lawyer, zero postal mail. ANTAI closed the case within 12 days. I couldn\'t believe it.',
-      t1Author: 'M.L. — Lyon, IT employee',
-      t2Text:
-        "My former employer took 8 months to pay my final salary. Formal notice generated in 5 minutes, sent by registered mail. Payment received 11 days later.",
-      t2Author: 'S.T. — Nantes, nurse',
-      t3Text:
-        "My landlord refused to return my security deposit. JurisIA drafted the letter with the legal 10% monthly late fees. I recovered €1,450.",
-      t3Author: 'C.B. — Toulouse, student',
     },
     compare: {
       title: 'Traditional lawyer vs JurisPurama',
@@ -421,16 +415,28 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
       dashboard: 'Mi espacio',
     },
     hero: {
-      badge: 'Asistente jurídico IA · Francia',
+      badge: 'Asistente jurídico IA · Derecho francés',
       title: 'El abogado que nunca duerme',
       subtitle:
-        'Cuenta tu problema. En 3 minutos tienes un plan de acción + documentos jurídicos listos para firmar. Un verdadero expediente, no una consulta.',
-      ctaPrimary: 'Probar gratis',
-      ctaSecondary: 'Ver cómo funciona',
-      trust: '14 días gratis · sin tarjeta · cancelación en 1 clic',
-      statsDomains: '12 áreas del derecho',
-      statsTime: 'Respuesta en menos de 30 segundos',
-      statsSaved: 'ahorrados por nuestros usuarios',
+        'Cuenta tu problema en lenguaje sencillo. JurisIA identifica los artículos aplicables, redacta tus cartas y te guía hasta el resultado. Un verdadero expediente, no una consulta.',
+      ctaPrimary: 'Iniciar mi caso',
+      ctaSecondary: 'Ver demo',
+      trust: '14 días de prueba · sin tarjeta · cancela en 1 clic',
+      statsDomains: 'Áreas del derecho',
+      statsTime: 'Respuesta media',
+      statsTrial: 'Prueba sin tarjeta',
+    },
+    trust: {
+      title: 'Diseñado para la confianza',
+      subtitle: 'Sin cifras de vanidad. Bases verificables y compromisos concretos según el derecho francés.',
+      items: [
+        { title: 'Alojado en Francia', desc: 'Servidores Hetzner Falkenstein. Tus datos nunca salen de Europa.' },
+        { title: 'Cifrado AES-256', desc: 'Perfil jurídico cifrado en reposo. Solo tú puedes leer tu expediente.' },
+        { title: 'Artículos citados', desc: 'Cada respuesta está fundada — Código Civil, Laboral, Consumo.' },
+        { title: 'Conforme RGPD', desc: 'Exportación y borrado en 1 clic. ePrivacy y DORA.' },
+        { title: 'Firma legal', desc: 'Artículo 1366 del Código Civil francés. Equivale a la firma manuscrita.' },
+        { title: 'Burofax AR24', desc: 'Burofax electrónico reconocido por la ley francesa — art. L100 CPCE.' },
+      ],
     },
     demo: {
       title: 'Ve JurisIA en acción',
@@ -461,19 +467,6 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
         'El documento se genera automáticamente. Firmas con un dedo — valor legal según el artículo 1366 del Código Civil francés.',
       step4Title: 'Envía en 1 clic',
       step4Desc: 'Email con acuse de lectura o burofax electrónico AR24 — entrega inmediata, seguimiento en tiempo real.',
-    },
-    testimonials: {
-      title: 'Ellos ganaron su caso con JurisPurama',
-      subtitle: 'Testimonios auténticos de usuarios — identidades anonimizadas por privacidad.',
-      t1Text:
-        'Recurrí mi multa de 135€ en 3 clics — cero abogado, cero correo postal. ANTAI la archivó en 12 días. No me lo podía creer.',
-      t1Author: 'M.L. — Lyon, empleado IT',
-      t2Text:
-        'Mi ex empresa tardó 8 meses en pagarme el finiquito. Requerimiento formal en 5 minutos, enviado por burofax. Pago recibido 11 días después.',
-      t2Author: 'S.T. — Nantes, enfermera',
-      t3Text:
-        'Mi casero se negaba a devolver mi fianza. JurisIA redactó la carta con los intereses legales del 10% mensual. Recuperé 1.450€.',
-      t3Author: 'C.B. — Toulouse, estudiante',
     },
     compare: {
       title: 'Abogado clásico vs JurisPurama',
