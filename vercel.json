@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "regions": ["cdg1"],
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 120
+    }
+  },
+  "crons": [
+    { "path": "/api/cron/deadline-alerts", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/check-ar-status", "schedule": "0 */6 * * *" }
+  ]
+}

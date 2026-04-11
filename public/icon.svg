@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="100%" stop-color="#142640"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2C878"/>
+      <stop offset="50%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#9C7F2E"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <!-- Scale of justice -->
+  <g stroke="url(#gold)" stroke-width="12" stroke-linecap="round" fill="none">
+    <line x1="256" y1="120" x2="256" y2="380"/>
+    <line x1="160" y1="180" x2="352" y2="180"/>
+    <circle cx="170" cy="185" r="6" fill="url(#gold)"/>
+    <circle cx="342" cy="185" r="6" fill="url(#gold)"/>
+    <line x1="170" y1="185" x2="135" y2="260"/>
+    <line x1="170" y1="185" x2="205" y2="260"/>
+    <line x1="342" y1="185" x2="307" y2="260"/>
+    <line x1="342" y1="185" x2="377" y2="260"/>
+  </g>
+  <path d="M120 265 Q170 305 220 265 L205 260 L135 260 Z" fill="url(#gold)"/>
+  <path d="M292 265 Q342 305 392 265 L377 260 L307 260 Z" fill="url(#gold)"/>
+  <rect x="216" y="375" width="80" height="14" rx="7" fill="url(#gold)"/>
+  <rect x="196" y="385" width="120" height="18" rx="9" fill="url(#gold)"/>
+  <circle cx="256" cy="120" r="14" fill="url(#gold)"/>
+</svg>
