@@ -1,0 +1,14 @@
+appId: dev.purama.jurispurama
+name: 06 — Dossiers list + new
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Accueil"
+    commands:
+      - tapOn: "Dossiers"
+      - assertVisible: "Tes dossiers"
+      - takeScreenshot: 06-dossiers-list
+      - tapOn:
+          id: "dossiers-new"
+      - assertVisible: "JurisIA"

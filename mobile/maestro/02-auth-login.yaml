@@ -1,0 +1,15 @@
+appId: dev.purama.jurispurama
+name: 02 — Auth login flow (form validation + submit)
+---
+- launchApp
+- assertVisible: "Bon retour, maître."
+- tapOn:
+    id: "login-email"
+- inputText: "matiss.frasne@gmail.com"
+- tapOn:
+    id: "login-password"
+- inputText: "MaestroTest123"
+- takeScreenshot: 02-login-filled
+- tapOn:
+    id: "login-submit"
+- waitForAnimationToEnd

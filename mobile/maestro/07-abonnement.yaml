@@ -1,0 +1,15 @@
+appId: dev.purama.jurispurama
+name: 07 — Pricing page
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Accueil"
+    commands:
+      - tapOn: "Abo"
+      - assertVisible: "Le bon plan pour ton cabinet."
+      - assertVisible: "Essentiel"
+      - assertVisible: "Pro"
+      - assertVisible: "Cabinet"
+      - assertVisible: "POPULAIRE"
+      - takeScreenshot: 07-pricing

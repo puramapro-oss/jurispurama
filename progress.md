@@ -1,5 +1,114 @@
 # JurisPurama — Progress
 
+## P8 — TERMINÉ ✅ (2026-04-11) — MOBILE EXPO (iOS + Android)
+
+### Livré
+Application mobile Expo SDK 54 + expo-router 6 complète, prête à builder via EAS. Auth Supabase chiffrée (SecureStore natif), 5 onglets fonctionnels (Accueil/JurisIA/Dossiers/Abo/Profil), 3 écrans auth (login/signup/forgot-password), 4 composants UI primitives, icônes Pollinations + sharp (scales of justice purple/gold), 10 flows Maestro avec testID, store.config.json en 16 langues, EAS workflows full-deploy + ota-update, GOOGLE_PLAY_SETUP.md.
+
+### Stack mobile
+- Expo SDK 54 (newArchEnabled) + expo-router 6 + React 19 + RN 0.81
+- NativeWind 4 + Tailwind 3.4
+- Supabase JS + expo-secure-store (chiffrement KeyChain iOS / Keystore Android)
+- Zustand (auth state)
+- expo-haptics, expo-linear-gradient, lucide-react-native, react-native-{safe-area-context, gesture-handler, reanimated}
+- Bundle : `dev.purama.jurispurama`
+- Scheme : `jurispurama://` + universal links `applinks:jurispurama.purama.dev`
+
+### Fichiers créés
+```
+mobile/
+├── app.json                            # JurisPurama, dark, bundle, plugins, infoPlist FR
+├── eas.json                            # dev/preview/production + submit Apple+Play
+├── babel.config.js                     # nativewind/babel + jsxImportSource
+├── metro.config.js                     # withNativeWind global.css
+├── tailwind.config.js                  # palette JurisPurama
+├── global.css                          # @tailwind base/components/utilities
+├── nativewind-env.d.ts                 # types nativewind
+├── tsconfig.json                       # strict + paths @/*
+├── package.json                        # main: expo-router/entry
+├── store.config.json                   # 16 langues App Store + Play
+├── GOOGLE_PLAY_SETUP.md                # guide 3 min Play Console
+├── .gitignore                          # google-service-account.json, .env.local
+├── .env.local                          # EXPO_PUBLIC_SUPABASE_URL/KEY
+├── lib/
+│   ├── supabase.ts                     # createClient + Platform.OS storage adapter
+│   ├── api.ts                          # fetch wrapper auth Bearer + ApiError FR
+│   └── theme.ts                        # palette
+├── store/
+│   └── auth.ts                         # Zustand (init, signOut, onAuthStateChange)
+├── components/
+│   ├── Button.tsx                      # primary/secondary/ghost + LinearGradient + Haptics
+│   ├── Input.tsx                       # focused state + error FR
+│   ├── Card.tsx                        # glass dark
+│   └── Screen.tsx                      # SafeArea + KeyboardAvoiding + ScrollView
+├── app/
+│   ├── _layout.tsx                     # root Stack + auth redirect + GestureHandlerRoot
+│   ├── index.tsx                       # Redirect login/dashboard
+│   ├── (auth)/
+│   │   ├── _layout.tsx                 # Stack auth (slide_from_right)
+│   │   ├── login.tsx                   # email+password + erreurs FR + validation
+│   │   ├── signup.tsx                  # name+email+password + emailRedirect web
+│   │   └── forgot-password.tsx         # resetPasswordForEmail
+│   └── (tabs)/
+│       ├── _layout.tsx                 # bottom tabs lucide icons
+│       ├── dashboard.tsx               # stats /api/cases + 4 cards (chat/doc/upgrade)
+│       ├── chat.tsx                    # JurisIA via /api/ai/chat (auth Bearer)
+│       ├── dossiers.tsx                # FlatList + RefreshControl + empty state
+│       ├── abonnement.tsx              # 3 plans Stripe checkout via Linking
+│       └── profil.tsx                  # settings + signOut + liens web
+├── assets/                             # icônes générées Pollinations + sharp
+│   ├── icon.png                        # 1024×1024
+│   ├── adaptive-icon.png               # 1024×1024 padding 100px #0A0A0F
+│   ├── splash.png                      # 1284×2778
+│   ├── splash-icon.png                 # 512×512 (legacy alias)
+│   ├── favicon.png                     # 48×48
+│   └── feature-graphic.png             # 1024×500 Play Store
+├── scripts/
+│   └── gen-icons.mjs                   # Pollinations flux + sharp pipeline
+├── maestro/
+│   ├── 01-onboarding.yaml              # cold launch → login screen
+│   ├── 02-auth-login.yaml              # form fill + submit
+│   ├── 03-signup.yaml                  # name + email + password
+│   ├── 04-navigation.yaml              # tabs cycle
+│   ├── 05-chat.yaml                    # JurisIA send
+│   ├── 06-dossiers.yaml                # list + new
+│   ├── 07-abonnement.yaml              # 3 plans visible
+│   ├── 08-profil-signout.yaml          # signout dialog
+│   ├── 09-forgot-password.yaml         # reset flow
+│   └── 10-error-handling.yaml          # validation errors
+└── .eas/workflows/
+    ├── full-deploy.yaml                # push main → ios+android build → submit
+    └── ota-update.yaml                 # OTA branch production
+```
+
+### Quality gates mobile 7/7 ✅
+- `npx tsc --noEmit` → **0 erreur**
+- grep `localStorage` → uniquement `lib/supabase.ts` sous `Platform.OS === "web"` ✅
+- grep `window.|document.` → **0** ✅
+- grep `TODO|Lorem|placeholder` → **0** ✅
+- grep `console.log` → **0** (1 `console.warn` toléré pour env var manquante)
+- 10 flows Maestro avec `testID` reliés ✅
+- 16 langues store.config.json ✅
+- npm install → 0 vulnerability
+
+### Dépendances installées (29)
+expo, expo-constants, expo-font, expo-haptics, expo-image, expo-linear-gradient, expo-linking, expo-notifications, expo-router, expo-secure-store, expo-splash-screen, expo-status-bar, expo-system-ui, expo-web-browser, @react-native-async-storage/async-storage, @supabase/supabase-js, lucide-react-native, nativewind, react-native, react-native-gesture-handler, react-native-reanimated, react-native-safe-area-context, react-native-screens, react-native-svg, react-native-url-polyfill, zustand + dev: tailwindcss@^3.4, prettier, typescript
+
+### Reste à faire (setup external — credentials humains)
+1. **Apple Dev** : `eas init` → remplir `PLACEHOLDER_EAS_PROJECT_ID` (app.json + updates.url) + `APPLE_TEAM_ID` (CLAUDE.md ligne `___à_remplir___`) + `ASC_APP_ID` (eas.json après création App Store Connect)
+2. **Google Play** : suivre `mobile/GOOGLE_PLAY_SETUP.md` (3 min) → placer `google-service-account.json` dans `mobile/`
+3. **EAS build** : `cd mobile && eas build --profile development --platform ios` (smoke test) puis `eas build --profile production --platform all` + `eas submit --platform all`
+
+### Limites assumées (par design)
+- **Pas de Watch** : JurisPurama est juridique (pas santé/bien-être/sport/fitness/wellness) → P8 Watch (Apple Watch + Wear OS) **non applicable** selon CLAUDE.md
+- **Cinématique d'intro** : reportée à v1.1 (priorité fonctionnelle)
+- **Daily gift / boutique points / cross-promo** : présents côté web, accessibles via WebView Linking depuis mobile (non dupliqués natifs en v1.0)
+
+### Commit
+Tout est dans le commit `feat(P8): mobile Expo iOS + Android` (à faire après ce handoff).
+
+---
+
 ## P7 — TERMINÉ ✅ (2026-04-11) — LIVRAISON FINALE
 
 ### Livré

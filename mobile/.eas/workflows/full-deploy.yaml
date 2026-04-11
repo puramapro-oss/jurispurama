@@ -1,0 +1,37 @@
+name: full-deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+
+jobs:
+  ios_build:
+    name: iOS production build
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  android_build:
+    name: Android production build
+    type: build
+    params:
+      platform: android
+      profile: production
+
+  ios_submit:
+    name: iOS submit (TestFlight + App Store draft)
+    needs: [ios_build]
+    type: submit
+    params:
+      platform: ios
+      profile: production
+
+  android_submit:
+    name: Android submit (Play Console draft)
+    needs: [android_build]
+    type: submit
+    params:
+      platform: android
+      profile: production

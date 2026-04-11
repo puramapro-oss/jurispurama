@@ -1,0 +1,17 @@
+appId: dev.purama.jurispurama
+name: 05 — Chat with JurisIA
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "JurisIA"
+    commands:
+      - tapOn: "JurisIA"
+      - assertVisible: "Avocat IA — 30 ans d'expérience"
+      - tapOn:
+          id: "chat-input"
+      - inputText: "Mon employeur ne paie pas mes heures supp, quels recours ?"
+      - takeScreenshot: 05-chat-typed
+      - tapOn:
+          id: "chat-send"
+      - waitForAnimationToEnd
