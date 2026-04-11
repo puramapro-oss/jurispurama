@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
+    "@react-email/components": "^1.0.12",
     "@react-pdf/renderer": "^4.4.1",
     "@stripe/stripe-js": "^9.0.1",
     "@supabase/ssr": "^0.10.0",

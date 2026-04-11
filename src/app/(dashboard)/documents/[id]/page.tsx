@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import SignModal from '@/components/documents/SignModal'
+import SendModal from '@/components/documents/SendModal'
 import { DOCUMENT_TEMPLATE_LABELS, type DocumentTemplate } from '@/lib/pdf/types'
 
 interface DocumentRow {
@@ -17,12 +19,17 @@ interface DocumentRow {
   content: string | null
   generated_data: unknown
   pdf_url: string | null
+  signed_pdf_url: string | null
   signature_status: 'pending' | 'signed' | 'expired'
   sent_status:
     | 'not_sent'
     | 'sent_email'
     | 'sent_recommande'
     | 'sent_teleservice'
+  sent_at: string | null
+  sent_to: string | null
+  tracking_number: string | null
+  ar_received_at: string | null
   created_at: string
 }
 
@@ -31,6 +38,22 @@ interface CaseSummary {
   summary: string | null
   type: string
   status: string
+}
+
+function sentBadge(status: DocumentRow['sent_status']): {
+  label: string
+  variant: 'green' | 'amber' | 'purple' | 'gray'
+} | null {
+  switch (status) {
+    case 'sent_email':
+      return { label: '📧 Envoyé par email', variant: 'green' }
+    case 'sent_recommande':
+      return { label: '📮 Recommandé déposé', variant: 'purple' }
+    case 'sent_teleservice':
+      return { label: '🏛 Déposé en téléservice', variant: 'gray' }
+    default:
+      return null
+  }
 }
 
 export default function DocumentDetailPage() {
@@ -43,6 +66,26 @@ export default function DocumentDetailPage() {
   const [regenOpen, setRegenOpen] = useState(false)
   const [regenText, setRegenText] = useState('')
   const [regenLoading, setRegenLoading] = useState(false)
+  const [signOpen, setSignOpen] = useState(false)
+  const [sendOpen, setSendOpen] = useState(false)
+
+  const refetch = useCallback(() => {
+    fetch(`/api/documents/${id}`, { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) throw new Error('load')
+        return (await r.json()) as {
+          document: DocumentRow
+          case: CaseSummary
+        }
+      })
+      .then((data) => {
+        setDoc(data.document)
+        setCaseRow(data.case)
+      })
+      .catch(() => {
+        toast.error('Impossible de charger le document.')
+      })
+  }, [id])
 
   useEffect(() => {
     let active = true
@@ -142,6 +185,10 @@ export default function DocumentDetailPage() {
 
   if (!doc || !caseRow) return null
 
+  const previewUrl = doc.signed_pdf_url ?? doc.pdf_url
+  const isSigned = doc.signature_status === 'signed'
+  const sentInfo = sentBadge(doc.sent_status)
+
   return (
     <div className="container-narrow py-8 md:py-10">
       <header className="mb-5 flex flex-col gap-2">
@@ -162,16 +209,14 @@ export default function DocumentDetailPage() {
                 {DOCUMENT_TEMPLATE_LABELS[doc.type as DocumentTemplate] ??
                   doc.type}
               </Badge>
-              <Badge
-                variant={
-                  doc.signature_status === 'signed' ? 'green' : 'amber'
-                }
-                size="sm"
-              >
-                {doc.signature_status === 'signed'
-                  ? '✓ Signé'
-                  : '⏳ À signer'}
+              <Badge variant={isSigned ? 'green' : 'amber'} size="sm">
+                {isSigned ? '✓ Signé' : '⏳ À signer'}
               </Badge>
+              {sentInfo && (
+                <Badge variant={sentInfo.variant} size="sm">
+                  {sentInfo.label}
+                </Badge>
+              )}
               <span className="text-xs text-[var(--text-muted)]">
                 Généré le{' '}
                 {new Date(doc.created_at).toLocaleDateString('fr-FR', {
@@ -183,9 +228,9 @@ export default function DocumentDetailPage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {doc.pdf_url && (
+            {previewUrl && (
               <a
-                href={doc.pdf_url}
+                href={previewUrl}
                 target="_blank"
                 rel="noreferrer"
                 download
@@ -204,12 +249,53 @@ export default function DocumentDetailPage() {
         </div>
       </header>
 
+      {isSigned && (
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
+          <span aria-hidden="true" className="text-xl">
+            ✓
+          </span>
+          <div className="min-w-0">
+            <p className="font-semibold">Document signé électroniquement</p>
+            <p className="text-xs opacity-80">
+              Valeur juridique équivalente à une signature manuscrite (Art.
+              1366 du Code civil).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {doc.sent_status === 'sent_recommande' && (
+        <div className="mb-4 rounded-2xl border border-violet-200 bg-violet-50/70 px-4 py-3 text-sm text-violet-800">
+          <p className="font-semibold">📮 Recommandé AR en cours</p>
+          <p className="mt-0.5 text-xs">
+            Numéro de suivi :{' '}
+            <span className="font-mono">{doc.tracking_number}</span>
+            {doc.sent_to && <> — Destinataire : {doc.sent_to}</>}
+          </p>
+          {doc.ar_received_at ? (
+            <p className="mt-1 text-xs font-semibold text-emerald-700">
+              ✓ Accusé de réception reçu le{' '}
+              {new Date(doc.ar_received_at).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs opacity-80">
+              En attente de l&apos;accusé de réception (suivi automatique toutes
+              les 6 h).
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="grid gap-5 md:grid-cols-[1.5fr_1fr]">
         {/* PDF preview */}
         <Card padding="sm" className="overflow-hidden">
-          {doc.pdf_url ? (
+          {previewUrl ? (
             <iframe
-              src={doc.pdf_url}
+              src={previewUrl}
               className="h-[70vh] min-h-[520px] w-full rounded-xl border border-[var(--border)]"
               title={doc.title}
             />
@@ -243,23 +329,36 @@ export default function DocumentDetailPage() {
             </p>
             <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
               <li className="flex items-start gap-2">
-                <span>1.</span>
+                <span className={isSigned ? 'text-emerald-600' : ''}>
+                  {isSigned ? '✓' : '1.'}
+                </span>
                 <span>
-                  Relis ton document et télécharge-le si tout te convient.
+                  {isSigned ? (
+                    <>
+                      Document signé
+                      <span className="text-[var(--text-muted)]">
+                        {' '}— prêt à l&apos;envoi
+                      </span>
+                    </>
+                  ) : (
+                    <>Relis ton document puis signe-le électroniquement.</>
+                  )}
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span>2.</span>
+                <span className={doc.sent_status !== 'not_sent' ? 'text-emerald-600' : ''}>
+                  {doc.sent_status !== 'not_sent' ? '✓' : '2.'}
+                </span>
                 <span>
-                  <strong>Signer électroniquement</strong> (bientôt disponible —
-                  P4).
+                  {doc.sent_status === 'not_sent'
+                    ? 'Envoie par email ou recommandé AR24.'
+                    : 'Document transmis au destinataire.'}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span>3.</span>
                 <span>
-                  <strong>Envoyer</strong> par email ou recommandé AR24
-                  (bientôt — P4).
+                  Suis les réponses et prépare une relance si besoin.
                 </span>
               </li>
             </ul>
@@ -268,23 +367,25 @@ export default function DocumentDetailPage() {
                 variant="gold"
                 size="sm"
                 fullWidth
-                onClick={() =>
-                  toast.info(
-                    'La signature électronique DocuSeal sera active dans la prochaine mise à jour.'
-                  )
-                }
+                onClick={() => setSignOpen(true)}
+                disabled={isSigned}
               >
-                ✍️ Signer le document
+                {isSigned ? '✓ Déjà signé' : '✍️ Signer le document'}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 fullWidth
-                onClick={() =>
-                  toast.info(
-                    "L'envoi automatique (email + recommandé AR24) sera actif dans la prochaine mise à jour."
-                  )
-                }
+                onClick={() => {
+                  if (!isSigned) {
+                    toast.info(
+                      'Signe le document avant de l\'envoyer.'
+                    )
+                    return
+                  }
+                  setSendOpen(true)
+                }}
+                disabled={!isSigned}
               >
                 📨 Envoyer
               </Button>
@@ -343,6 +444,22 @@ export default function DocumentDetailPage() {
           </Card>
         </div>
       </div>
+
+      <SignModal
+        documentId={doc.id}
+        documentTitle={doc.title}
+        open={signOpen}
+        onClose={() => setSignOpen(false)}
+        onSigned={() => refetch()}
+      />
+      <SendModal
+        documentId={doc.id}
+        documentTitle={doc.title}
+        caseType={caseRow.type}
+        open={sendOpen}
+        onClose={() => setSendOpen(false)}
+        onSent={() => refetch()}
+      />
     </div>
   )
 }

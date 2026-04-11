@@ -89,6 +89,7 @@ const patchSchema = z.object({
     .optional(),
   summary: z.string().max(500).optional(),
   sub_type: z.string().max(80).optional(),
+  money_saved: z.number().min(0).max(10_000_000).optional(),
 })
 
 export async function PATCH(
@@ -120,6 +121,7 @@ export async function PATCH(
   }
   if (body.summary !== undefined) patch.summary = body.summary
   if (body.sub_type !== undefined) patch.sub_type = body.sub_type
+  if (body.money_saved !== undefined) patch.money_saved = body.money_saved
 
   const { data, error } = await supabase
     .from('jurispurama_cases')

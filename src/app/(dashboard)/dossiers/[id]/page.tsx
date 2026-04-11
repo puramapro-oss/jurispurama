@@ -14,6 +14,8 @@ import type { JurisCase, JurisDocument, JurisMessage } from '@/types'
 import {
   CASE_STATUS_LABELS,
   CASE_TYPE_LABELS,
+  TIMELINE_COLOR_STYLES,
+  buildTimeline,
   daysUntil,
   formatDeadline,
   formatEuros,
@@ -96,7 +98,7 @@ export default function CaseDetailPage() {
   const typeInfo = CASE_TYPE_LABELS[caseRow.type]
   const statusInfo = CASE_STATUS_LABELS[caseRow.status]
   const deadlines = caseRow.deadlines ?? []
-  const assistantMessages = messages.filter((m) => m.role === 'assistant')
+  const timeline = buildTimeline(caseRow, messages, documents)
 
   const tabItems: TabItem[] = [
     { id: 'timeline', label: 'Timeline', icon: '📍' },
@@ -220,32 +222,58 @@ export default function CaseDetailPage() {
       {/* Tab content */}
       {tab === 'timeline' && (
         <Card padding="lg">
-          <h2 className="mb-4 font-serif text-xl font-semibold text-[var(--justice)]">
-            Historique
+          <h2 className="mb-5 font-serif text-xl font-semibold text-[var(--justice)]">
+            Historique du dossier
           </h2>
-          <ol className="relative border-l-2 border-[var(--border)] pl-6">
-            <li className="mb-6">
-              <div className="absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full bg-[var(--gold)]" />
-              <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-                {formatDate(caseRow.created_at)}
-              </p>
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                Dossier ouvert
-              </p>
-            </li>
-            {assistantMessages.slice(0, 10).map((m) => (
-              <li key={m.id} className="mb-6">
-                <div className="absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full bg-[var(--justice)]/40" />
-                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                  {formatDate(m.created_at)}
-                </p>
-                <p className="line-clamp-2 text-sm text-[var(--text-primary)]">
-                  JurisIA : {m.content.replace(/[#*`>_]/g, '').slice(0, 160)}
-                  {m.content.length > 160 ? '…' : ''}
-                </p>
-              </li>
-            ))}
-          </ol>
+          {timeline.length === 0 ? (
+            <p className="text-sm text-[var(--text-muted)]">
+              Aucun événement pour le moment.
+            </p>
+          ) : (
+            <ol className="relative space-y-5 md:border-l-2 md:border-[var(--border)] md:pl-6">
+              {timeline.map((ev) => {
+                const styles = TIMELINE_COLOR_STYLES[ev.color]
+                const inner = (
+                  <div className="group flex items-start gap-3">
+                    <div
+                      className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles.dot} text-white shadow-sm md:absolute md:-left-[33px] md:h-7 md:w-7 md:text-sm`}
+                      aria-hidden="true"
+                    >
+                      <span className="text-sm">{ev.icon}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-[10px] uppercase tracking-wider ${styles.text}`}
+                      >
+                        {formatDate(ev.at)} · {formatRelativeDate(ev.at)}
+                      </p>
+                      <p className="mt-0.5 font-semibold text-[var(--text-primary)]">
+                        {ev.label}
+                      </p>
+                      {ev.description && (
+                        <p className="mt-0.5 line-clamp-2 text-sm text-[var(--text-secondary)]">
+                          {ev.description}
+                        </p>
+                      )}
+                      {ev.link && (
+                        <Link
+                          href={ev.link}
+                          className="mt-1 inline-block text-xs font-semibold text-[var(--justice)] hover:underline"
+                        >
+                          Voir →
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )
+                return (
+                  <li key={ev.id} className="relative">
+                    {inner}
+                  </li>
+                )
+              })}
+            </ol>
+          )}
         </Card>
       )}
 
@@ -393,8 +421,101 @@ export default function CaseDetailPage() {
               suis la stratégie recommandée.
             </p>
           </div>
+
+          <MarkAsWonBox
+            caseId={caseRow.id}
+            currentAmount={caseRow.money_saved}
+            currentStatus={caseRow.status}
+            onUpdate={(next) => setCaseRow(next)}
+          />
         </Card>
       )}
+    </div>
+  )
+}
+
+function MarkAsWonBox({
+  caseId,
+  currentAmount,
+  currentStatus,
+  onUpdate,
+}: {
+  caseId: string
+  currentAmount: number
+  currentStatus: string
+  onUpdate: (next: JurisCase) => void
+}) {
+  const [amount, setAmount] = useState<string>(
+    currentAmount ? String(currentAmount) : ''
+  )
+  const [saving, setSaving] = useState(false)
+  const isResolved = currentStatus === 'resolu'
+
+  const submit = async () => {
+    const value = Number(amount)
+    if (!Number.isFinite(value) || value < 0) {
+      toast.error('Indique un montant valide en euros.')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/cases/${caseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          money_saved: value,
+          status: 'resolu',
+        }),
+      })
+      if (!res.ok) throw new Error()
+      const data = (await res.json()) as { case: JurisCase }
+      onUpdate(data.case)
+      toast.success(
+        `🏆 Dossier résolu — ${formatEuros(value)} économisés !`
+      )
+    } catch {
+      toast.error('Impossible de valider ce gain.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+      <p className="text-xs uppercase tracking-wider text-emerald-700">
+        {isResolved
+          ? 'Dossier résolu'
+          : 'Marquer comme résolu'}
+      </p>
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        {isResolved
+          ? 'Tu peux mettre à jour le montant économisé si besoin.'
+          : 'Quand ton dossier est gagné, indique combien tu as économisé ou récupéré.'}
+      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            min={0}
+            step="1"
+            placeholder="Ex : 450"
+            className="w-full rounded-xl border border-emerald-300 bg-white px-4 py-2.5 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+          />
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-700">
+            €
+          </span>
+        </div>
+        <Button
+          variant="gold"
+          size="md"
+          onClick={submit}
+          loading={saving}
+        >
+          🏆 {isResolved ? 'Mettre à jour' : 'Valider le gain'}
+        </Button>
+      </div>
     </div>
   )
 }

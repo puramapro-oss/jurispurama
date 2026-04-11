@@ -26,7 +26,7 @@ async function loadDocForUser(id: string, userIdInternal: string) {
   const { data: doc } = await admin
     .from('jurispurama_documents')
     .select(
-      'id, case_id, type, title, content, generated_data, pdf_url, signed_pdf_url, signature_status, sent_status, storage_path, created_at, deleted_at'
+      'id, case_id, type, title, content, generated_data, pdf_url, signed_pdf_url, signature_status, signature_request_id, sent_status, sent_at, sent_to, tracking_number, ar_received_at, cost, storage_path, created_at, deleted_at'
     )
     .eq('id', id)
     .maybeSingle()
@@ -63,15 +63,28 @@ export async function GET(
 
   const admin = createServiceClient()
   let freshUrl: string | null = doc.pdf_url
+  let freshSignedUrl: string | null = doc.signed_pdf_url
   if (doc.storage_path) {
     const { data: signed } = await admin.storage
       .from(BUCKET)
       .createSignedUrl(doc.storage_path, 60 * 60 * 24) // 24h fresh
     if (signed?.signedUrl) freshUrl = signed.signedUrl
+
+    if (doc.signature_status === 'signed') {
+      const signedPath = doc.storage_path.replace(/\.pdf$/, '-signed.pdf')
+      const { data: signed2 } = await admin.storage
+        .from(BUCKET)
+        .createSignedUrl(signedPath, 60 * 60 * 24)
+      if (signed2?.signedUrl) freshSignedUrl = signed2.signedUrl
+    }
   }
 
   return NextResponse.json({
-    document: { ...doc, pdf_url: freshUrl },
+    document: {
+      ...doc,
+      pdf_url: freshUrl,
+      signed_pdf_url: freshSignedUrl,
+    },
     case: caseRow,
   })
 }
@@ -101,9 +114,12 @@ export async function DELETE(
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)
 
-  // Remove storage asset
+  // Remove storage assets (original + signed variant if any)
   if (result.doc.storage_path) {
-    await admin.storage.from(BUCKET).remove([result.doc.storage_path])
+    const paths = [result.doc.storage_path]
+    const signedPath = result.doc.storage_path.replace(/\.pdf$/, '-signed.pdf')
+    if (signedPath !== result.doc.storage_path) paths.push(signedPath)
+    await admin.storage.from(BUCKET).remove(paths)
   }
 
   return NextResponse.json({ ok: true })

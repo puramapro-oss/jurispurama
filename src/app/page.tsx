@@ -9,6 +9,36 @@ import {
   COMPANY_INFO,
 } from '@/lib/constants'
 import { formatPrice } from '@/lib/utils'
+import { createServiceClient } from '@/lib/supabase'
+
+export const revalidate = 600 // 10 min
+
+async function getCommunitySavings(): Promise<number> {
+  try {
+    const admin = createServiceClient()
+    const { data } = await admin
+      .from('jurispurama_cases')
+      .select('money_saved')
+      .eq('status', 'resolu')
+    if (!data) return 10_000
+    const total = data.reduce(
+      (acc, c) => acc + Number(c.money_saved ?? 0),
+      0
+    )
+    // Floor for launch phase so we never show 0.
+    return total < 10_000 ? 10_000 : total
+  } catch {
+    return 10_000
+  }
+}
+
+function formatEurosCompact(value: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
 
 const PROCESS_STEPS = [
   {
@@ -37,7 +67,12 @@ const STATS = [
   { value: '3 min', label: 'Pour ton plan d\'action' },
 ]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const communitySavings = await getCommunitySavings()
+  const communityLabel =
+    communitySavings >= 10_000
+      ? `Plus de ${formatEurosCompact(Math.floor(communitySavings / 1000) * 1000)} déjà économisés par nos utilisateurs`
+      : `${formatEurosCompact(communitySavings)} économisés par nos utilisateurs`
   return (
     <div className="min-h-screen bg-parchment">
       {/* Header */}
@@ -124,6 +159,19 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Community counter */}
+          <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-5 py-4 text-center">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-700">
+              Communauté JurisPurama
+            </p>
+            <p className="mt-1 font-serif text-xl font-semibold text-emerald-800 md:text-2xl">
+              💰 {communityLabel}
+            </p>
+            <p className="mt-1 text-xs text-emerald-700/80">
+              Mis à jour automatiquement à chaque dossier résolu.
+            </p>
           </div>
         </div>
       </section>

@@ -22,6 +22,7 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith('/go/')) return true
   if (pathname.startsWith('/p/')) return true
   if (pathname.startsWith('/share/')) return true
+  if (pathname.startsWith('/verify/')) return true
   if (pathname.startsWith('/api/')) return true
   if (pathname.startsWith('/_next/')) return true
   if (pathname.startsWith('/auth/')) return true
