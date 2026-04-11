@@ -5,38 +5,48 @@
 - [x] P2 — Chat JurisIA SSE + dossiers/messages + actions ✅ 2026-04-11
 - [x] P3 — Profil juridique chiffré + Scanner OCR Claude Vision + Génération PDF ✅ 2026-04-11
 - [x] P4 — Signature canvas Art.1366 + Envoi Resend/AR24 + Timeline + Crons + Notifications ✅ 2026-04-11
-- [ ] P5 — Stripe 4 plans + Parrainage + Influenceurs + Admin
+- [x] P5 — Stripe 4 plans + Parrainage + Influenceurs + Admin ✅ 2026-04-11
 - [ ] P6 — Landing premium + SEO + PWA + i18n + Dark
 - [ ] P7 — Tests PW + audit + deploy final
 
-## Live (P4)
+## Live (P5)
 - URL: https://jurispurama.purama.dev — HTTP 200
-- API status: https://jurispurama.purama.dev/api/status — `{"ok":true,"app":"jurispurama"}`
-- Chat SSE: POST /api/ai/chat (auth required)
+- API status: /api/status → {"ok":true,"app":"jurispurama"}
+- Chat SSE: POST /api/ai/chat (auth)
 - Cases API: GET/POST /api/cases, GET/PATCH/DELETE /api/cases/[id]
-  (PATCH accepte maintenant money_saved)
-- Profile API: GET/PUT /api/profile (AES-256 chiffré)
-- OCR API: POST /api/ocr (multipart Claude Vision)
+- Profile API: GET/PUT /api/profile (AES-256)
+- OCR API: POST /api/ocr
 - Documents API: POST /api/documents/generate, GET/DELETE /api/documents/[id]
-- **P4 Signature**: POST /api/documents/[id]/sign
-- **P4 Envoi email**: POST /api/documents/[id]/send-email
-- **P4 Envoi recommandé**: POST /api/documents/[id]/send-recommande
-- **P4 Notifications**: GET/PATCH /api/notifications
-- **P4 Crons**: GET /api/cron/deadline-alerts (8h quotidien),
-  GET /api/cron/check-ar-status (toutes 6h) — Bearer CRON_SECRET
-- **P4 Verify public**: GET /verify/[id]
-- Pages P4: /documents/[id] (sign+send modals), /dossiers/[id]
-  (timeline enrichie + savings), landing avec counter community
-- Storage bucket: jurispurama-documents (+ sous-dossiers signatures/)
-- DB schema: jurispurama (10 tables — +jurispurama_signatures,
-  +jurispurama_notifications, RLS ON)
-- Dernier deploy: dpl_48AfcJA3qwvr6hKBEDwrLj6trKHz
-- Commit: de4109f (feat P4)
+- **P4** Signature: POST /api/documents/[id]/sign
+- **P4** Envoi email: POST /api/documents/[id]/send-email
+- **P4** Envoi recommandé: POST /api/documents/[id]/send-recommande
+- **P4** Notifs: GET/PATCH /api/notifications
+- **P4** Crons: deadline-alerts, check-ar-status (Bearer CRON_SECRET)
+- **P4** Verify public: GET /verify/[id]
+- **P5** Stripe checkout abo: POST /api/stripe/checkout (401 w/o auth)
+- **P5** Stripe checkout unit: POST /api/stripe/checkout-unit
+- **P5** Stripe portal: POST /api/stripe/portal
+- **P5** Stripe webhook: POST /api/stripe/webhook (constructEvent + raw body)
+- **P5** Referral: GET/POST /api/referral (stats, apply_on_signup, withdrawal)
+- **P5** Influencer: GET/POST /api/influencer
+- **P5** Admin: GET /api/admin/stats, GET/PATCH /api/admin/users, GET /api/admin/payments (csv), GET/PATCH /api/admin/influencers
+- **P5** Redirects: GET /go/[slug] → /signup?ref=CODE (302 + cookie)
+- **P5** Public profile: GET /p/[slug]
+- Pages P5: /abonnement (cards + toggle + portal), /parrainage (QR + stats + tier + withdrawal),
+  /influenceur (dashboard), /apply/influenceur (form), /admin, /admin/users, /admin/cases,
+  /admin/payments, /admin/influenceurs
+- Stripe webhook: we_1TKqgb4Y1unNvKtXo10pXz8L (live) → /api/stripe/webhook
+  Events: checkout.session.completed, customer.subscription.*, invoice.payment_*
+- Stripe products/prices: 6 recurring (essentiel/pro/avocat × monthly/yearly) + 3 one-time
+  (recommande 5.99€, signature 1.99€, document 2.99€) + coupon welcome10_jurispurama
+- DB schema: jurispurama (11 tables — +jurispurama_influencers RLS)
+- Dernier deploy: dpl_2Ayv89m8XSpqwqvk4TM8tgQnRHZE (prod), alias jurispurama.purama.dev
+- Commit: aeadc22 (feat P5)
 
 ## Stack
 Next.js 16 + React 19 + TS strict + Tailwind v4 + @supabase/ssr +
 @anthropic-ai/sdk + @react-pdf/renderer + pdf-lib + @react-email/components +
-resend + react-markdown + remark-gfm + sonner + zod
+resend + stripe 22 + recharts + qrcode + react-markdown + remark-gfm + sonner + zod
 
 ## Identité
 - Slug: jurispurama
