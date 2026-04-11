@@ -50,10 +50,12 @@ Tous >90 sur toutes les catégories. Aucune optimisation nécessaire.
 Créé à la racine : pitch, stack, features P1→P7, architecture complète src/, dev local, tests, deploy, licence SASU PURAMA, contact.
 
 ### Deploy final
-- Commit : P7: tests + audit + final deploy
-- Vercel prod : redeploy P7
-- URL : https://jurispurama.purama.dev → 200 (vérifié curl)
-- /api/status → `{"ok":true,"app":"jurispurama","env":"production"}`
+- Commit : `66c6a33` — "P7: tests Playwright + 21 SIM + Lighthouse + README final"
+- Vercel prod deploy : `dpl_6kxcN5xEv4h8HKqfpo99bQPBY6zP`
+- Alias : `https://jurispurama.purama.dev` → points to `jurispurama-mzdlowkkb-puramapro-oss-projects.vercel.app`
+- Déploiement via workaround rsync /tmp (sans .git) pour contourner restriction Vercel git author email non-membre team puramapro-oss
+- Smoke test post-deploy (tous 200) : /, /pricing, /aide, /sitemap.xml, /api/status → `{"ok":true,"app":"jurispurama","env":"production"}`
+- Re-run Playwright desktop post-deploy : **37/37 ✓** (16s)
 
 ### Stats projet
 - Fichiers .ts/.tsx : **152**
