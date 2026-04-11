@@ -1,20 +1,47 @@
 {
   "name": "JurisPurama — Assistant juridique IA",
   "short_name": "JurisPurama",
-  "description": "L'assistant juridique IA qui remplace ton avocat à 99%.",
+  "description": "L'assistant juridique IA qui remplace ton avocat à 99 %. 12 domaines du droit français, documents juridiques prêts à signer et envoi en recommandé électronique.",
   "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A0E1A",
+  "background_color": "#05070F",
   "theme_color": "#1E3A5F",
   "lang": "fr",
-  "categories": ["productivity", "business", "legal"],
+  "dir": "ltr",
+  "id": "jurispurama",
+  "categories": ["productivity", "business", "legal", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouveau dossier",
+      "short_name": "Nouveau",
+      "description": "Ouvrir JurisIA pour commencer un nouveau dossier",
+      "url": "/chat",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Mes dossiers",
+      "short_name": "Dossiers",
+      "description": "Voir tous mes dossiers en cours",
+      "url": "/dossiers",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Scanner un document",
+      "short_name": "Scanner",
+      "description": "Analyser une amende ou un document légal",
+      "url": "/scanner",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
     }
   ]
 }

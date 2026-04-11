@@ -7,10 +7,25 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/dashboard/', '/api/', '/auth/', '/dossiers/', '/profil/'],
+        allow: ['/', '/api/og'],
+        disallow: [
+          '/dashboard/',
+          '/api/',
+          '/auth/',
+          '/dossiers/',
+          '/profil/',
+          '/scanner/',
+          '/documents/',
+          '/admin/',
+          '/chat/',
+          '/abonnement/',
+          '/influenceur/',
+          '/apply/',
+          '/verify/',
+        ],
       },
     ],
     sitemap: `${base}/sitemap.xml`,
+    host: base,
   }
 }

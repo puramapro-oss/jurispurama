@@ -4,6 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PUBLIC_PATHS = [
   '/',
   '/pricing',
+  '/how-it-works',
+  '/ecosystem',
+  '/changelog',
+  '/status',
+  '/blog',
+  '/offline',
   '/login',
   '/signup',
   '/forgot-password',
