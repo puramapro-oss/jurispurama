@@ -71,6 +71,13 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (user && (pathname === '/login' || pathname === '/signup')) {
+    const url = new URL(pathname, request.url)
+    // Preserve ?ref=... on signup so that logged-out tests still work; for
+    // logged-in users, redirect to dashboard only if no ref is pending.
+    if (pathname === '/signup' && request.nextUrl.searchParams.has('ref')) {
+      return response
+    }
+    void url
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -78,6 +85,22 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Admin zone: super_admin only (email-based)
+  if (
+    user &&
+    (pathname.startsWith('/admin') || pathname.startsWith('/api/admin'))
+  ) {
+    if (user.email !== 'matiss.frasne@gmail.com') {
+      if (pathname.startsWith('/api/admin')) {
+        return new NextResponse(
+          JSON.stringify({ error: 'Accès réservé à l\'administration.' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return response

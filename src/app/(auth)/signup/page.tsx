@@ -1,16 +1,49 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
+const REF_COOKIE = 'juris_ref'
+
+function readRefCookie(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${REF_COOKIE}=`))
+  return match ? decodeURIComponent(match.split('=')[1] ?? '') : null
+}
+
+function writeRefCookie(code: string) {
+  if (typeof document === 'undefined') return
+  const thirtyDays = 60 * 60 * 24 * 30
+  document.cookie = `${REF_COOKIE}=${encodeURIComponent(
+    code
+  )}; path=/; max-age=${thirtyDays}; samesite=lax`
+}
+
+async function applyReferral(code: string) {
+  try {
+    const res = await fetch('/api/referral', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'apply_on_signup', code }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 function SignupForm() {
   const router = useRouter()
-  const { signUpWithEmail, signInWithGoogle } = useAuth()
+  const params = useSearchParams()
+  const { signUpWithEmail, signInWithGoogle, user } = useAuth()
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -18,6 +51,31 @@ function SignupForm() {
   const [accepted, setAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [refCode, setRefCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fromQuery = params.get('ref')
+    if (fromQuery) {
+      const normalized = fromQuery.trim().toUpperCase().slice(0, 16)
+      setRefCode(normalized)
+      writeRefCookie(normalized)
+      return
+    }
+    const fromCookie = readRefCookie()
+    if (fromCookie) setRefCode(fromCookie)
+  }, [params])
+
+  // If a logged-in user lands here via ?ref (middleware lets them pass), try
+  // to bind the code to their existing profile once.
+  useEffect(() => {
+    if (!user || !refCode) return
+    applyReferral(refCode).then((ok) => {
+      if (ok) {
+        toast.success('Code parrain activé sur ton compte')
+        router.push('/dashboard')
+      }
+    })
+  }, [user, refCode, router])
 
   async function handleGoogle() {
     setGoogleLoading(true)
@@ -47,6 +105,10 @@ function SignupForm() {
       return
     }
     toast.success('Bienvenue chez JurisPurama')
+    if (refCode) {
+      // Fire-and-forget; the hook will retry on next load if profile not ready yet
+      void applyReferral(refCode)
+    }
     router.push('/dashboard')
   }
 
@@ -61,6 +123,20 @@ function SignupForm() {
             14 jours d&apos;essai gratuit · sans carte bancaire
           </p>
         </div>
+
+        {refCode && (
+          <div className="mb-6 rounded-2xl border border-[var(--gold)]/40 bg-[var(--gold)]/10 p-4 text-center">
+            <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
+              Parrainé par
+            </p>
+            <p className="mt-1 font-mono text-lg font-semibold text-[var(--justice)]">
+              {refCode}
+            </p>
+            <p className="mt-1 text-xs text-[var(--text-secondary)]">
+              ✨ -50% sur ton premier mois activé
+            </p>
+          </div>
+        )}
 
         <Button
           variant="secondary"

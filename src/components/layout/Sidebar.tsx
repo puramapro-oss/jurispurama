@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/profil', label: 'Profil juridique', icon: '👤' },
   { href: '/abonnement', label: 'Abonnement', icon: '💳' },
   { href: '/parrainage', label: 'Parrainage', icon: '🎁' },
+  { href: '/influenceur', label: 'Influenceur', icon: '⭐' },
 ]
 
 export default function Sidebar() {
