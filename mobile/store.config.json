@@ -1,0 +1,172 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "fr": {
+        "title": "JurisPurama — Avocat IA",
+        "subtitle": "Ton conseil juridique 24/7",
+        "description": "JurisPurama est ton avocat IA personnel, disponible 24/7 dans la poche. Pose tes questions juridiques en français à JurisIA, génère mises en demeure, contrats et requêtes en quelques secondes, signe tes documents en mobilité (Art. 1366) et envoie un courrier recommandé en deux clics. Conçu par et pour les particuliers, freelances et cabinets en France. RGPD conforme · Hébergé en Europe · 14 jours d'essai gratuit.",
+        "keywords": "avocat,droit,juridique,contrat,IA,assistant,documents,signature,mise en demeure,RGPD",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Lancement initial JurisPurama mobile : JurisIA, dossiers, génération de documents, signature électronique, parrainage."
+      },
+      "en-US": {
+        "title": "JurisPurama — AI Lawyer",
+        "subtitle": "Your 24/7 legal counsel",
+        "description": "JurisPurama is your personal AI lawyer, in your pocket 24/7. Ask JurisIA legal questions, generate formal letters and contracts in seconds, sign documents on the go (eIDAS-aligned), and send registered mail in two taps. Built for French law and tailored for individuals, freelancers and law firms. GDPR compliant · EU-hosted · 14-day free trial.",
+        "keywords": "lawyer,law,legal,AI,assistant,contracts,documents,signature,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Initial release: JurisIA chat, cases, document generation, e-signature, referral program."
+      },
+      "es-ES": {
+        "title": "JurisPurama — Abogado IA",
+        "subtitle": "Tu asesor jurídico 24/7",
+        "description": "JurisPurama es tu abogado IA personal, disponible 24/7 en tu bolsillo. Consulta a JurisIA, genera cartas formales y contratos en segundos, firma documentos en movilidad y envía correo certificado con dos toques. Conforme con el RGPD · Alojado en la UE · 14 días gratis.",
+        "keywords": "abogado,derecho,jurídico,IA,asistente,contratos,firma,RGPD",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Lanzamiento inicial."
+      },
+      "de-DE": {
+        "title": "JurisPurama — KI-Anwalt",
+        "subtitle": "Dein Rechtsberater 24/7",
+        "description": "JurisPurama ist dein persönlicher KI-Anwalt, rund um die Uhr in der Tasche. Frage JurisIA zu Rechtsthemen, erstelle Mahnungen und Verträge in Sekunden, unterschreibe digital und sende Einschreiben mit zwei Klicks. DSGVO-konform · EU-Hosting · 14 Tage kostenlos.",
+        "keywords": "Anwalt,Recht,KI,Vertrag,Unterschrift,DSGVO",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Erstveröffentlichung."
+      },
+      "it": {
+        "title": "JurisPurama — Avvocato IA",
+        "subtitle": "Il tuo consulente legale 24/7",
+        "description": "JurisPurama è il tuo avvocato IA personale, disponibile 24/7. Chiedi a JurisIA, genera lettere formali e contratti in pochi secondi, firma documenti in mobilità. Conforme GDPR · Hosting UE · 14 giorni gratis.",
+        "keywords": "avvocato,legale,IA,contratti,firma,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Versione iniziale."
+      },
+      "pt-PT": {
+        "title": "JurisPurama — Advogado IA",
+        "subtitle": "O teu consultor jurídico 24/7",
+        "description": "JurisPurama é o teu advogado IA pessoal, disponível 24/7. Pergunta ao JurisIA, gera cartas formais e contratos em segundos, assina documentos em mobilidade. Conforme RGPD · Alojado na UE · 14 dias grátis.",
+        "keywords": "advogado,direito,IA,contratos,assinatura,RGPD",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Versão inicial."
+      },
+      "ar-SA": {
+        "title": "JurisPurama — محامي الذكاء الاصطناعي",
+        "subtitle": "مستشارك القانوني على مدار الساعة",
+        "description": "JurisPurama هو محاميك الشخصي بالذكاء الاصطناعي، متاح على مدار الساعة. اطرح أسئلتك القانونية، وأنشئ المراسلات والعقود في ثوانٍ، ووقّع المستندات إلكترونياً. متوافق مع GDPR · 14 يوماً مجاناً.",
+        "keywords": "محامي,قانون,ذكاء اصطناعي,عقود,توقيع",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "الإصدار الأول."
+      },
+      "zh-Hans": {
+        "title": "JurisPurama — AI 律师",
+        "subtitle": "您的 24/7 法律顾问",
+        "description": "JurisPurama 是您的随身 AI 律师，全天候为您解答法律问题、生成正式信函和合同、电子签名并寄出挂号信。GDPR 合规 · 欧盟托管 · 14 天免费试用。",
+        "keywords": "律师,法律,人工智能,合同,签名,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "首次发布。"
+      },
+      "ja": {
+        "title": "JurisPurama — AI 弁護士",
+        "subtitle": "あなたの 24/7 法律アドバイザー",
+        "description": "JurisPurama はあなた専属の AI 弁護士。24時間365日、法律相談、契約書作成、電子署名、書留郵送をサポート。GDPR 準拠 · EU ホスティング · 14日間無料。",
+        "keywords": "弁護士,法律,AI,契約書,署名,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "初回リリース。"
+      },
+      "ko": {
+        "title": "JurisPurama — AI 변호사",
+        "subtitle": "24/7 법률 자문",
+        "description": "JurisPurama는 24시간 함께하는 AI 변호사입니다. 법률 질문, 계약서 작성, 전자 서명, 등기 우편 발송. GDPR 준수 · EU 호스팅 · 14일 무료 체험.",
+        "keywords": "변호사,법률,AI,계약서,서명,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "초기 릴리스."
+      },
+      "hi": {
+        "title": "JurisPurama — AI वकील",
+        "subtitle": "आपका 24/7 कानूनी सलाहकार",
+        "description": "JurisPurama आपका निजी AI वकील है, 24/7 जेब में। JurisIA से कानूनी सवाल पूछें, औपचारिक पत्र और अनुबंध तैयार करें, ई-हस्ताक्षर करें। GDPR अनुपालन · EU होस्टिंग · 14 दिन निःशुल्क।",
+        "keywords": "वकील,कानून,AI,अनुबंध,हस्ताक्षर,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "प्रारंभिक रिलीज़।"
+      },
+      "ru": {
+        "title": "JurisPurama — ИИ-юрист",
+        "subtitle": "Ваш юридический советник 24/7",
+        "description": "JurisPurama — ваш персональный ИИ-юрист, доступен 24/7. Задавайте юридические вопросы JurisIA, создавайте письма и договоры за секунды, подписывайте документы и отправляйте заказные письма в два клика. Соответствие GDPR · хостинг ЕС · 14 дней бесплатно.",
+        "keywords": "юрист,право,ИИ,договор,подпись,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Первый выпуск."
+      },
+      "tr": {
+        "title": "JurisPurama — Yapay Zeka Avukat",
+        "subtitle": "7/24 hukuki danışmanın",
+        "description": "JurisPurama cebindeki kişisel yapay zeka avukatın. JurisIA'ya hukuki sorular sor, resmi yazılar ve sözleşmeler oluştur, e-imza at. GDPR uyumlu · AB barındırma · 14 gün ücretsiz.",
+        "keywords": "avukat,hukuk,yapay zeka,sözleşme,imza,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "İlk sürüm."
+      },
+      "nl-NL": {
+        "title": "JurisPurama — AI-advocaat",
+        "subtitle": "Je juridisch adviseur 24/7",
+        "description": "JurisPurama is je persoonlijke AI-advocaat, 24/7 in je broekzak. Stel juridische vragen aan JurisIA, genereer brieven en contracten in seconden, onderteken digitaal. AVG-conform · EU-hosting · 14 dagen gratis.",
+        "keywords": "advocaat,recht,AI,contract,handtekening,AVG",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Eerste release."
+      },
+      "pl": {
+        "title": "JurisPurama — Adwokat AI",
+        "subtitle": "Twój doradca prawny 24/7",
+        "description": "JurisPurama to Twój osobisty adwokat AI, dostępny 24/7. Zadawaj pytania prawne, generuj pisma i umowy w kilka sekund, podpisuj dokumenty elektronicznie. Zgodny z RODO · 14 dni za darmo.",
+        "keywords": "adwokat,prawo,AI,umowa,podpis,RODO",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Pierwsze wydanie."
+      },
+      "sv": {
+        "title": "JurisPurama — AI-jurist",
+        "subtitle": "Din juridiska rådgivare 24/7",
+        "description": "JurisPurama är din personliga AI-jurist, tillgänglig dygnet runt. Ställ juridiska frågor till JurisIA, generera brev och avtal på sekunder, signera digitalt. GDPR-kompatibel · EU-värd · 14 dagar gratis.",
+        "keywords": "jurist,juridik,AI,avtal,signatur,GDPR",
+        "marketingUrl": "https://jurispurama.purama.dev",
+        "supportUrl": "https://jurispurama.purama.dev/contact",
+        "privacyPolicyUrl": "https://jurispurama.purama.dev/politique-confidentialite",
+        "releaseNotes": "Första utgåvan."
+      }
+    },
+    "categories": ["BUSINESS", "PRODUCTIVITY"],
+    "advisory": ["UNRESTRICTED_WEB_ACCESS"]
+  },
+  "android": {
+    "playStoreUrl": "https://play.google.com/store/apps/details?id=dev.purama.jurispurama"
+  }
+}

@@ -1,0 +1,9 @@
+appId: dev.purama.jurispurama
+name: 01 — Onboarding (cold launch → login screen)
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- assertVisible: "JURISPURAMA"
+- assertVisible: "Bon retour, maître."
+- takeScreenshot: 01-onboarding

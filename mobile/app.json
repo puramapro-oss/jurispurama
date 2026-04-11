@@ -1,0 +1,90 @@
+{
+  "expo": {
+    "name": "JurisPurama",
+    "slug": "jurispurama",
+    "scheme": "jurispurama",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "primaryColor": "#6D28D9",
+    "backgroundColor": "#0A0A0F",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.purama.jurispurama",
+      "buildNumber": "1",
+      "associatedDomains": ["applinks:jurispurama.purama.dev"],
+      "infoPlist": {
+        "NSCameraUsageDescription": "JurisPurama utilise l'appareil photo pour scanner tes documents juridiques (OCR).",
+        "NSPhotoLibraryUsageDescription": "JurisPurama accède à tes photos pour importer un document à analyser.",
+        "NSFaceIDUsageDescription": "JurisPurama utilise Face ID pour sécuriser l'accès à ton dossier juridique.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "dev.purama.jurispurama",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "jurispurama.purama.dev" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0F",
+          "image": "./assets/splash.png",
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "puramapro-oss",
+    "extra": {
+      "router": {
+        "origin": "https://jurispurama.purama.dev"
+      },
+      "eas": {
+        "projectId": "PLACEHOLDER_EAS_PROJECT_ID"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/PLACEHOLDER_EAS_PROJECT_ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}

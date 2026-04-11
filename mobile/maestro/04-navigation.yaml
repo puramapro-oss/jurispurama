@@ -1,0 +1,18 @@
+appId: dev.purama.jurispurama
+name: 04 — Tab navigation (dashboard → chat → dossiers → abo → profil)
+---
+- launchApp
+# Pre-condition: user must be signed in. Skipped in CI without seed.
+- runFlow:
+    when:
+      visible: "Accueil"
+    commands:
+      - tapOn: "JurisIA"
+      - assertVisible: "Avocat IA — 30 ans d'expérience"
+      - tapOn: "Dossiers"
+      - assertVisible: "Tes dossiers"
+      - tapOn: "Abo"
+      - assertVisible: "Le bon plan pour ton cabinet."
+      - tapOn: "Profil"
+      - assertVisible: "PROFIL"
+      - takeScreenshot: 04-profil

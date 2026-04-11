@@ -1,0 +1,11 @@
+appId: dev.purama.jurispurama
+name: 10 — Error handling (form validation)
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Bon retour, maître."
+- tapOn:
+    id: "login-submit"
+- assertVisible: "Email invalide."
+- assertVisible: "6 caractères minimum."
+- takeScreenshot: 10-validation-errors

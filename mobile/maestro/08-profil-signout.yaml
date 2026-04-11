@@ -1,0 +1,15 @@
+appId: dev.purama.jurispurama
+name: 08 — Profil + sign out
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Accueil"
+    commands:
+      - tapOn: "Profil"
+      - assertVisible: "PROFIL"
+      - tapOn:
+          id: "profil-signout"
+      - assertVisible: "Tu veux vraiment te déconnecter ?"
+      - tapOn: "Annuler"
+      - takeScreenshot: 08-profil

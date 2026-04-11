@@ -1,0 +1,14 @@
+name: ota-update
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+
+jobs:
+  publish_ota:
+    name: Publish OTA update
+    type: update
+    params:
+      branch: production
+      message: "Auto OTA from main"
