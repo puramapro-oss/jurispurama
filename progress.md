@@ -1,114 +1,80 @@
 # JurisPurama — Progress
 
 ## P1 — TERMINÉ ✅ (2026-04-11)
+Scaffold, Auth, DB, Landing, Legal pages, Deploy. Voir historique git commit b4e69df.
 
-### Live
-- **URL**: https://jurispurama.purama.dev (HTTP 200)
-- **API status**: https://jurispurama.purama.dev/api/status → `{"ok":true,"app":"jurispurama","env":"production"}`
-- **Vercel**: project `prj_g9rdLUpZDdMLkJNNrBUXWjdSV9yk`, deployment `dpl_7rLC9DKG5NcN8egUHPJ7tLhK52vT` (READY)
-- **Git commit**: b4e69df — "P1: scaffold + auth + DB + landing + legal pages"
+## P2 — TERMINÉ ✅ (2026-04-11)
 
-### Fichiers créés
+### Livré
+Chat JurisIA en streaming SSE avec dossiers, messages, actions rapides, pages dossiers filtrables et détail timeline.
 
-**Racine**
-- package.json (Next 16.2.2, React 19, @supabase/ssr, Tailwind v4, etc.)
-- tsconfig.json, next.config.ts, postcss.config.mjs, eslint.config.mjs
-- .gitignore, .env.local (avec credentials VPS corrects)
-- vercel.json (crons configurés pour /api/cron/deadline-alerts + /api/cron/check-ar-status)
-- schema.sql (déployé sur VPS)
+### Fichiers créés (P2)
 
 **src/lib/**
-- constants.ts (APP_*, PLANS, LEGAL_DOMAINS, COMPANY_INFO)
-- utils.ts (cn, formatPrice, generateReferralCode, isSuperAdmin)
-- supabase.ts (createBrowserClient + createServiceClient, schema='jurispurama')
-- supabase-server.ts (createServerSupabaseClient pour RSC/API)
+- `claude.ts` — wrapper Anthropic SDK avec lazy init `getAnthropic()`, `askClaude()`, `streamClaude()` (async generator), `withRetry()`. Modèle par défaut: `claude-sonnet-4-20250514`, fast: `claude-haiku-4-5-20251001`. Support images base64 pour Vision.
+- `prompts/jurisia.ts` — `JURISIA_SYSTEM_PROMPT` avec rôles, règles, processus, disclaimer et 12 domaines détaillés (Art. 429 CPP, Art. L.121-3 Code route, Art. L.221-18 Code conso, Art. 1641 CC, Art. 6 loi 6/7/1989, barème Macron Art. L.1235-3, etc.). Contrat de sortie structuré `<juris-meta>{...}</juris-meta>` pour phase/case_type/sub_type/success_probability/strategy/deadlines/estimated_savings/next_actions. Helpers `buildUserContext()`, `composeSystemPrompt()`, `extractJurisMeta()`.
+- `case-helpers.ts` — `CASE_TYPE_LABELS`, `CASE_STATUS_LABELS`, `CASE_PHASES`, `formatRelativeDate()`, `daysUntil()`, `formatDeadline()`, `formatEuros()`.
 
-**src/types/**
-- index.ts (JurisUser, JurisCase, JurisMessage, JurisDocument, types enum)
+**src/app/api/**
+- `ai/chat/route.ts` — POST SSE streaming, runtime nodejs, maxDuration 120. Auth server supabase, quota free (3 dossiers/mois), création auto du case si pas caseId, persist user message, load history (20), inject legal profile, stream Claude, detect `<juris-meta>` dans buffer, flush tail avant meta tag pour éviter leak, persist assistant message sans bloc meta, apply meta to case (status/type/sub_type/probability/strategy/deadlines/money_saved). Event types: `case_created`, `text`, `done`, `error`.
+- `cases/route.ts` — GET (list + filtres status/type/q), POST (create manuel avec Zod).
+- `cases/[id]/route.ts` — GET (case + messages + documents), PATCH (status/summary/sub_type), DELETE (soft archive).
 
-**src/hooks/**
-- useAuth.ts (signIn/signUp/signInWithGoogle/signOut/resetPassword, fetchOrCreateProfile)
+**src/components/ui/**
+- `Badge.tsx` — 9 variants (justice, gold, green, amber, red, blue, purple, gray, default), 2 sizes.
+- `Progress.tsx` — barre gradient justice→or avec label optionnel.
+- `Tabs.tsx` — onglets scrollables avec count badges.
+- `Skeleton.tsx` — loading placeholder animé.
 
-**src/middleware.ts** — @supabase/ssr, PUBLIC_PATHS, redirect auth → /dashboard, non-auth → /login?next=
+**src/components/chat/**
+- `MessageBubble.tsx` — bulles chat avec react-markdown + remark-gfm, rendu dédié pour h1/h2/h3, ul/ol, strong, code (articles loi en or), blockquote, table. Avatar ⚖️ assistant / 👤 user. Streaming cursor.
+- `ChatInput.tsx` — textarea auto-grow (max 260px), Entrée envoie, Maj+Entrée nouvelle ligne, bouton send avec loading spinner, compteur caractères.
+- `PhaseStepper.tsx` — stepper horizontal 6 phases (Diagnostic→Analyse→Document prêt→Signé→Envoyé→Résolu) avec badge actif gradient.
+- `CaseSidebar.tsx` — panneau latéral avec type/statut/probabilité/money_saved/deadlines (critique rouge si ≤3j)/actions rapides (generate_document, sign, send_recommande, view_full, new_case).
+- `ActionButtons.tsx` — boutons contextuels sous message assistant (generate_document, sign, send_email, send_recommande, book_appointment, close).
 
-**src/app/**
-- layout.tsx (Cormorant Garamond + Inter, metadata FR, Toaster, ErrorBoundary)
-- globals.css (palette justice #1E3A5F + or #C9A84C, glass, gradient-text, fade-in-up)
-- page.tsx (landing: header, hero, process 3 étapes, 12 domaines, pricing 4 plans, CTA, footer)
-- not-found.tsx, error.tsx
-- sitemap.ts, robots.ts
-- (auth)/layout.tsx + login/signup/forgot-password pages
-- auth/callback/route.ts (exchangeCodeForSession)
-- (dashboard)/layout.tsx + dashboard/page.tsx (accueil + CTA + empty state + 12 domaines)
-- mentions-legales, politique-confidentialite, cgv, cgu, cookies (contenu légal complet SASU PURAMA Frasne, art.293B, RGPD, DPO)
-- api/status/route.ts, api/cron/deadline-alerts/route.ts, api/cron/check-ar-status/route.ts (avec CRON_SECRET Bearer auth)
+**src/app/(dashboard)/chat/**
+- `page.tsx` — "Nouveau dossier" : sélection domaine (12 cards LEGAL_DOMAINS), ChatInput, liste 5 derniers dossiers. Stocke message dans sessionStorage puis navigue vers `/chat/new`.
+- `[caseId]/page.tsx` — PIÈCE MAÎTRESSE. Interface chat responsive desktop (chat + sidebar fixed) / mobile (stack). Fetch dossier + messages, gestion fetch+reader ReadableStream du SSE (event SSE → update state), auto-scroll intelligent (stoppe si user scrolle vers le haut), phase stepper, action buttons contextuels, support `new` sentinel avec auto-send du pending_message depuis sessionStorage. History.replaceState vers `/chat/[caseId]` après création.
 
-**src/components/**
-- ui/Button.tsx (primary/gold/secondary/ghost/danger, loading, fullWidth)
-- ui/Input.tsx (label, error, hint, focus ring justice)
-- ui/Card.tsx (glass, hover, padding variants)
-- layout/Sidebar.tsx (desktop, nav items, admin link si super_admin)
-- layout/BottomTabBar.tsx (mobile, safe-area-inset-bottom)
-- shared/ErrorBoundary.tsx
+**src/app/(dashboard)/dossiers/**
+- `page.tsx` — liste complète filtrable. Tabs statut (Tous, Diagnostic, Analyse, Document prêt, Envoyé, Résolu) avec count, filtre type, recherche texte, tri (recent/oldest/probability). Cards avec icon/type/status/summary/probability/money_saved/relative date. Empty state + CTA.
+- `[id]/page.tsx` — détail complet. Header avec breadcrumb, type, sub_type, summary, badges, dates. Boutons "Reprendre conversation" + "Archiver". PhaseStepper. 3 stats cards (probability, money_saved, next deadline). Tabs: Timeline (messages chronologiques), Échanges (liste messages complète), Documents (vide pour P3), Délais (critique J≤3), Gains (compteur money_saved).
 
-**public/**
-- manifest.json (PWA basique, theme #1E3A5F)
-- icon.svg (balance SVG gradient bleu/or)
+**src/app/(dashboard)/dashboard/**
+- `page.tsx` — mis à jour avec vraies stats live : dossiers actifs count, money_saved total, prochaine deadline, alerte critique en rouge pour deadlines ≤3j, liste 3 derniers dossiers avec probability bar.
 
-### DB VPS (schema `jurispurama`)
-Tables créées avec RLS ON :
-1. `jurispurama_users` — profil auth (PK, FK auth.users, plan, stripe, referral_code)
-2. `jurispurama_legal_profiles` — identité complète pour docs
-3. `jurispurama_cases` — dossiers (type, status, strategy JSONB, deadlines, money_saved)
-4. `jurispurama_messages` — conversation JurisIA
-5. `jurispurama_documents` — PDFs générés, signature, envoi
-6. `jurispurama_payments` — Stripe payments
-7. `jurispurama_referrals` — parrainage
+**src/app/(dashboard)/{profil,abonnement,parrainage}/page.tsx** — stubs propres pour que les liens sidebar ne 404 pas. Abonnement affiche les 4 plans PLANS avec "Bientôt disponible" (Stripe P5). Parrainage affiche code + lien copiable + paliers.
 
-Trigger : `handle_new_user_jurispurama` sur auth.users → insert jurispurama_users auto.
-RLS policies : user voit ses propres rows ; matiss.frasne@gmail.com voit tout.
-Index : email, referral_code, stripe_customer_id, user_id, case_id.
-PGRST_DB_SCHEMAS mis à jour sur VPS, `docker compose up -d --force-recreate rest` exécuté, schema exposé (vérifié via `curl /rest/v1/jurispurama_users` → `[]`).
+### Validations
+- `npx tsc --noEmit` → 0 erreur
+- `npm run build` → ✓ Compiled, 20 static + dynamic pages
+- `grep TODO|console.log|placeholder|Lorem|any:` → 0 match
+- `grep sk_live|password|secret` → seulement auth forms légitimes et CRON_SECRET env var
 
-### Env vars Vercel production (11 variables pushées)
-NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, APP_SCHEMA, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, RESEND_API_KEY, NEXT_PUBLIC_APP_URL, ADMIN_EMAIL, CRON_SECRET — toutes en production + preview + development.
+### Détails techniques importants
 
-### Vérifications HTTP
-```
-/                                   200
-/login                              200
-/signup                             200
-/mentions-legales                   200
-/cgv                                200
-/cgu                                200
-/politique-confidentialite          200
-/cookies                            200
-/dashboard                          307 (redirect /login — OK)
-/api/status                         {"ok":true,"app":"jurispurama"}
-```
+**SSE streaming + parsing `<juris-meta>`**
+Le pattern: on accumule `fullText` et on maintient un `emittedCount`. Tant qu'on n'a pas vu `<juris-meta>`, on émet seulement `fullText.slice(emittedCount, safeEnd)` où `safeEnd = fullText.length - len('<juris-meta>')` — ça empêche l'émission d'un prefix du tag si la chunk se coupe au milieu. Dès qu'on détecte le tag, on émet le texte jusqu'à l'index du tag puis on stoppe l'émission (`metaBuffering = true`) mais on continue à accumuler `fullText`. À la fin, on parse le bloc meta, on clean le texte, on persist via service client (pour contourner RLS après auth faite), et on update le case avec le patch partiel.
 
-### Problèmes rencontrés + résolutions
-1. **Next 16 ne reconnaît pas `eslint` dans nextConfig** — retiré du config.
-2. **`vercel --prod` deploy échouait silencieusement (ERROR état, 0 logs)** — le CLI push sans envs locales fait fail le prerender Supabase. Fix : `vercel pull` puis `vercel build --prod` puis `vercel deploy --prebuilt --prod`.
-3. **Vercel SSO deployment protection activée par défaut** — bloquait jurispurama.purama.dev avec 401 SSO. Fix : `PATCH /v9/projects/ID {"ssoProtection":null}` via API REST.
-4. **PAT GitHub fine-grained ne peut pas créer de repo** — repo `jurispurama` PAS créé sur github.com/puramapro-oss. Remote local set avec token, il suffit que l'user crée le repo manuellement puis `git push -u origin main`.
+**Lazy init Anthropic**
+`getAnthropic()` retourne un singleton créé au premier appel. Sans ça, Vercel Turbopack évalue le module au build et crash car `ANTHROPIC_API_KEY` n'est pas encore injectée.
 
-### Ce qui est prêt pour P2 (Chat JurisIA)
-- Types `JurisMessage`, `JurisCase` déjà définis dans `src/types/index.ts`
-- Tables `jurispurama_cases`, `jurispurama_messages` déjà créées avec RLS
-- Client Supabase browser/server configuré avec schema=jurispurama
-- Middleware protège `/chat` et `/dossiers` → redirect login
-- Env `ANTHROPIC_API_KEY` déjà poussé sur Vercel
+**Sentinel `new` pour nouveau dossier**
+`/chat/new` est un caseId spécial. Le composant détecte et skip le fetch initial, attend un `jurispurama:pending_message` dans sessionStorage, envoie auto, puis à réception du `case_created` du SSE, fait `window.history.replaceState()` vers `/chat/[realId]`. Évite un round-trip pre-chat.
 
-**Pour P2 il faudra** :
-1. Créer `src/lib/claude.ts` (askClaude / streamClaude helpers avec modèle claude-sonnet-4)
-2. System prompt JurisIA dans `src/lib/prompts/jurisia.ts` (avocat 30 ans, FR, cite articles)
-3. `src/app/api/ai/chat/route.ts` — streaming SSE `ReadableStream + TextEncoder + data: JSON\n\n + [DONE]`, runtime='nodejs', maxDuration=120
-4. `src/app/(dashboard)/chat/page.tsx` — création/reprise dossier, UI chat markdown
-5. `src/app/(dashboard)/chat/[caseId]/page.tsx` — historique dossier
-6. `src/app/(dashboard)/dossiers/page.tsx` — liste filtrable par statut
-7. `src/app/(dashboard)/dossiers/[id]/page.tsx` — détail timeline
+**Quota free 3 dossiers/mois**
+Dans `/api/ai/chat`, avant création d'un nouveau case, on `count` les cases du mois pour ce user (`created_at >= startOfMonth`). Si ≥ 3 et `subscription_plan='free'`, on renvoie 402.
 
-### Manuel (à faire 1 fois par Tissma)
-- Créer repo GitHub `puramapro-oss/jurispurama` (PAT actuel ne peut pas) → puis `git push -u origin main`
-- Éventuellement connecter le repo au projet Vercel pour auto-deploy sur push
+**Streaming UI**
+`MessageBubble` affiche un cursor pulsant `animate-pulse` tant que `streaming=true`. Le parent garde un ref `autoScrollRef.current` qui track si l'user est "near bottom" (< 120px du bas). Si oui, chaque update scroll auto. Sinon, respect du scroll user.
+
+### Prêt pour P3
+- Profil juridique : page stub existe, tables `jurispurama_legal_profiles` créées, CRUD à construire avec sections (identité / véhicule / emploi / logement / banque).
+- Scanner OCR : utiliser `@anthropic-ai/sdk` avec `ImageAttachment` déjà supportée dans `ChatMessage.images`. Endpoint `/api/ocr` upload + analyse.
+- Génération PDF : jspdf ou @react-pdf/renderer. Templates dynamiques par `type` case (contestation ANTAI, mise en demeure L.1235-3, etc.). Pré-remplissage depuis legal profile.
+
+### Learnings P2
+| 2026-04-11 | JURISPURAMA | SSE avec meta block à la fin : maintenir un `safeEnd = fullText.length - len('<juris-meta>')` pour émettre en sécurité sans leaker un prefix du tag si la chunk stream se coupe au milieu du tag. | Stream propre + meta parsing fiable. |
+| 2026-04-11 | JURISPURAMA | Sentinel `/chat/new` + sessionStorage pending_message + history.replaceState après `case_created` SSE event | Évite round-trip API avant chat, garde l'URL propre. |
+| 2026-04-11 | JURISPURAMA | Next 16 dynamic params sont `Promise<{id:string}>` — `await ctx.params` obligatoire dans les handlers. | Typescript strict. |
