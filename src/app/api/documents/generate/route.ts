@@ -93,31 +93,33 @@ export async function POST(req: NextRequest) {
     )
   }
   if (typeof quota === 'number' && !isAdmin) {
-    const admin = createServiceClient()
+    const adminQ = createServiceClient()
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
-    const { data: usage } = await admin
-      .from('jurispurama_documents')
-      .select('id, created_at, case_id')
-      .gte('created_at', startOfMonth.toISOString())
-      .is('deleted_at', null)
-    const mine = (usage ?? []).filter(async () => true)
-    // Re-check via join
-    const { count } = await admin
-      .from('jurispurama_documents')
-      .select('id, case_id!inner(user_id)', {
-        count: 'exact',
-        head: true,
-      })
-      .gte('created_at', startOfMonth.toISOString())
-      .is('deleted_at', null)
-      .eq('case_id.user_id', juriUser.id)
-    void mine
-    if ((count ?? 0) >= quota) {
+
+    // Get ids of this user's cases
+    const { data: userCases } = await adminQ
+      .from('jurispurama_cases')
+      .select('id')
+      .eq('user_id', juriUser.id)
+
+    const caseIds = (userCases ?? []).map((c) => c.id)
+    let used = 0
+    if (caseIds.length > 0) {
+      const { count } = await adminQ
+        .from('jurispurama_documents')
+        .select('id', { count: 'exact', head: true })
+        .in('case_id', caseIds)
+        .gte('created_at', startOfMonth.toISOString())
+        .is('deleted_at', null)
+      used = count ?? 0
+    }
+
+    if (used >= quota) {
       return NextResponse.json(
         {
-          error: `Quota atteint (${quota} documents/mois sur le plan ${juriUser.subscription_plan}). Passe à Pro pour des documents illimités.`,
+          error: `Quota atteint (${used}/${quota} documents ce mois-ci sur le plan ${juriUser.subscription_plan}). Passe à Pro pour des documents illimités.`,
         },
         { status: 402 }
       )
