@@ -6,8 +6,21 @@
 - [x] P3 — Profil juridique chiffré + Scanner OCR Claude Vision + Génération PDF ✅ 2026-04-11
 - [x] P4 — Signature canvas Art.1366 + Envoi Resend/AR24 + Timeline + Crons + Notifications ✅ 2026-04-11
 - [x] P5 — Stripe 4 plans + Parrainage + Influenceurs + Admin ✅ 2026-04-11
-- [ ] P6 — Landing premium + SEO + PWA + i18n + Dark
+- [x] P6 — Landing premium + Pricing + SEO + PWA + i18n + Dark ✅ 2026-04-11
 - [ ] P7 — Tests PW + audit + deploy final
+
+## Live (P6)
+- URL: https://jurispurama.purama.dev — HTTP 200 (toutes pages publiques)
+- Deploy: dpl_CKBBGwaFNK1BoT451C5xQWQusYjY (prod)
+- Pages: /, /pricing, /how-it-works, /ecosystem, /aide, /contact, /changelog, /status, /blog, /offline
+- API: /api/og?title=X (ImageResponse/Satori 1200x630), /api/contact (Resend + DB), /api/cron/email-sequences
+- PWA: /manifest.json (shortcuts), /sw.js (offline fallback)
+- SEO: /sitemap.xml (16 URLs), /robots.txt, JSON-LD (Organization + SoftwareApplication), hreflang
+- i18n lightweight fr/en/es via useLocale hook (localStorage + cookie fallback)
+- Dark mode via useTheme hook (localStorage + FOUC-safe ThemeScript)
+- Email marketing templates (Welcome J0, Day1 tip, Day7 upgrade WELCOME20, Day30 winback, Referral success)
+- Cron daily 10h: /api/cron/email-sequences (anti-duplicate via jurispurama_email_sequences)
+- DB tables P6: jurispurama_contact_messages, jurispurama_email_sequences (RLS)
 
 ## Live (P5)
 - URL: https://jurispurama.purama.dev — HTTP 200

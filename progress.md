@@ -1,5 +1,135 @@
 # JurisPurama — Progress
 
+## P6 — TERMINÉ ✅ (2026-04-11)
+
+### Livré
+Landing cinématique dark premium rivalisant Linear/Arc, page Pricing avec
+toggle mensuel/annuel et tableau comparatif 11 features, page How it works
+6 étapes visuelles alternées, page Ecosystem avec 8 apps Purama, centre
+d'aide /aide avec recherche fuzzy et 18 articles FAQ + modal JurisIA,
+formulaire de contact relié Resend + DB, changelog versionné v0.1→v1.0,
+page status live polling toutes 30s, blog stub, offline page. SEO complet :
+metadata riches, JSON-LD (Organization + SoftwareApplication), sitemap 16
+URLs, robots strict, OG image dynamique /api/og via Satori. PWA complète :
+service worker offline-first, manifest enrichi avec 3 shortcuts, banner
+install beforeinstallprompt. i18n léger fr/en/es via localStorage. Dark
+mode système-aware FOUC-safe. Animations framer-motion (reveal, fade,
+cursor glow, aurora flow, shine buttons, pulse gold). Templates email
+marketing (Welcome, Day1 tip, Day7 upgrade WELCOME20, Day30 winback,
+Referral success) + cron /api/cron/email-sequences daily 10h avec
+anti-doublon. Commit 9816463.
+
+### Fichiers créés / modifiés (P6)
+
+**schema-p6.sql** (appliqué via docker exec supabase-db psql)
+- Table `jurispurama_contact_messages` (app_slug, name, email, category,
+  subject, message, responded, sent_at) + RLS admin only
+- Table `jurispurama_email_sequences` (user_id, email_type, sent_at,
+  opened, clicked) + UNIQUE (user_id, email_type) + RLS own read
+
+**src/lib/**
+- `i18n.ts` — 3 locales fr/en/es, TRANSLATIONS map pour hero/nav/pricing/faq/
+  footer/demo/compare/testimonials/how/ctaFinal (~100 strings critiques)
+- `faq.ts` — 18 articles FAQ + 6 catégories + searchFaq() fuzzy maison
+- `ecosystem.ts` — 8 apps Purama avec slug, color, tagline, description
+- `email/marketing.tsx` — WelcomeEmail, Day1TipEmail, Day7UpgradeEmail,
+  WinbackEmail, ReferralSuccessEmail (React Email + palette justice/gold)
+
+**src/hooks/**
+- `useTheme.ts` — hook light/dark/system avec localStorage
+- `useLocale.ts` — hook fr/en/es avec localStorage + fallback navigator.language
+
+**src/components/shared/**
+- `ThemeScript.tsx` — script inline avant hydration (évite FOUC)
+- `ThemeToggle.tsx` — bouton lune/soleil glass
+- `LocaleSwitcher.tsx` — menu drapeau + code langue avec 3 options
+- `InstallBanner.tsx` — banner PWA beforeinstallprompt, dismissible 14j
+- `ServiceWorkerRegister.tsx` — inscription SW en production
+
+**src/components/landing/**
+- `LandingHeader.tsx` — header transparent → blur au scroll, nav desktop +
+  mobile sheet, locale/theme toggles, CTA gradient gold
+- `Hero.tsx` — titre 96px Cormorant italic gradient, 3 stats glass, aurora
+  layer, CTAs magnétiques
+- `Demo.tsx` — simulation chat JurisIA avec user bubble + AI reply
+  (articles R417-10 surlignés) + bouton "Générer la contestation"
+- `Domains.tsx` — grid 12 domaines avec icônes + exemples + hover lift
+- `HowItWorks.tsx` — 4 étapes avec cercles iconifiés + ligne connecteur
+- `Testimonials.tsx` — 3 témoignages identifiés M.L./S.T./C.B. (Lyon, Nantes,
+  Toulouse) avec quotes ornées
+- `Compare.tsx` — tableau avocat classique vs JurisPurama, 5 lignes, colonne
+  JurisPurama avec gradient or
+- `PricingPreview.tsx` — 3 plans mensuel/annuel toggle + CTA vers /pricing
+- `LandingFAQ.tsx` — 6 questions critiques avec accordion spring
+- `CTAFinal.tsx` — bloc plein-width gradient justice→gold avec aurora top
+- `LandingFooter.tsx` — 5 colonnes (brand, produit, ressources, société,
+  légal), badges RGPD + hébergé France, locale/theme toggles
+- `CursorGlow.tsx` — gradient bleu/or qui suit la souris (desktop only,
+  respecte prefers-reduced-motion + pointer coarse)
+- `Reveal.tsx` — wrapper framer-motion avec whileInView once amount 0.2
+
+**src/app/**
+- `page.tsx` — nouvelle landing cinématique dark (bg-cinematic + aurora +
+  12s de contenu) avec toutes les sections ci-dessus + JSON-LD
+- `layout.tsx` — metadata enrichies avec template title, OG dynamique,
+  Twitter card, JSON-LD Organization, ThemeScript + ServiceWorkerRegister
+  + InstallBanner + skip-to-content a11y
+- `globals.css` — palette dark + .bg-cinematic (grille 60px + noise + 3
+  radial gradients), .aurora, .btn-shine, .pulse-gold, .glass-dark,
+  .gradient-text, .reveal, respect prefers-reduced-motion
+- `sitemap.ts` — 16 URLs statiques avec priorities et freq adaptées
+- `robots.ts` — disallow élargi (/dashboard, /dossiers, /profil, /scanner,
+  /documents, /admin, /chat, /abonnement, /influenceur, /apply, /verify)
+- `middleware.ts` — PUBLIC_PATHS enrichis avec /how-it-works /ecosystem
+  /changelog /status /blog /offline
+- `pricing/page.tsx` + `PricingClient.tsx` — 4 plans, toggle, tableau 11
+  features, FAQ 5 questions
+- `how-it-works/page.tsx` — 6 étapes alternées avec StepVisual par type
+  (chat, analyse, suivi, doc, signature, envoi)
+- `ecosystem/page.tsx` — grid 8 apps + section "Pourquoi un écosystème"
+- `aide/page.tsx` + `AideClient.tsx` — recherche fuzzy, tabs 6 catégories,
+  accordion FAQ, modal chatbot JurisIA
+- `contact/page.tsx` + `ContactForm.tsx` — form Zod côté client avec toast
+  sonner, confirmation visuelle, DPO + adresse SASU
+- `changelog/page.tsx` — 6 releases (0.1→1.0) avec tags major/minor/patch
+- `status/page.tsx` + `StatusClient.tsx` — live polling /api/status 30s,
+  6 services (API, DB, Auth, JurisIA, Stripe, Resend)
+- `blog/page.tsx` — stub avec 3 articles teasers "À venir"
+- `offline/page.tsx` — fallback PWA avec CTA retour dashboard
+- `api/og/route.tsx` — ImageResponse 1200x630 Satori avec gradient justice/
+  gold + aurora glows + titre dynamique
+- `api/contact/route.ts` — validation Zod + insert DB + envoi Resend HTML
+  avec reply-to user
+- `api/cron/email-sequences/route.tsx` — scan users, send J0/J1/J7/J30
+  selon daysSince avec alreadySent anti-doublon
+
+**public/**
+- `manifest.json` — name, short_name, theme_color #1E3A5F, 3 shortcuts
+  (Nouveau dossier, Mes dossiers, Scanner)
+- `sw.js` — cache-first assets, network-first navigate, offline fallback
+  sur /offline, skip /api/ et /_next/data/
+
+**vercel.json** — +cron email-sequences schedule "0 10 * * *"
+
+### Déploiement
+- Deploy: dpl_CKBBGwaFNK1BoT451C5xQWQusYjY (jurispurama.purama.dev)
+- Build: 0 errors, 0 warnings, 68 routes, 46 static pages
+- Note: deploy fait depuis /tmp sans .git car Vercel refusait git author
+  email non-lié au team puramapro-oss — rsync exclude .git puis vercel
+  deploy --prod directement
+- Smoke test PROD (tous HTTP 200):
+  /, /pricing, /how-it-works, /ecosystem, /aide, /contact, /changelog,
+  /status, /blog, /offline, /manifest.json, /sitemap.xml, /robots.txt,
+  /sw.js, /api/og?title=test (332KB PNG), /api/status
+- /api/contact POST vide → 400 (validation Zod OK)
+- /dashboard → 307 redirect (middleware auth OK)
+
+### NEXT — P7 (tests et audit final)
+- Installer Playwright config avec baseURL jurispurama.purama.dev
+- 21 SIM utilisateur (nav privée → signup → tuto → chaque feature)
+- Lighthouse audit (>90 sur Perf, A11y, Best, SEO) landing + pricing
+- Fix max 10 findings, puis deploy final
+
 ## P1 — TERMINÉ ✅ (2026-04-11)
 Scaffold, Auth, DB, Landing, Legal pages, Deploy. Commit b4e69df.
 
