@@ -78,6 +78,12 @@ export type PlanId = keyof typeof PLANS
 export const PUBLIC_ROUTES = [
   '/',
   '/pricing',
+  '/how-it-works',
+  '/ecosystem',
+  '/changelog',
+  '/status',
+  '/blog',
+  '/offline',
   '/login',
   '/signup',
   '/forgot-password',

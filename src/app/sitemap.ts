@@ -5,14 +5,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = `https://${APP_DOMAIN}`
   const now = new Date()
 
-  return [
-    { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1.0 },
-    { url: `${base}/login`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/signup`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${base}/mentions-legales`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${base}/politique-confidentialite`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${base}/cgv`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${base}/cgu`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${base}/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+  const staticRoutes: Array<{
+    path: string
+    freq: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    priority: number
+  }> = [
+    { path: '', freq: 'weekly', priority: 1.0 },
+    { path: '/pricing', freq: 'weekly', priority: 0.9 },
+    { path: '/how-it-works', freq: 'weekly', priority: 0.9 },
+    { path: '/ecosystem', freq: 'monthly', priority: 0.7 },
+    { path: '/aide', freq: 'weekly', priority: 0.8 },
+    { path: '/contact', freq: 'monthly', priority: 0.6 },
+    { path: '/changelog', freq: 'monthly', priority: 0.5 },
+    { path: '/status', freq: 'daily', priority: 0.4 },
+    { path: '/blog', freq: 'weekly', priority: 0.6 },
+    { path: '/login', freq: 'monthly', priority: 0.5 },
+    { path: '/signup', freq: 'monthly', priority: 0.8 },
+    { path: '/mentions-legales', freq: 'yearly', priority: 0.3 },
+    { path: '/politique-confidentialite', freq: 'yearly', priority: 0.3 },
+    { path: '/cgv', freq: 'yearly', priority: 0.3 },
+    { path: '/cgu', freq: 'yearly', priority: 0.3 },
+    { path: '/cookies', freq: 'yearly', priority: 0.3 },
   ]
+
+  return staticRoutes.map((r) => ({
+    url: `${base}${r.path}`,
+    lastModified: now,
+    changeFrequency: r.freq,
+    priority: r.priority,
+  }))
 }
