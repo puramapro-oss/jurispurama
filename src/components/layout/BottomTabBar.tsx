@@ -8,8 +8,8 @@ const TABS = [
   { href: '/dashboard', label: 'Accueil', icon: '📊' },
   { href: '/dossiers', label: 'Dossiers', icon: '📁' },
   { href: '/chat', label: 'Nouveau', icon: '⚖️' },
+  { href: '/scanner', label: 'Scanner', icon: '📷' },
   { href: '/profil', label: 'Profil', icon: '👤' },
-  { href: '/abonnement', label: 'Abo', icon: '💳' },
 ]
 
 export default function BottomTabBar() {

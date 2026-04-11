@@ -11,8 +11,10 @@ import PhaseStepper from '@/components/chat/PhaseStepper'
 import ActionButtons, {
   type NextAction,
 } from '@/components/chat/ActionButtons'
+import GenerateDocumentModal from '@/components/chat/GenerateDocumentModal'
 import type { CaseSidebarAction } from '@/components/chat/CaseSidebar'
 import type { JurisCase, JurisMessage } from '@/types'
+import type { DocumentTemplate } from '@/lib/pdf/types'
 
 interface UIMessage {
   id: string
@@ -37,6 +39,9 @@ export default function ChatCasePage() {
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [errored, setErrored] = useState<string | null>(null)
+  const [scanning, setScanning] = useState(false)
+  const [docModalOpen, setDocModalOpen] = useState(false)
+  const [generating, setGenerating] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef(true)
@@ -291,12 +296,25 @@ export default function ChatCasePage() {
   }
 
   const handleAction = useCallback((action: NextAction) => {
-    toast.info(
-      "Cette action sera disponible très bientôt — nous finalisons l'intégration avec DocuSeal et AR24.",
-      { duration: 4000 }
-    )
-    // Prevent unused warning
-    void action
+    if (action === 'generate_document') {
+      setDocModalOpen(true)
+      return
+    }
+    if (action === 'sign' || action === 'send_email' || action === 'send_recommande') {
+      toast.info(
+        "Cette action sera active dans la prochaine mise à jour (signature + envoi AR24).",
+        { duration: 4000 }
+      )
+      return
+    }
+    if (action === 'book_appointment') {
+      toast.info('La prise de rendez-vous sera disponible bientôt.')
+      return
+    }
+    if (action === 'close') {
+      toast.info('Marque le dossier comme résolu depuis la page détail.')
+      return
+    }
   }, [])
 
   const handleSidebarAction = useCallback(
@@ -305,6 +323,99 @@ export default function ChatCasePage() {
       handleAction(action as NextAction)
     },
     [handleAction]
+  )
+
+  const handleScanFile = useCallback(
+    async (file: File) => {
+      if (!caseId) {
+        toast.error('Envoie d\'abord un message pour créer le dossier.')
+        return
+      }
+      setScanning(true)
+      try {
+        const form = new FormData()
+        form.append('file', file)
+        form.append('caseId', caseId)
+        const res = await fetch('/api/ocr', { method: 'POST', body: form })
+        if (!res.ok) {
+          const err = (await res.json().catch(() => null)) as {
+            error?: string
+          } | null
+          throw new Error(err?.error ?? 'Analyse impossible.')
+        }
+        toast.success('Document analysé. Consulte la nouvelle réponse de JurisIA.')
+        // Refresh messages
+        const fresh = await fetch(`/api/cases/${caseId}`, { cache: 'no-store' })
+        if (fresh.ok) {
+          const data = (await fresh.json()) as {
+            case: JurisCase
+            messages: JurisMessage[]
+          }
+          setCaseRow(data.case)
+          setMessages(
+            data.messages
+              .filter((m) => m.role === 'user' || m.role === 'assistant')
+              .map((m) => ({
+                id: m.id,
+                role: m.role as 'user' | 'assistant',
+                content: m.content,
+                createdAt: m.created_at,
+              }))
+          )
+          requestAnimationFrame(() => scrollToBottom(true))
+        }
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : 'Analyse impossible.'
+        toast.error(msg)
+      } finally {
+        setScanning(false)
+      }
+    },
+    [caseId, scrollToBottom]
+  )
+
+  const handleGenerateDocument = useCallback(
+    async (payload: {
+      documentType: DocumentTemplate
+      title: string
+      instructions: string
+    }) => {
+      if (!caseId) {
+        toast.error('Dossier introuvable.')
+        return
+      }
+      setGenerating(true)
+      try {
+        const res = await fetch('/api/documents/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            caseId,
+            documentType: payload.documentType,
+            title: payload.title,
+            instructions: payload.instructions || undefined,
+          }),
+        })
+        if (!res.ok) {
+          const err = (await res.json().catch(() => null)) as {
+            error?: string
+          } | null
+          throw new Error(err?.error ?? 'Génération impossible.')
+        }
+        const data = (await res.json()) as { documentId: string }
+        toast.success('Document généré avec succès.')
+        setDocModalOpen(false)
+        router.push(`/documents/${data.documentId}`)
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : 'Génération impossible.'
+        toast.error(msg)
+      } finally {
+        setGenerating(false)
+      }
+    },
+    [caseId, router]
   )
 
   const currentStatus = caseRow?.status ?? 'diagnostic'
@@ -403,6 +514,8 @@ export default function ChatCasePage() {
                 ? 'Pose ta question suivante…'
                 : 'Raconte ton problème juridique à JurisIA…'
             }
+            onScan={caseId ? handleScanFile : undefined}
+            scanning={scanning}
           />
           <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
             <span>
@@ -422,6 +535,20 @@ export default function ChatCasePage() {
 
       {/* Sidebar */}
       <CaseSidebar caseRow={caseRow} onActionClick={handleSidebarAction} />
+
+      {/* Generate document modal */}
+      <GenerateDocumentModal
+        open={docModalOpen}
+        caseType={caseRow?.type ?? 'administratif'}
+        defaultTitle={
+          caseRow?.summary
+            ? caseRow.summary.slice(0, 60)
+            : undefined
+        }
+        onClose={() => setDocModalOpen(false)}
+        onGenerate={handleGenerateDocument}
+        loading={generating}
+      />
     </div>
   )
 }

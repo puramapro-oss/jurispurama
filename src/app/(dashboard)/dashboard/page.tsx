@@ -18,6 +18,7 @@ import {
   formatEuros,
   formatRelativeDate,
 } from '@/lib/case-helpers'
+import { profileCompletion, type LegalProfileInput } from '@/lib/profile-schema'
 
 interface DeadlineItem {
   caseId: string
@@ -32,6 +33,9 @@ export default function DashboardPage() {
   const { profile, loading: authLoading } = useAuth()
   const [cases, setCases] = useState<JurisCase[]>([])
   const [loadingCases, setLoadingCases] = useState(true)
+  const [legalProfile, setLegalProfile] =
+    useState<Partial<LegalProfileInput> | null>(null)
+  const [docsCount, setDocsCount] = useState<number | null>(null)
 
   useEffect(() => {
     let active = true
@@ -41,10 +45,34 @@ export default function DashboardPage() {
         if (active) setCases(d.cases ?? [])
       })
       .finally(() => active && setLoadingCases(false))
+
+    fetch('/api/profile', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : { profile: {} }))
+      .then((d: { profile?: Partial<LegalProfileInput> }) => {
+        if (active) setLegalProfile(d.profile ?? {})
+      })
+      .catch(() => {
+        if (active) setLegalProfile({})
+      })
+
+    fetch('/api/documents/generate', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : { documents: [] }))
+      .then((d: { documents?: unknown[] }) => {
+        if (active) setDocsCount((d.documents ?? []).length)
+      })
+      .catch(() => {
+        if (active) setDocsCount(0)
+      })
+
     return () => {
       active = false
     }
   }, [])
+
+  const profilePercent = useMemo(
+    () => profileCompletion(legalProfile ?? {}),
+    [legalProfile]
+  )
 
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
@@ -160,6 +188,66 @@ export default function DashboardPage() {
             {stats.nextDeadline?.description ?? 'Aucune échéance'}
           </p>
         </Card>
+      </div>
+
+      {/* P3 cards */}
+      <div className="mb-8 grid gap-3 sm:grid-cols-2">
+        <Link href="/profil" className="block">
+          <Card
+            padding="md"
+            className="h-full transition-all hover:border-[var(--justice)]/30 hover:shadow-md"
+          >
+            <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                  Profil juridique
+                </p>
+                <p className="mt-1 font-serif text-2xl font-bold text-[var(--justice)]">
+                  {legalProfile == null ? '…' : `${profilePercent}% complété`}
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                  {profilePercent < 40
+                    ? 'Complète ton profil pour des documents mieux pré-remplis.'
+                    : 'Ton profil est bien renseigné. Modifie-le à tout moment.'}
+                </p>
+              </div>
+              <span className="text-4xl" aria-hidden="true">
+                👤
+              </span>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--justice)]/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[var(--justice)] via-[var(--justice-light)] to-[var(--gold)] transition-all"
+                style={{ width: `${profilePercent}%` }}
+              />
+            </div>
+          </Card>
+        </Link>
+        <Link href="/documents" className="block">
+          <Card
+            padding="md"
+            className="h-full transition-all hover:border-[var(--justice)]/30 hover:shadow-md"
+          >
+            <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                  Documents générés
+                </p>
+                <p className="mt-1 font-serif text-2xl font-bold text-[var(--justice)]">
+                  {docsCount == null ? '…' : docsCount}
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                  {docsCount === 0
+                    ? 'Aucun document pour l\'instant.'
+                    : 'Accède à tous tes actes signables en un clic.'}
+                </p>
+              </div>
+              <span className="text-4xl" aria-hidden="true">
+                📄
+              </span>
+            </div>
+          </Card>
+        </Link>
       </div>
 
       {/* CTA */}

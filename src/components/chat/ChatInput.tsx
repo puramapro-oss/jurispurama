@@ -1,6 +1,12 @@
 'use client'
 
-import { useEffect, useRef, type FormEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  type ChangeEvent,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react'
 import { cn } from '@/lib/utils'
 
 interface ChatInputProps {
@@ -11,6 +17,8 @@ interface ChatInputProps {
   placeholder?: string
   autoFocus?: boolean
   className?: string
+  onScan?: (file: File) => void
+  scanning?: boolean
 }
 
 export default function ChatInput({
@@ -21,8 +29,17 @@ export default function ChatInput({
   placeholder = 'Raconte ton problème juridique à JurisIA…',
   autoFocus,
   className,
+  onScan,
+  scanning,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f && onScan) onScan(f)
+    e.target.value = ''
+  }
 
   // Auto-grow
   useEffect(() => {
@@ -71,8 +88,63 @@ export default function ChatInput({
         disabled={disabled}
         rows={2}
         aria-label="Message à JurisIA"
-        className="block w-full resize-none rounded-2xl bg-transparent px-4 py-3.5 pr-14 text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none disabled:opacity-60"
+        className={cn(
+          'block w-full resize-none rounded-2xl bg-transparent px-4 py-3.5 text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none disabled:opacity-60',
+          onScan ? 'pr-24' : 'pr-14'
+        )}
       />
+
+      {onScan && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+            capture="environment"
+            className="sr-only"
+            onChange={handleFile}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || scanning}
+            aria-label="Scanner un document"
+            title="Scanner un document"
+            className={cn(
+              'absolute bottom-2.5 right-14 flex h-10 w-10 items-center justify-center rounded-xl transition-all',
+              'bg-[var(--gold)]/10 text-[var(--gold-dark)] hover:bg-[var(--gold)]/20 active:scale-95',
+              (disabled || scanning) && 'cursor-not-allowed opacity-50'
+            )}
+          >
+            {scanning ? (
+              <svg
+                className="h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  className="opacity-25"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            ) : (
+              <span className="text-lg" aria-hidden="true">
+                📷
+              </span>
+            )}
+          </button>
+        </>
+      )}
 
       <button
         type="submit"

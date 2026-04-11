@@ -11,6 +11,8 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Tableau de bord', icon: '📊' },
   { href: '/dossiers', label: 'Mes dossiers', icon: '📁' },
   { href: '/chat', label: 'Nouveau dossier', icon: '⚖️' },
+  { href: '/scanner', label: 'Scanner', icon: '📷' },
+  { href: '/documents', label: 'Documents', icon: '📄' },
   { href: '/profil', label: 'Profil juridique', icon: '👤' },
   { href: '/abonnement', label: 'Abonnement', icon: '💳' },
   { href: '/parrainage', label: 'Parrainage', icon: '🎁' },
