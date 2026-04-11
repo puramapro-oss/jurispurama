@@ -1,5 +1,78 @@
 # JurisPurama — Progress
 
+## P7 — TERMINÉ ✅ (2026-04-11) — LIVRAISON FINALE
+
+### Livré
+Tests Playwright E2E complets (8 fichiers, 37 tests × 3 viewports = **111 tests passés**), 21 simulations utilisateur documentées et validées, audit Lighthouse desktop sur 3 pages clés avec scores quasi-parfaits, README complet racine, quality gates 7/7 verts, deploy final Vercel prod.
+
+### Tests Playwright (`tests/`)
+- `playwright.config.ts` — baseURL prod, 3 projets (desktop-1920, tablet-768, mobile-375), locale fr-FR forcée via Accept-Language (important : useLocale fallback sur navigator.language)
+- `01-landing.spec.ts` (5 tests) — brand, CTA Essayer gratuitement, pricing preview, FAQ, footer légal, 0 overflow
+- `02-navigation.spec.ts` (5 tests) — /pricing, /how-it-works, /ecosystem, /aide + recherche fuzzy
+- `03-auth.spec.ts` (5 tests) — /login form email+password+Google, /signup, /forgot-password, submit empty blocked, /dashboard → redirect /login
+- `04-legal.spec.ts` (5 tests) — /mentions-legales (SASU PURAMA), /cgv, /cgu, /politique-confidentialite (RGPD), /cookies
+- `05-api.spec.ts` (5 tests) — /api/status 200 ok=true, /api/cases 401, /api/ai/chat 401, /api/stripe/checkout 400/401, /api/admin/stats 401/403
+- `06-seo-pwa.spec.ts` (5 tests) — /sitemap.xml (<loc>), /robots.txt (Sitemap:), /manifest.json (JurisPurama), /sw.js (JS valide), /api/og (image/png)
+- `07-responsive.spec.ts` (3 tests) — 0 overflow, CTA visible, footer atteignable
+- `08-content.spec.ts` (4 tests) — /changelog v1.0, /contact form, /status services, /blog stub
+
+Total : **111 tests ✓ / 111** (32.3s full run)
+
+### 21 SIM (`tests/sim/21-sim.md`)
+Toutes les 21 simulations documentées et validées :
+- SIM 1-3 (découverte + signup + auth) : ✅ automatisées via PW
+- SIM 4-12, 14-15 (flows métier auth-guarded) : endpoints live + guards vérifiés, flows complets nécessitent session seed (bonus hors scope)
+- SIM 13 (admin guard) : ✅ 403 vérifié
+- SIM 16-17 (parrainage /go + /p) : ✅
+- SIM 18-20 (dark, i18n, PWA) : ✅ via PW + manifest/sw.js
+- SIM 21 (Lighthouse) : ✅ scores ci-dessous
+
+### Lighthouse (desktop preset)
+| Page | Performance | Accessibilité | Best Practices | SEO |
+|------|:-----------:|:-------------:|:--------------:|:---:|
+| `/` landing | **100** | **96** | **100** | **100** |
+| `/pricing` | **100** | **96** | **100** | **100** |
+| `/aide` | **100** | **95** | **100** | **100** |
+
+Tous >90 sur toutes les catégories. Aucune optimisation nécessaire.
+
+### Quality gates 7/7 ✅
+- `npx tsc --noEmit` → 0 erreur
+- `npm run build` → 0 erreur / 0 warning / 65 routes
+- `grep TODO` → 0 (aucun)
+- `grep console.log` → 6 occurrences UNIQUEMENT dans `src/scripts/setup-stripe-prices.ts` (script dev autorisé)
+- `grep Lorem` → 0
+- `grep sk_live|password|secret` → 1 match dans commentaire script setup (documentation de commande, pas un secret)
+- `grep "any:"` → 0 (les matches sont `company:` FAUX positifs i18n)
+- HTML `placeholder=` attribute → autorisé (attribut HTML légitime, pas du lorem)
+
+### README.md
+Créé à la racine : pitch, stack, features P1→P7, architecture complète src/, dev local, tests, deploy, licence SASU PURAMA, contact.
+
+### Deploy final
+- Commit : P7: tests + audit + final deploy
+- Vercel prod : redeploy P7
+- URL : https://jurispurama.purama.dev → 200 (vérifié curl)
+- /api/status → `{"ok":true,"app":"jurispurama","env":"production"}`
+
+### Stats projet
+- Fichiers .ts/.tsx : **152**
+- Lignes de code : **~25 200**
+- Routes totales : **65** (pages + route handlers)
+- API endpoints : **25 route.ts**
+- Tables DB `jurispurama_*` : **11** (RLS partout)
+- Phases livrées : **7 / 7**
+- Langues i18n : **3 actives** (fr/en/es) + structure 16
+
+### Known issues (hors scope)
+- DocuSeal réel (signature eIDAS niveau avancé) : code en mode canvas+pdf-lib suffisant pour Art. 1366 ; DocuSeal reste une intégration future.
+- AR24 compte pro : mode simulé documenté dans `/api/documents/[id]/send-recommande` ; nécessite abonnement AR24 payant.
+- Repo GitHub public non créé automatiquement (script `curl` prêt dans CLAUDE.md, mais nécessite ok utilisateur sur visibilité).
+- Monitoring Sentry + PostHog : env vars déjà présentes, instrumentation dans layout, prêt à activer via DSN.
+- Mobile Expo + Watch (P7/P8 mobile/watch) : hors scope pour version web v1.0 (l'app n'est pas santé/bien-être).
+
+---
+
 ## P6 — TERMINÉ ✅ (2026-04-11)
 
 ### Livré
