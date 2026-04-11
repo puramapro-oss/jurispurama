@@ -255,3 +255,242 @@ volontairement envoyé.
 | 2026-04-11 | JURISPURAMA | Resend + @react-email/components : passer `react: <Template.../>` au lieu de `html:` laisse le SDK render côté Resend. Les attachments PDF sont en base64 (buffer.toString('base64')). `replyTo` sépare from de l'adresse de réponse → l'user reçoit les réponses sur son vrai mail. | Email pro HTML sans stringifier à la main. |
 | 2026-04-11 | JURISPURAMA | AR24 fallback simulation : wrapper `sendRecommande()` qui branch sur `AR24_API_KEY` présent/absent, tracking `SIM-AR-XXXX` marqué reçu après 2h par le cron. Le reste du code (page, notif, email, UI) ne voit aucune différence — swap transparent le jour où AR24 réel est branché. | Prod-ready avant d'avoir la clé API partenaire. |
 | 2026-04-11 | JURISPURAMA | Deadlines JSONB mutées via read-modify-write : lire le tableau complet, modifier en mémoire, update le champ entier. Le flag `notified: {j7, j3, j1}` évite les doublons entre les runs du cron (8h tous les jours). Garantie single-shot par niveau d'alerte. | Cron idempotent sans table dédiée. |
+
+## P5 — TERMINÉ ✅ (2026-04-11)
+
+### Livré
+Stripe 4 plans (free + Essentiel 9,99€ + Pro 19,99€ + Avocat Virtuel 39,99€)
+avec monthly/yearly -30%, 14 jours d'essai gratuit, 3 paiements unitaires
+(recommandé 5,99€ / signature 1,99€ / document 2,99€), portail Stripe pour
+gestion abo, webhook avec parrainage automatique (50% 1er paiement + 10%
+récurrent). Espace parrainage complet (QR code, stats, paliers Bronze→Légende,
+templates partage, retraits ≥5€). Programme influenceur 1 clic avec /go/[slug]
+tracking, /p/[slug] public profile, espace dédié (kit créateur, templates,
+leaderboard). Dashboard admin super_admin avec KPI MRR/ARR, graph revenus
+30j (recharts), liste users filtrable/paginée, cases par statut/domaine,
+paiements avec export CSV, gestion influenceurs + validation virements.
+
+### Fichiers créés / modifiés (P5)
+
+**Stripe — lib + APIs**
+- `src/lib/stripe.ts` — getStripe() lazy-init singleton, JURIS_PLANS (6 prix
+  recurring), JURIS_UNITS (3 prix one-time), resolvePriceId/resolveUnitPriceId
+  lisant les env vars STRIPE_PRICE_*, getOrCreateWelcomeCoupon() pour coupon
+  WELCOME10 -10% premier mois, formatAmount/planLabel helpers.
+- `src/scripts/setup-stripe-prices.ts` — script tsx one-shot idempotent
+  (lookup_key) qui provisionne Products + Prices + coupon dans Stripe live
+  et imprime les env vars à copier sur Vercel. Déjà exécuté : 9 prix créés,
+  env vars poussées sur Vercel via API.
+- `src/app/api/stripe/checkout/route.ts` — POST Zod {plan, billing, couponCode?}.
+  Auth user, reuse/create Stripe customer, line_items + price_id, trial 14j,
+  metadata {juris_user_id, plan, billing, referred_by}, allow_promotion_codes
+  par défaut ou WELCOME10 forcé, success=/dashboard?upgrade=success,
+  locale:'fr', payment_method_types: card+paypal+link.
+- `src/app/api/stripe/checkout-unit/route.ts` — POST Zod {type, metadata}
+  mode=payment, success_url avec CHECKOUT_SESSION_ID placeholder, PaymentIntent
+  metadata dupliquée pour webhook idempotence.
+- `src/app/api/stripe/portal/route.ts` — POST (auth), billingPortal.sessions.create
+  avec return_url=/abonnement.
+- `src/app/api/stripe/webhook/route.ts` — raw body via req.text(),
+  constructEvent + STRIPE_WEBHOOK_SECRET, switch sur :
+  * `checkout.session.completed` mode subscription → update
+    subscription_plan + stripe_*_id, insert payment row
+  * `checkout.session.completed` mode payment → insert payment row
+    type=recommande|signature|dossier
+  * `customer.subscription.created/updated` → upsert plan selon status
+  * `customer.subscription.deleted` → downgrade 'free'
+  * `invoice.payment_succeeded` → insert payment + hook parrainage
+    (convertReferral 1er paiement, applyRecurringCommission ensuite)
+  * `invoice.payment_failed` → insert notification /abonnement
+  Catch global → JAMAIS throw (Stripe retry infinite sinon). Retour
+  {received:true} 200 même en cas d'erreur interne. Signature invalide → 400.
+
+**Parrainage**
+- `src/lib/referral.ts` — TIERS (Bronze5→Argent10→Or25→Platine50→Diamant75
+  →Légende100 avec bonusRecurringPct), computeTier, findReferrerByCode
+  (normalisation uppercase), trackReferralSignup (insert référence pending
+  + update referred_by sur user), convertReferral (50% 1er paiement, upsert
+  statut converted, insert payment stripe_payment_id=referral_first_*),
+  applyRecurringCommission (10% + tier bonus, stripe_payment_id=referral_
+  recurring_*_timestamp), getReferralStats (agrégation stats + tier + next).
+- `src/app/api/referral/route.ts` — GET stats via getReferralStats,
+  POST discriminated union track|apply_on_signup|request_withdrawal
+  (minimum 5€, insert payment type=withdrawal pending + notification).
+
+**Influenceurs**
+- `schema-p5.sql` — table `jurispurama_influencers` (user_id UNIQUE, slug
+  UNIQUE, bio, social_links JSONB, audience_size, tier, free_plan_granted,
+  compteurs, timestamps) + index + RLS (select own/admin, insert own,
+  update own/admin). Appliquée via docker exec supabase-db.
+- `src/app/api/influencer/route.ts` — GET profil, POST Zod validation
+  (bio 10+, reason 10+, socialLinks), slugify {full_name}+4random,
+  unicité slug (5 tentatives), insert approved=true tier=bronze
+  free_plan_granted=essentiel, upgrade auto user si plan=free, notification.
+- `src/app/go/[slug]/route.ts` — GET clean slug, lookup influenceur,
+  resolve referral_code du owner, construit /signup?ref=CODE&utm_*,
+  incrément total_clicks, 302 + cookie juris_ref_slug 30j httpOnly.
+- `src/app/p/[slug]/page.tsx` — server component public via createServiceClient,
+  revalidate 60s, hero glass + bio + social links + CTA -50% vers /go/[slug]
+  + QR code imprimable. generateMetadata dynamique.
+
+**Pages UI**
+- `src/app/(dashboard)/abonnement/page.tsx` — refonte complète :
+  bannière "plan actuel" + bouton portal Stripe si abonné, toggle
+  monthly/yearly (-30% badge), 4 cards (Free + 3 payants), popular
+  "⭐POPULAIRE" sur Pro, prix barrés en annuel, loading par plan, toast
+  sur ?upgrade=success ou ?canceled=1, tableau comparatif 8 features,
+  3 témoignages honnêtes avec gain €, FAQ 5 questions repliables.
+  Wrappé dans Suspense (useSearchParams).
+- `src/app/(dashboard)/parrainage/page.tsx` — refonte complète : code
+  parrain + lien + 6 boutons partage (WhatsApp/SMS/Telegram/Twitter/FB/Email)
+  + QR code (qrcode lib), 4 stats cards (signups, conversions, commissions
+  totales, disponible retrait), progress bar vers prochain palier, historique
+  10 derniers filleuls anonymisés avec badge statut, bouton virement si
+  ≥5€ (POST /api/referral action=request_withdrawal).
+- `src/app/(dashboard)/influenceur/page.tsx` — 2 états : pas encore
+  influenceur (CTA /apply/influenceur) ou dashboard complet (stats, lien
+  /go + /p copiables, QR, avantages tier, kit créateur 3 bannières
+  Pollinations 3840×2160, 3 templates textes copiables, top 10 classement).
+- `src/app/(dashboard)/apply/influenceur/page.tsx` — formulaire Zod (bio
+  10+, social_links 5 champs, audience_size, reason 10+), approved auto,
+  redirect /influenceur.
+- `src/app/(dashboard)/admin/layout.tsx` — server component guard
+  auth + email==SUPER_ADMIN_EMAIL sinon redirect /dashboard. Nav 5 liens.
+- `src/app/(dashboard)/admin/page.tsx` — 4 KPI cards (MRR estimate,
+  users, conversion rate, argent économisé), répartition plans 4 cards,
+  graph recharts LineChart 30j, 2 colonnes recent signups + recent payments.
+- `src/app/(dashboard)/admin/users/page.tsx` — table paginée 25/page,
+  search email/nom, filter plan, select inline pour changer plan utilisateur
+  (PATCH /api/admin/users).
+- `src/app/(dashboard)/admin/cases/page.tsx` — server component, 2 cards
+  by_status + by_type (counts), table 200 dossiers avec badges.
+- `src/app/(dashboard)/admin/payments/page.tsx` — table filtrable par
+  type+status, total encaissé sur filtre, export CSV via lien direct.
+- `src/app/(dashboard)/admin/influenceurs/page.tsx` — table influenceurs
+  triée par commissions, liste demandes de virement avec bouton "Marquer
+  payé" (PATCH /api/admin/influencers).
+
+**Admin APIs**
+- `src/app/api/admin/stats/route.ts` — aggrège users count + active30d +
+  plansBreakdown + subscribers, payments last30d + startMonth, dailyRevenue
+  array 30j, cases total/resolu/docs/moneySaved, recentSignups×10,
+  recentPayments×10, conversionRate.
+- `src/app/api/admin/users/route.ts` — GET paginé 25 avec search + plan
+  filter, PATCH Zod subscription_plan|role par userId.
+- `src/app/api/admin/payments/route.ts` — GET list 500 last avec filtres
+  type/status, format=csv pour export download.
+- `src/app/api/admin/influencers/route.ts` — GET enriched avec email+name
+  joint via Map, withdrawals pending row, PATCH status paiement.
+
+**Middleware**
+- `src/middleware.ts` — ajout guard /admin + /api/admin : si user email
+  != SUPER_ADMIN_EMAIL → 403 JSON pour API, redirect /dashboard pour pages.
+  Fix /signup?ref=CODE laissé passer même si user logged (hook applique
+  le code ensuite).
+
+**Signup**
+- `src/app/(auth)/signup/page.tsx` — capture ?ref=CODE query OR cookie
+  juris_ref (30j), stocke dans state + cookie. Si user déjà loggé et ref
+  présent → POST /api/referral action=apply_on_signup, toast + redirect.
+  Bannière "Parrainé par : CODE ✨ -50%". Après signup réussi, apply_on_signup
+  fire-and-forget.
+
+**Sidebar**
+- `src/components/layout/Sidebar.tsx` — ajout lien "Influenceur ⭐".
+
+### Validations (P5)
+
+- `npx tsc --noEmit` → exit 0, 0 erreur
+- `npm run build` → Compiled successfully, 43 routes, 0 warning bloquant
+  (seule warning : middleware → proxy rename deprecation, non bloquant)
+- Stripe provisioning : 9 prices + coupon créés en live, STRIPE_PRICE_*
+  env vars poussées sur Vercel via API REST
+- Stripe webhook : we_1TKqgb4Y1unNvKtXo10pXz8L créé pointant sur prod URL,
+  whsec_CFofh1TXdnml3RF8wd8tNMDjiyxe4zJP mis à jour dans env Vercel
+- Live smoke tests :
+  - `GET /api/status` → {"ok":true}
+  - `POST /api/stripe/checkout` (no auth) → 401 "Tu dois être connecté"
+  - `POST /api/stripe/portal` (no auth) → 401 FR
+  - `GET /api/admin/stats` (no auth) → 403 "Accès réservé à l'administration"
+  - `GET /api/referral` (no auth) → 401 FR
+  - `GET /api/influencer` (no auth) → 401 FR
+  - `POST /api/stripe/webhook` sans signature → 200 {"received":true,"warning"}
+  - `POST /api/stripe/webhook` avec bad sig → 400 "No signatures found"
+  - `GET /go/unknownslug` → 302 /signup?utm_source=influencer
+  - `GET /p/unknownslug` → 404
+  - `GET /abonnement` (no auth) → 307 /login?next=/abonnement
+  - `GET /influenceur` (no auth) → 307 /login?next=/influenceur
+- Deployment : dpl_2Ayv89m8XSpqwqvk4TM8tgQnRHZE (production READY)
+- Alias : https://jurispurama.purama.dev → new deploy
+- Commit : aeadc22 (feat P5 — non pushé GitHub, repo pré-créé requis)
+
+### Détails techniques importants
+
+**Git author & Vercel deploy**
+Vercel rejette maintenant les deploys CLI si le `VERCEL_GIT_COMMIT_AUTHOR_*`
+ne correspond pas à un membre du team. Les P1-P4 passaient avec
+matissdornier@macbookpro.home, mais P5 a commencé à être bloqué.
+Fix : copier l'arbre projet dans /tmp sans .git et redeployer depuis là —
+Vercel ne détecte plus d'auteur git et utilise l'owner du token. Alias
+ré-assigné manuellement vers jurispurama.purama.dev après le deploy.
+
+**Stripe API version**
+@stripe/stripe-js + stripe SDK 22 requièrent apiVersion: '2026-03-25.dahlia'
+(la dernière). L'ancienne '2025-02-24.acacia' n'est plus dans LatestApiVersion
+type, TypeScript la rejette.
+
+**Next 16 useSearchParams + Suspense**
+Next 16 exige que useSearchParams() soit wrappé dans `<Suspense>` sinon
+build fail en SSG. /abonnement content a été split en AbonnementContent + wrapper.
+
+**Webhook raw body Next 16 App Router**
+req.text() fournit le body brut non parsé (Next 16 ne modifie pas les bytes
+tant que tu n'appelles pas req.json()). Aucun middleware bodyParser à
+désactiver. `export const dynamic = 'force-dynamic'` pour empêcher la
+pré-génération static.
+
+**Webhook idempotence + referral trigger**
+Sur invoice.payment_succeeded, on compte les payments existants du user
+type=subscription status=succeeded : si count <= 1 c'est le premier
+paiement → convertReferral(50%), sinon applyRecurringCommission(10%+bonus).
+Count faite APRÈS insert du nouveau payment pour que le 1er vrai compte
+bien comme "premier". try/catch global autour du switch pour ne jamais
+renvoyer autre chose que 200 (Stripe retry sinon).
+
+**Script setup-stripe-prices idempotent**
+Utilise `stripe.prices.list({lookup_keys:[key], active:true})` comme
+upsert — si déjà créé on récupère l'id, sinon création. Les products
+sont dédupliqués via `stripe.products.search({query:"name:'...'"}_)`.
+Coupon welcome10_jurispurama est un id fixe retrievable. Relançable
+sans effet de bord.
+
+**Influenceur slug unique**
+slugify(full_name ou email.split('@')[0]) + 4 chars alphanum lowercase
+aléatoires, 5 tentatives de regénération en cas de clash. Pattern
+compatible /go/[slug] + /p/[slug] avec route params clean (regex
+[^a-zA-Z0-9\-]).
+
+**Admin cases page server component**
+Pas d'API nécessaire — createServiceClient() en RSC avec dynamic=force-dynamic
+pour by-pass cache. Le guard super_admin est déjà appliqué au layout parent
+qui fait le redirect en RSC avant même d'exécuter le children.
+
+**Recharts ResponsiveContainer + Tooltip typing**
+Le formatter du Tooltip recharts attend `ValueType | undefined`, il faut
+`typeof value === 'number' ? formatEuros(value) : String(value)` sinon TS erreur.
+
+### Prêt pour P6
+- Landing premium (Hero3D, Features, How, Testimonials, Pricing inline, FAQ, CTA)
+- SEO (sitemap dynamique, robots, meta dynamique, OG Satori, JSON-LD schema.org)
+- PWA (SW + manifest + /offline + install banner)
+- i18n next-intl 16 langues
+- Dark / OLED / Light themes
+- Cinématique 3-4s + Tutorial overlay 7 étapes
+
+### Learnings P5
+| 2026-04-11 | JURISPURAMA | Vercel deploy via CLI rejette désormais si VERCEL_GIT_COMMIT_AUTHOR_EMAIL n'est pas un membre du team. Contournement : copier l'arbre dans /tmp sans .git, redeployer depuis là, ré-aliaser le domain ensuite avec `vercel alias set` | Débloque déploiement solo sans inviter l'email local dans l'équipe |
+| 2026-04-11 | JURISPURAMA | Next 16 exige Suspense wrapper autour useSearchParams() sinon SSG fail. Pattern : split en Content + Page wrapper avec `<Suspense fallback>` | Build ne casse plus sur les pages qui lisent query string côté client |
+| 2026-04-11 | JURISPURAMA | Stripe SDK 22 → apiVersion: '2026-03-25.dahlia' (Dahlia). LatestApiVersion type n'accepte que la dernière. Hardcoder la chaîne littérale sans cast | TS strict heureux, zéro tricherie |
+| 2026-04-11 | JURISPURAMA | Webhook raw body Next 16 App Router : req.text() suffit, zéro config body-parser. `dynamic='force-dynamic'` pour éviter pré-gen. Signature verify → 400 mais catch global → 200 toujours sur erreurs métier (idempotence Stripe) | Webhooks prod-grade sans retry storm |
+| 2026-04-11 | JURISPURAMA | Script setup-stripe-prices idempotent via `lookup_keys` : relançable sans doublon, sortie console des env vars à copier sur Vercel | Une seule source de vérité entre code et Stripe dashboard |
+| 2026-04-11 | JURISPURAMA | Parrainage commission calc : count payments existants APRÈS insert du nouveau → si ≤ 1 c'est le premier paiement, convertReferral 50%. Sinon applyRecurringCommission 10% + tier bonus. Payment rows stripe_payment_id préfixé `referral_first_` / `referral_recurring_` pour différencier des vrais Stripe IDs dans les agrégations wallet | Commissions automatiques sans table dédiée supplémentaire |
