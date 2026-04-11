@@ -3,16 +3,14 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLocale } from '@/hooks/useLocale'
+import { LEGAL_DOMAINS } from '@/lib/constants'
 
-interface HeroProps {
-  communitySavingsLabel: string
-}
-
-export default function Hero({ communitySavingsLabel }: HeroProps) {
+export default function Hero() {
   const { t } = useLocale()
+  const domainsCount = LEGAL_DOMAINS.length
 
   return (
-    <section className="relative overflow-hidden pt-28 md:pt-36">
+    <section className="relative overflow-hidden pt-24 sm:pt-28 md:pt-36">
       {/* Aurora layer */}
       <div className="pointer-events-none absolute inset-0">
         <div className="aurora" />
@@ -24,17 +22,17 @@ export default function Hero({ communitySavingsLabel }: HeroProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-md"
+            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/85 backdrop-blur-md sm:px-4 sm:text-[11px] sm:tracking-[0.18em]"
           >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--gold)]" />
-            {t.hero.badge}
+            <span className="truncate">{t.hero.badge}</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.05 }}
-            className="font-serif text-[44px] italic font-semibold leading-[1.02] tracking-tight text-white sm:text-6xl md:text-[86px] lg:text-[96px]"
+            className="font-serif text-[36px] italic font-semibold leading-[1.04] tracking-tight text-white sm:text-[56px] md:text-[78px] lg:text-[96px]"
           >
             <span className="gradient-text">{t.hero.title}</span>
           </motion.h1>
@@ -43,7 +41,7 @@ export default function Hero({ communitySavingsLabel }: HeroProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.25 }}
-            className="mx-auto mt-7 max-w-2xl text-base text-white/75 md:text-xl md:leading-[1.55]"
+            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-white/75 sm:mt-7 sm:text-base md:text-xl md:leading-[1.55]"
           >
             {t.hero.subtitle}
           </motion.p>
@@ -52,11 +50,12 @@ export default function Hero({ communitySavingsLabel }: HeroProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.4 }}
-            className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:items-center"
           >
             <Link
               href="/signup"
-              className="pulse-gold group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] px-8 text-base font-semibold text-[var(--justice-dark)] shadow-2xl shadow-[rgba(201,168,76,0.35)] transition hover:brightness-110"
+              className="pulse-gold group relative inline-flex h-13 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] px-7 py-0 text-[15px] font-semibold text-[var(--justice-dark)] shadow-2xl shadow-[rgba(201,168,76,0.35)] transition hover:brightness-110 sm:h-14 sm:px-8 sm:text-base"
+              style={{ height: '56px' }}
             >
               <span className="relative z-10 flex items-center gap-2">
                 {t.hero.ctaPrimary}
@@ -68,7 +67,8 @@ export default function Hero({ communitySavingsLabel }: HeroProps) {
             </Link>
             <Link
               href="/how-it-works"
-              className="inline-flex h-14 items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 text-base font-medium text-white/90 backdrop-blur-md transition hover:border-[var(--gold)]/60 hover:bg-white/10"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-7 text-[15px] font-medium text-white/90 backdrop-blur-md transition hover:border-[var(--gold)]/60 hover:bg-white/10 sm:px-8 sm:text-base"
+              style={{ height: '56px' }}
             >
               {t.hero.ctaSecondary}
             </Link>
@@ -84,16 +84,16 @@ export default function Hero({ communitySavingsLabel }: HeroProps) {
           </motion.p>
         </div>
 
-        {/* Stats */}
+        {/* Stats — réels uniquement */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="mx-auto mt-16 grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4"
+          className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-3 sm:mt-16 sm:grid-cols-3 sm:gap-4"
         >
-          <StatCard value="12" label={t.hero.statsDomains} />
-          <StatCard value="< 30s" label={t.hero.statsTime} highlight />
-          <StatCard value={communitySavingsLabel} label={t.hero.statsSaved} />
+          <StatCard value={String(domainsCount)} label={t.hero.statsDomains} />
+          <StatCard value="< 30 s" label={t.hero.statsTime} highlight />
+          <StatCard value="14 j" label={t.hero.statsTrial} />
         </motion.div>
       </div>
     </section>
@@ -111,14 +111,14 @@ function StatCard({
 }) {
   return (
     <div
-      className={`glass-dark rounded-2xl p-5 text-center transition hover:-translate-y-0.5 ${
+      className={`glass-dark rounded-2xl px-4 py-5 text-center transition hover:-translate-y-0.5 sm:p-5 ${
         highlight ? 'border-[var(--gold)]/40' : ''
       }`}
     >
-      <div className="font-serif text-3xl font-semibold leading-none text-white md:text-4xl">
+      <div className="font-serif text-3xl font-semibold leading-none text-white sm:text-4xl">
         {value}
       </div>
-      <div className="mt-2 text-[11px] uppercase tracking-wider text-white/60 md:text-xs">
+      <div className="mt-2 text-[10px] uppercase tracking-wider text-white/60 sm:text-[11px]">
         {label}
       </div>
     </div>

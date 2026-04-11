@@ -110,24 +110,18 @@ const FAQ = [
   },
 ]
 
-const TESTIMONIALS = [
+const GUARANTEES = [
   {
-    name: 'Léa M.',
-    city: 'Lyon',
-    text: 'Grâce à JurisPurama j\'ai contesté mon amende de 135€ en 3 clics. Le document était prêt en 2 minutes, reçu par l\'ANTAI 4 jours plus tard, annulée.',
-    saved: 135,
+    title: 'Articles de loi cités',
+    text: 'Chaque réponse de JurisIA s\'appuie sur des articles précis du droit français — Code civil, Code du travail, Code de la consommation. Tu peux toujours vérifier la source.',
   },
   {
-    name: 'Karim B.',
-    city: 'Paris',
-    text: 'Mon propriétaire refusait de rendre ma caution. La mise en demeure générée par JurisIA a suffi — 1 200€ récupérés sans passer au tribunal.',
-    saved: 1200,
+    title: 'Documents à valeur juridique',
+    text: 'Tes courriers et signatures électroniques respectent l\'article 1366 du Code civil : valeur probante équivalente au manuscrit. Recommandé AR24 sur les plans payants.',
   },
   {
-    name: 'Sophie D.',
-    city: 'Bordeaux',
-    text: 'En tant qu\'auto-entrepreneuse, j\'utilise JurisPurama pour mes contestations URSSAF et mes factures impayées. Un Avocat Virtuel à 40€/mois.',
-    saved: 2800,
+    title: 'Annulation en 1 clic',
+    text: '14 jours d\'essai sans carte bancaire. Tu peux résilier ton abonnement à tout moment depuis ton espace, sans justification ni frais cachés.',
   },
 ]
 
@@ -401,29 +395,19 @@ function AbonnementContent() {
         </div>
       </Card>
 
-      {/* Testimonials */}
+      {/* Guarantees */}
       <div className="mt-10 grid gap-4 md:grid-cols-3">
-        {TESTIMONIALS.map((t) => (
-          <Card key={t.name} padding="lg">
-            <p className="text-sm italic text-[var(--text-secondary)]">
-              « {t.text} »
+        {GUARANTEES.map((g) => (
+          <Card key={g.title} padding="lg">
+            <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
+              Engagement
             </p>
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-[var(--justice)]">
-                  {t.name}
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">{t.city}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-                  Gain
-                </p>
-                <p className="font-serif text-lg font-bold text-[var(--justice)]">
-                  {formatPrice(t.saved * 100)}
-                </p>
-              </div>
-            </div>
+            <h3 className="mt-2 font-serif text-lg font-semibold text-[var(--justice)]">
+              {g.title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+              {g.text}
+            </p>
           </Card>
         ))}
       </div>
