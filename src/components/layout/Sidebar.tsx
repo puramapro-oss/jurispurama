@@ -14,7 +14,12 @@ const NAV_ITEMS = [
   { href: '/scanner', label: 'Scanner', icon: '📷' },
   { href: '/documents', label: 'Documents', icon: '📄' },
   { href: '/profil', label: 'Profil juridique', icon: '👤' },
+  { href: '/breathe', label: 'Respiration', icon: '🌬️' },
+  { href: '/gratitude', label: 'Gratitude', icon: '🙏' },
   { href: '/abonnement', label: 'Abonnement', icon: '💳' },
+  { href: '/wallet', label: 'Wallet', icon: '💰' },
+  { href: '/points', label: 'Points', icon: '✨' },
+  { href: '/financer', label: 'Financer', icon: '🏛️' },
   { href: '/parrainage', label: 'Parrainage', icon: '🎁' },
   { href: '/influenceur', label: 'Influenceur', icon: '⭐' },
 ]

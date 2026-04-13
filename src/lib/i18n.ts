@@ -1,21 +1,27 @@
-// Lightweight i18n (fr, en, es). Only critical landing + nav strings.
-// FR is the source of truth — app is French-first.
+// Lightweight i18n — 16 languages. FR is the source of truth — app is French-first.
+// Full translations for fr, en, es. Other locales fall back to en.
 
-export type Locale = 'fr' | 'en' | 'es'
+export type Locale =
+  | 'fr' | 'en' | 'es' | 'de' | 'it' | 'pt' | 'ar' | 'zh'
+  | 'ja' | 'ko' | 'hi' | 'ru' | 'tr' | 'nl' | 'pl' | 'sv'
 
-export const LOCALES: Locale[] = ['fr', 'en', 'es']
+export const LOCALES: Locale[] = [
+  'fr', 'en', 'es', 'de', 'it', 'pt', 'ar', 'zh',
+  'ja', 'ko', 'hi', 'ru', 'tr', 'nl', 'pl', 'sv',
+]
 export const DEFAULT_LOCALE: Locale = 'fr'
 
 export const LOCALE_FLAGS: Record<Locale, string> = {
-  fr: '🇫🇷',
-  en: '🇬🇧',
-  es: '🇪🇸',
+  fr: '🇫🇷', en: '🇬🇧', es: '🇪🇸', de: '🇩🇪', it: '🇮🇹', pt: '🇵🇹',
+  ar: '🇸🇦', zh: '🇨🇳', ja: '🇯🇵', ko: '🇰🇷', hi: '🇮🇳', ru: '🇷🇺',
+  tr: '🇹🇷', nl: '🇳🇱', pl: '🇵🇱', sv: '🇸🇪',
 }
 
 export const LOCALE_NAMES: Record<Locale, string> = {
-  fr: 'Français',
-  en: 'English',
-  es: 'Español',
+  fr: 'Français', en: 'English', es: 'Español', de: 'Deutsch',
+  it: 'Italiano', pt: 'Português', ar: 'العربية', zh: '中文',
+  ja: '日本語', ko: '한국어', hi: 'हिन्दी', ru: 'Русский',
+  tr: 'Türkçe', nl: 'Nederlands', pl: 'Polski', sv: 'Svenska',
 }
 
 interface TranslationKeys {
@@ -135,7 +141,8 @@ interface TranslationKeys {
   }
 }
 
-export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
+// Full translations for fr, en, es. Other locales fall back to en at runtime.
+export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
   fr: {
     nav: {
       howItWorks: 'Comment ça marche',
@@ -257,7 +264,7 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
     },
     footer: {
       tagline:
-        "L'assistant juridique IA qui remplace ton avocat à 99 %. 12 domaines du droit français couverts. 14 jours d'essai gratuit, sans carte bancaire.",
+        "L'assistant juridique IA qui décrypte le droit français pour toi. 12 domaines couverts. 14 jours d'essai gratuit, sans carte bancaire.",
       product: 'Produit',
       company: 'Société',
       legal: 'Légal',
@@ -388,7 +395,7 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
     },
     footer: {
       tagline:
-        'The AI legal assistant that replaces your lawyer 99% of the time. 12 areas of French law. 14-day free trial, no credit card.',
+        'The AI legal assistant that deciphers French law for you. 12 areas of law. 14-day free trial, no credit card.',
       product: 'Product',
       company: 'Company',
       legal: 'Legal',
@@ -520,7 +527,7 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
     },
     footer: {
       tagline:
-        'El asistente jurídico IA que reemplaza a tu abogado el 99% de las veces. 12 áreas del derecho francés. 14 días gratis, sin tarjeta.',
+        'El asistente jurídico IA que descifra el derecho francés para ti. 12 áreas del derecho. 14 días gratis, sin tarjeta.',
       product: 'Producto',
       company: 'Empresa',
       legal: 'Legal',
@@ -538,9 +545,9 @@ export const TRANSLATIONS: Record<Locale, TranslationKeys> = {
 }
 
 export function getTranslations(locale: Locale): TranslationKeys {
-  return TRANSLATIONS[locale] ?? TRANSLATIONS[DEFAULT_LOCALE]
+  return TRANSLATIONS[locale] ?? TRANSLATIONS.en!
 }
 
 export function isValidLocale(x: string | null | undefined): x is Locale {
-  return x === 'fr' || x === 'en' || x === 'es'
+  return typeof x === 'string' && (LOCALES as string[]).includes(x)
 }

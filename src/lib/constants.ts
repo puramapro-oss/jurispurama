@@ -7,7 +7,7 @@ export const APP_SCHEMA = 'jurispurama'
 export const APP_COLOR_PRIMARY = '#1E3A5F'
 export const APP_COLOR_ACCENT = '#C9A84C'
 export const APP_TAGLINE =
-  "L'assistant juridique IA qui remplace ton avocat à 99%"
+  "L'assistant juridique IA qui décrypte le droit français pour toi"
 export const APP_PITCH =
   'Raconte ton problème. En 3 minutes, tu as un plan d\'action + dossier complet. JurisIA rédige, signe et envoie à ta place.'
 

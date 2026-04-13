@@ -53,7 +53,7 @@ export default function LocaleSwitcher({
       {open && (
         <div
           role="menu"
-          className={`absolute right-0 top-11 z-50 min-w-[160px] overflow-hidden rounded-xl border shadow-2xl backdrop-blur-xl ${menuBase}`}
+          className={`absolute right-0 top-11 z-50 min-w-[160px] max-h-[320px] overflow-y-auto rounded-xl border shadow-2xl backdrop-blur-xl ${menuBase}`}
         >
           {LOCALES.map((l: Locale) => (
             <button
