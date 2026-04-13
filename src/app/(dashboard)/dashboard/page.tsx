@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting } from '@/lib/utils'
+import Affirmation from '@/components/shared/Affirmation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
@@ -118,6 +119,9 @@ export default function DashboardPage() {
             ? 'Chargement de ton espace…'
             : 'Prêt à faire valoir tes droits ? JurisIA est à ta disposition.'}
         </p>
+        <div className="mt-4">
+          <Affirmation />
+        </div>
       </header>
 
       {/* Critical deadline alert */}
