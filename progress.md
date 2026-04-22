@@ -808,3 +808,55 @@ Le formatter du Tooltip recharts attend `ValueType | undefined`, il faut
 | 2026-04-11 | JURISPURAMA | Webhook raw body Next 16 App Router : req.text() suffit, zéro config body-parser. `dynamic='force-dynamic'` pour éviter pré-gen. Signature verify → 400 mais catch global → 200 toujours sur erreurs métier (idempotence Stripe) | Webhooks prod-grade sans retry storm |
 | 2026-04-11 | JURISPURAMA | Script setup-stripe-prices idempotent via `lookup_keys` : relançable sans doublon, sortie console des env vars à copier sur Vercel | Une seule source de vérité entre code et Stripe dashboard |
 | 2026-04-11 | JURISPURAMA | Parrainage commission calc : count payments existants APRÈS insert du nouveau → si ≤ 1 c'est le premier paiement, convertReferral 50%. Sinon applyRecurringCommission 10% + tier bonus. Payment rows stripe_payment_id préfixé `referral_first_` / `referral_recurring_` pour différencier des vrais Stripe IDs dans les agrégations wallet | Commissions automatiques sans table dédiée supplémentaire |
+
+
+## UPGRADE V7.1 + V4.1 — TERMINÉ ✅ (2026-04-22)
+
+### Commits atomiques (8 phases U0 → U7)
+
+- **722bf3c** feat(P-U0): foundation agentique V7.1 — .claude/ (agents qa/security, 5 skills, 4 docs, settings.json, hooks, 3 commands) + backup CLAUDE.md + palette_seed `finance-premium-luxury-jurispurama` dans BRIEF
+- **eac3c04** feat(P-U1): V4.1 patch — OpenTimestamps (javascript-opentimestamps 0.4.5) + lib INSEE V3.11 + Stripe Connect AccountSession gated TREEZOR_ACTIVE + migration SQL (ots_proof sur signatures, stripe_connect_account_id + subscription_started_at sur users, tables legal_proofs + retractations)
+- **3f657cb** feat(P-U2): homepage 3 blocs V7.1 + rename ambassadeur — ParrainageBlock + AmbassadeurBlock (9 paliers Bronze→Éternel + barre progression) + CrossPromoBlock (MOKSHA/AKASHA/KASH mapping priorité) + git mv influenceur→ambassadeur (3 routes) + 301 redirects next.config + UI labels partout + /go/[slug] double usage cross-promo avec cookie purama_promo + getOrCreateCrossPromoCoupon (WELCOME50 dynamic idempotent) + checkout auto-apply
+- **c00d862** feat(P-U3): flow paiement V7.1 — /confirmation deep link purama://activate + confettis + prime J1 25€ + /subscribe alias + /settings/abonnement (plan + gate 30j + pause/résilier) + CancelFlow 3 étapes (pertes → pause → feedback) + /api/stripe/portal étendu (GET status + POST pause|cancel|portal) + webhook Stripe étendu (subscription_started_at + prime J1 wallet + charge.refunded avec déduction prime <30j + insert retractations + notifs FR) + bouton "Démarrer & recevoir ma prime" + mention L221-28 + CGV article 7 bis
+- **ef1a826** feat(P-U4): fiscal /fiscal — schéma fiscal_notifications (UNIQUE user+palier) + annual_summaries + page /fiscal publique (gains cumulés + 3 paliers + 3 étapes case 5NG + abattement 34% + FAQ) + FiscalBanner (dismissible >3000€) + FiscalSummaryDownload + /api/cron/fiscal-paliers (quotidien 9h, Resend email + notif push) + /api/cron/annual-summary (dual mode CRON 1er janvier + ?preview=1 user self-service PDF pdf-lib avec mention SASU CGI 293B) + 2 crons vercel.json
+- **2834b3b** feat(P-U5): wealth engine phase 1 — schéma ambassador_tiers (Bronze→Éternel) + social_feed_events (RLS lecture publique auth) + user_impact + first_withdrawal + SocialFeed (events sans montants) + ImpactDashboard (CO2/arbres/heures avocat/€) + Flywheel (users × pool × moyenne) + MagicMoment (modal plein écran 💎 AudioContext cristallin + badge) + /api/social-feed + /api/impact (agrégation auto)
+- **8e44624** feat(P-U6): design system V1 chirurgical — @paper-design/shaders-react + geist + next-themes + lib/brand (purama-adn 12 moods + palette-generator déterministe xmur3 + app-config) + components/brand (PuramaBackground MeshGradient avec WebGL fallback + reduced-motion + visibilitychange + PuramaSkeleton shimmer + PuramaEmpty + PuramaErrorBoundary FR Sentry + PuramaSheet bottom sheet mobile) + hero landing avec shader "ambient" overlay 0.35
+- **+ U7** deploy production — dpl_24mXRMnLMBXweExS7Cvv6axCUpKY READY, alias jurispurama.purama.dev
+
+### Quality gates ✅
+- `npx tsc --noEmit` → **0 erreur**
+- `npm run build` → **61 routes**, Compiled successfully
+- `grep TODO|Lorem|coming soon|FIXME|originstamp|tryterra` (hors attribut placeholder HTML) → **0**
+- `grep console.log` → 6 uniquement dans src/scripts/setup-stripe-prices.ts (CLI légitime)
+- `grep sk_live_|pk_live_|whsec_|eyJ` dans src/ (hors env) → **0**
+- `grep Influenceur` dans UI → **0** (1 comment interne conservé pour traçabilité)
+
+### Smoke tests prod ✅
+| Endpoint | HTTP | Détail |
+|---|---|---|
+| GET / | 200 | Landing |
+| GET /api/status | 200 | `{"ok":true,"app":"jurispurama","env":"production"}` |
+| GET /fiscal | 200 | Publique, gains cumulés + 3 paliers |
+| GET /confirmation | 200 | Publique, deep link + confettis |
+| GET /subscribe | 307 | → /abonnement (behavior expected) |
+| GET /influenceur | 308 | → /ambassadeur (redirect permanent backward compat) |
+| GET /ambassadeur | 307 | → /login (protected, expected) |
+| POST /api/stripe/connect/account-session | 503 | `TREEZOR_ACTIVE=false` Phase 1 (expected) |
+
+### Migrations VPS appliquées
+- schema-u1.sql : ots_proof + subscription_started_at + legal_proofs + retractations
+- schema-u4.sql : fiscal_notifications (UNIQUE user+palier) + annual_summaries
+- schema-u5.sql : ambassador_tiers + social_feed_events + user_impact + first_withdrawal
+
+### .env.local ajouts
+- INSEE_API_KEY (023ed173...)
+- NEXT_PUBLIC_PALETTE_SEED=finance-premium-luxury-jurispurama
+- NEXT_PUBLIC_APP_SLUG=jurispurama
+- PURAMA_PHASE=1, CARD_AVAILABLE=false, IBAN_AVAILABLE=false, WITHDRAWAL_AVAILABLE=false, TREEZOR_ACTIVE=false, WALLET_MODE=points
+
+### Reste à faire (non-bloquant)
+- Pousser env vars vers Vercel (INSEE_API_KEY, NEXT_PUBLIC_PALETTE_SEED, NEXT_PUBLIC_APP_SLUG, PURAMA_PHASE, CRON_SECRET si pas déjà présente)
+- Tests Playwright étendus sur nouvelles routes (/fiscal, /confirmation, /settings/abonnement, flow résiliation, /ambassadeur avec post-rename)
+- Pousser sur GitHub (main branche — repo puramapro-oss/jurispurama si créé)
+
+### Learnings capturés dans ~/purama/LEARNINGS.md
