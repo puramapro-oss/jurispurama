@@ -78,18 +78,18 @@ export default function AdminInfluencersPage() {
     <div className="space-y-6">
       <Card padding="lg">
         <h2 className="mb-3 font-serif text-2xl font-semibold text-[var(--justice)]">
-          Influenceurs ({influencers.length})
+          Ambassadeurs ({influencers.length})
         </h2>
         {loading ? (
           <p className="text-sm text-[var(--text-muted)]">Chargement…</p>
         ) : influencers.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">Aucun influenceur.</p>
+          <p className="text-sm text-[var(--text-muted)]">Aucun ambassadeur.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                  <th className="py-2 pr-2">Influenceur</th>
+                  <th className="py-2 pr-2">Ambassadeur</th>
                   <th className="py-2 px-2">Slug</th>
                   <th className="py-2 px-2">Palier</th>
                   <th className="py-2 px-2">Clics</th>

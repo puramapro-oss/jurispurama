@@ -136,7 +136,7 @@ const TEMPLATES = [
   },
 ]
 
-export default function InfluenceurPage() {
+export default function AmbassadeurPage() {
   const [loading, setLoading] = useState(true)
   const [influencer, setInfluencer] = useState<Influencer | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
@@ -193,7 +193,7 @@ export default function InfluenceurPage() {
   if (loading) {
     return (
       <div className="container-narrow py-10">
-        <p className="text-sm text-[var(--text-muted)]">Chargement de ton espace influenceur…</p>
+        <p className="text-sm text-[var(--text-muted)]">Chargement de ton espace ambassadeur…</p>
       </div>
     )
   }
@@ -207,7 +207,7 @@ export default function InfluenceurPage() {
             Programme partenaire
           </p>
           <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
-            Deviens influenceur JurisPurama
+            Deviens ambassadeur JurisPurama
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-[var(--text-secondary)]">
             Validation automatique en 1 clic. Plan Essentiel offert à vie,
@@ -225,7 +225,7 @@ export default function InfluenceurPage() {
                 immédiatement.
               </p>
             </div>
-            <Link href="/apply/influenceur">
+            <Link href="/apply/ambassadeur">
               <Button variant="primary" size="md">
                 Candidater maintenant →
               </Button>
@@ -243,7 +243,7 @@ export default function InfluenceurPage() {
       <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-            Espace influenceur
+            Espace ambassadeur
           </p>
           <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
             Ton tableau de bord partenaire
@@ -427,7 +427,7 @@ export default function InfluenceurPage() {
       {/* Leaderboard */}
       <Card padding="lg" className="mt-6">
         <h2 className="mb-3 font-serif text-xl font-semibold text-[var(--justice)]">
-          Top 10 influenceurs du mois
+          Top 10 ambassadeurs du mois
         </h2>
         <ul className="space-y-2">
           {LEADERBOARD.map((row) => (
