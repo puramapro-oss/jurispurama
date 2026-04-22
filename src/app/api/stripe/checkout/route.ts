@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
       billing,
       referred_by: profile.referred_by ?? '',
     },
-    success_url: `${origin}/dashboard?upgrade=success&plan=${plan}`,
+    success_url: `${origin}/confirmation?plan=${plan}&billing=${billing}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/abonnement?canceled=1`,
     ...(discounts.length > 0
       ? { discounts }

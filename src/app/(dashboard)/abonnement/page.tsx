@@ -337,10 +337,16 @@ function AbonnementContent() {
                     loading={loadingPlan === plan.slug}
                     onClick={() => handleCheckout(plan.slug as PlanSlug)}
                   >
-                    Essayer 14 jours gratuit
+                    Démarrer & recevoir ma prime
                   </Button>
                 )}
               </div>
+              {plan.slug !== 'free' && !isCurrent && (
+                <p className="mt-3 text-[10px] leading-tight text-[var(--text-muted)]">
+                  En démarrant maintenant, tu bénéficies d&apos;un accès immédiat
+                  à ton abonnement (art. L221-28 Code conso).
+                </p>
+              )}
             </Card>
           )
         })}
