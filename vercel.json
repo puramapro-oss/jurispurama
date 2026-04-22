@@ -9,6 +9,8 @@
   "crons": [
     { "path": "/api/cron/deadline-alerts", "schedule": "0 8 * * *" },
     { "path": "/api/cron/check-ar-status", "schedule": "0 */6 * * *" },
-    { "path": "/api/cron/email-sequences", "schedule": "0 10 * * *" }
+    { "path": "/api/cron/email-sequences", "schedule": "0 10 * * *" },
+    { "path": "/api/cron/fiscal-paliers", "schedule": "0 9 * * *" },
+    { "path": "/api/cron/annual-summary", "schedule": "0 3 1 1 *" }
   ]
 }
