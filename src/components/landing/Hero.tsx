@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLocale } from '@/hooks/useLocale'
 import { LEGAL_DOMAINS } from '@/lib/constants'
+import { PuramaBackground } from '@/components/brand/PuramaBackground'
+import { APP_SEED } from '@/lib/brand/app-config'
 
 export default function Hero() {
   const { t } = useLocale()
@@ -11,8 +13,17 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 md:pt-44 md:pb-24">
-      {/* Aurora layer */}
+      {/* V7.1 Design System V1 — Paper Shaders mesh (finance-premium-luxury-jurispurama) */}
       <div className="pointer-events-none absolute inset-0">
+        <PuramaBackground
+          seed={APP_SEED}
+          variant="ambient"
+          overlayOpacity={0.35}
+          className="w-full h-full"
+        />
+      </div>
+      {/* Aurora legacy layer — overlay subtil */}
+      <div className="pointer-events-none absolute inset-0 opacity-40">
         <div className="aurora" />
       </div>
 
