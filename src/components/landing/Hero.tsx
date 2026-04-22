@@ -10,7 +10,7 @@ export default function Hero() {
   const domainsCount = LEGAL_DOMAINS.length
 
   return (
-    <section className="relative overflow-hidden pt-24 sm:pt-28 md:pt-36">
+    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 md:pt-44 md:pb-24">
       {/* Aurora layer */}
       <div className="pointer-events-none absolute inset-0">
         <div className="aurora" />
@@ -32,7 +32,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.05 }}
-            className="font-serif text-[36px] italic font-semibold leading-[1.04] tracking-tight text-white sm:text-[56px] md:text-[78px] lg:text-[96px]"
+            className="font-serif text-[40px] font-medium leading-[1.05] tracking-[-0.02em] text-white sm:text-[60px] md:text-[80px] lg:text-[96px]"
           >
             <span className="gradient-text">{t.hero.title}</span>
           </motion.h1>
@@ -41,7 +41,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.25 }}
-            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-white/75 sm:mt-7 sm:text-base md:text-xl md:leading-[1.55]"
+            className="mx-auto mt-8 max-w-2xl text-[15px] leading-[1.6] text-white/70 sm:mt-8 sm:text-[17px] md:mt-10 md:text-[19px] md:leading-[1.55]"
           >
             {t.hero.subtitle}
           </motion.p>
