@@ -1,3 +1,5 @@
+palette_seed: 'finance-premium-luxury-jurispurama'
+
 # JURISPURAMA-BRIEF.md — BRIEF ULTIME CLAUDE CODE
 # App: jurispurama.purama.dev | Slug: jurispurama
 # Mission: L'assistant juridique IA le plus puissant de France — remplace un avocat à 99%
