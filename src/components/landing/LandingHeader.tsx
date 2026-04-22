@@ -22,11 +22,11 @@ export default function LandingHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'border-b border-white/10 bg-[#05070F]/80 backdrop-blur-xl'
-          : 'bg-transparent'
+          ? 'border-b border-white/10 bg-[#05070F]/85 backdrop-blur-xl shadow-[0_8px_32px_-12px_rgba(0,0,0,0.6)]'
+          : 'border-b border-white/[0.04] bg-[#05070F]/40 backdrop-blur-md'
       }`}
     >
-      <div className="container-wide flex h-16 items-center justify-between md:h-20">
+      <div className="container-wide flex h-16 items-center justify-between md:h-[72px]">
         <Link
           href="/"
           className="flex items-center gap-2.5 text-white"
@@ -47,7 +47,7 @@ export default function LandingHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 text-sm font-medium text-white/75 md:flex">
+        <nav className="hidden items-center gap-8 text-[13.5px] font-medium text-white/70 lg:flex">
           <Link href="/how-it-works" className="transition hover:text-[var(--gold)]">
             {t.nav.howItWorks}
           </Link>
@@ -62,7 +62,7 @@ export default function LandingHeader() {
           </Link>
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <LocaleSwitcher />
           <ThemeToggle />
           <Link
@@ -82,7 +82,7 @@ export default function LandingHeader() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white lg:hidden"
           aria-label="Ouvrir le menu"
           aria-expanded={open}
         >
@@ -104,7 +104,7 @@ export default function LandingHeader() {
       </div>
 
       {open && (
-        <div className="border-t border-white/10 bg-[#05070F]/95 px-6 py-5 backdrop-blur-xl md:hidden">
+        <div className="border-t border-white/10 bg-[#05070F]/95 px-6 py-5 backdrop-blur-xl lg:hidden">
           <nav className="flex flex-col gap-3 text-sm font-medium text-white/85">
             <Link href="/how-it-works" onClick={() => setOpen(false)}>
               {t.nav.howItWorks}
