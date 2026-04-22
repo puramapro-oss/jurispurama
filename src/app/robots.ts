@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
           '/admin/',
           '/chat/',
           '/abonnement/',
-          '/influenceur/',
+          '/ambassadeur/',
           '/apply/',
           '/verify/',
         ],

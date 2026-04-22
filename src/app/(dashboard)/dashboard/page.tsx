@@ -9,6 +9,9 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Progress from '@/components/ui/Progress'
+import ParrainageBlock from '@/components/home/ParrainageBlock'
+import AmbassadeurBlock from '@/components/home/AmbassadeurBlock'
+import CrossPromoBlock from '@/components/home/CrossPromoBlock'
 import { LEGAL_DOMAINS } from '@/lib/constants'
 import type { JurisCase } from '@/types'
 import {
@@ -123,6 +126,13 @@ export default function DashboardPage() {
           <Affirmation />
         </div>
       </header>
+
+      {/* V7.1 §15 — 3 blocs above-the-fold */}
+      <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ParrainageBlock />
+        <AmbassadeurBlock />
+        <CrossPromoBlock />
+      </section>
 
       {/* Critical deadline alert */}
       {stats.criticalDeadlines.length > 0 && (
