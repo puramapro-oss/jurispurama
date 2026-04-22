@@ -139,6 +139,33 @@ export default function CGVPage() {
 
             <section>
               <h2 className="font-serif text-2xl font-semibold text-[var(--justice)]">
+                7 bis. Prime de bienvenue et droit de rétractation (Art. L221-28 3°)
+              </h2>
+              <p>
+                En choisissant un accès immédiat à son abonnement {APP_NAME},
+                l&apos;utilisateur reconnaît et accepte expressément,
+                conformément à l&apos;article L221-28 3° du Code de la
+                consommation, que l&apos;exécution immédiate du service
+                numérique entraîne la renonciation à son droit de
+                rétractation de 14 jours.
+              </p>
+              <p className="mt-3">
+                La prime de bienvenue (100€ totaux : 25€ J+1, 25€ J+30, 50€ J+60)
+                est versée sous forme de crédits sur le wallet Purama de
+                l&apos;utilisateur. Ces crédits ne sont disponibles au
+                retrait qu&apos;après 30 jours calendaires consécutifs
+                d&apos;abonnement actif.
+              </p>
+              <p className="mt-3">
+                En cas d&apos;annulation de l&apos;abonnement dans les 30
+                premiers jours, {APP_NAME} se réserve le droit de déduire le
+                montant des tranches de prime déjà versées de tout
+                remboursement éventuellement accordé à titre commercial.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="font-serif text-2xl font-semibold text-[var(--justice)]">
                 8. Médiation
               </h2>
               <p>
