@@ -12,6 +12,9 @@ import Progress from '@/components/ui/Progress'
 import ParrainageBlock from '@/components/home/ParrainageBlock'
 import AmbassadeurBlock from '@/components/home/AmbassadeurBlock'
 import CrossPromoBlock from '@/components/home/CrossPromoBlock'
+import ImpactDashboard from '@/components/engagement/ImpactDashboard'
+import SocialFeed from '@/components/engagement/SocialFeed'
+import Flywheel from '@/components/engagement/Flywheel'
 import { LEGAL_DOMAINS } from '@/lib/constants'
 import type { JurisCase } from '@/types'
 import {
@@ -386,6 +389,15 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* V7.1 §20 — Wealth Engine : impact + social feed + flywheel */}
+      <section className="mt-10 grid gap-4 md:grid-cols-2">
+        <ImpactDashboard />
+        <SocialFeed />
+      </section>
+      <section className="mt-4">
+        <Flywheel />
       </section>
     </div>
   )
