@@ -21,6 +21,9 @@ const PUBLIC_PATHS = [
   '/cgv',
   '/cgu',
   '/cookies',
+  '/confirmation',
+  '/subscribe',
+  '/fiscal',
 ]
 
 function isPublicPath(pathname: string): boolean {

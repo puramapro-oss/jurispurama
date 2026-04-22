@@ -66,11 +66,11 @@ export default function ApplyInfluencerPage() {
         return
       }
       if (data.alreadyApproved) {
-        toast.success('Tu es déjà influenceur JurisPurama.')
+        toast.success('Tu es déjà ambassadeur JurisPurama.')
       } else {
-        toast.success('Bienvenue dans le programme influenceur !')
+        toast.success('Bienvenue dans le programme ambassadeur !')
       }
-      router.push('/influenceur')
+      router.push('/ambassadeur')
     } catch {
       toast.error('Erreur réseau. Réessaie dans un instant.')
     } finally {
@@ -86,7 +86,7 @@ export default function ApplyInfluencerPage() {
             Programme partenaire
           </p>
           <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
-            Deviens influenceur {APP_NAME}
+            Deviens ambassadeur {APP_NAME}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
             Validation automatique · plan Essentiel offert · jusqu&apos;à 25% de

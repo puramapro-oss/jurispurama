@@ -121,8 +121,8 @@ export default function LandingFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/apply/influenceur" className="text-white/70 hover:text-[var(--gold)]">
-                  Devenir influenceur
+                <Link href="/apply/ambassadeur" className="text-white/70 hover:text-[var(--gold)]">
+                  Devenir ambassadeur
                 </Link>
               </li>
               <li>

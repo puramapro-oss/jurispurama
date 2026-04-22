@@ -46,3 +46,6 @@ yarn-error.log*
 
 # lighthouse reports (large JSON, regeneratable)
 lighthouse-*.json
+CLAUDE.md
+CLAUDE.md.backup.*
+STRIPE_CONNECT_KARMA_V4.md

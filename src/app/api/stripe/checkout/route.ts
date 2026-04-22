@@ -4,11 +4,13 @@ import {
   getStripe,
   resolvePriceId,
   getOrCreateWelcomeCoupon,
+  getOrCreateCrossPromoCoupon,
   type PlanSlug,
   type BillingCycle,
 } from '@/lib/stripe'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { APP_DOMAIN } from '@/lib/constants'
+import { PROMO_COOKIE_NAME } from '@/lib/cross-promo'
 
 export const runtime = 'nodejs'
 
@@ -97,14 +99,44 @@ export async function POST(req: NextRequest) {
       .eq('id', profile.id)
   }
 
-  // Discounts: WELCOME10 if requested, else allow promo codes at checkout
+  // Discounts priorité :
+  //   1. Cookie purama_promo (cross-promo inter-app, /go/[source]?coupon=WELCOME50) — auto
+  //   2. couponCode explicite du front (WELCOME10, WELCOME50)
+  //   3. sinon : laisse Stripe Checkout accepter les codes promo saisis manuellement
   const discounts: Array<{ coupon: string }> = []
-  if (couponCode && couponCode.toUpperCase() === 'WELCOME10') {
+
+  // 1. Lecture cookie purama_promo (cross-promo auto-apply)
+  let promoFromCookie: string | null = null
+  try {
+    const rawCookie = req.cookies.get(PROMO_COOKIE_NAME)?.value
+    if (rawCookie) {
+      const parsed = JSON.parse(rawCookie) as { coupon?: string; expires?: string }
+      if (
+        parsed?.coupon &&
+        parsed.expires &&
+        new Date(parsed.expires).getTime() > Date.now()
+      ) {
+        promoFromCookie = parsed.coupon.toUpperCase()
+      }
+    }
+  } catch {
+    // cookie malformé → ignore silencieusement
+  }
+
+  const effectiveCoupon = (couponCode?.toUpperCase() || promoFromCookie) ?? null
+  if (effectiveCoupon === 'WELCOME10') {
     try {
       const couponId = await getOrCreateWelcomeCoupon()
       discounts.push({ coupon: couponId })
     } catch {
-      // Non-fatal: user can still enter a promo code in checkout
+      // non-bloquant
+    }
+  } else if (effectiveCoupon === 'WELCOME50') {
+    try {
+      const couponId = await getOrCreateCrossPromoCoupon()
+      discounts.push({ coupon: couponId })
+    } catch {
+      // non-bloquant
     }
   }
 
@@ -129,7 +161,7 @@ export async function POST(req: NextRequest) {
       billing,
       referred_by: profile.referred_by ?? '',
     },
-    success_url: `${origin}/dashboard?upgrade=success&plan=${plan}`,
+    success_url: `${origin}/confirmation?plan=${plan}&billing=${billing}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/abonnement?canceled=1`,
     ...(discounts.length > 0
       ? { discounts }

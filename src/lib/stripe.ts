@@ -130,11 +130,41 @@ export async function getOrCreateWelcomeCoupon(): Promise<string> {
   const stripe = getStripe()
   const envCoupon = process.env.STRIPE_COUPON_WELCOME10
   if (envCoupon) return envCoupon
+  try {
+    const existing = await stripe.coupons.retrieve('welcome10_jurispurama')
+    if (existing?.id && !existing.deleted) return existing.id
+  } catch {
+    // doesn't exist, create below
+  }
   const coupon = await stripe.coupons.create({
     id: 'welcome10_jurispurama',
     percent_off: 10,
     duration: 'once',
     name: 'Bienvenue chez JurisPurama (-10%)',
+  })
+  return coupon.id
+}
+
+/**
+ * WELCOME50 = -50% premier mois pour les cross-promo inter-apps Purama.
+ * Appliqué quand le user arrive via un lien /go/[source_app]?coupon=WELCOME50.
+ * Voir V7.1 §15 (BLOC 3 — CROSS-PROMO).
+ */
+export async function getOrCreateCrossPromoCoupon(): Promise<string> {
+  const stripe = getStripe()
+  const envCoupon = process.env.STRIPE_COUPON_WELCOME50
+  if (envCoupon) return envCoupon
+  try {
+    const existing = await stripe.coupons.retrieve('WELCOME50')
+    if (existing?.id && !existing.deleted) return existing.id
+  } catch {
+    // doesn't exist
+  }
+  const coupon = await stripe.coupons.create({
+    id: 'WELCOME50',
+    percent_off: 50,
+    duration: 'once',
+    name: 'Bienvenue -50% (cross-promo Purama)',
   })
   return coupon.id
 }

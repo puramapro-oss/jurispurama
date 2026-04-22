@@ -50,15 +50,15 @@ const RELEASES: Release[] = [
   {
     version: '0.5.0',
     date: '11 avril 2026',
-    title: 'Stripe, parrainage et influenceurs',
+    title: 'Stripe, parrainage et ambassadeurs',
     tag: 'minor',
     features: [
       '4 plans Stripe (Gratuit, Essentiel, Pro, Avocat Virtuel) + achats unitaires',
       'Webhook Stripe avec gestion complète des cycles d\'abonnement',
       'Système de parrainage avec 6 paliers (Bronze → Légende)',
       'Wallet et retraits IBAN à partir de 5 €',
-      'Programme influenceurs ouvert avec dashboard dédié',
-      'Admin : gestion utilisateurs, paiements, dossiers, influenceurs',
+      'Programme ambassadeurs ouvert avec dashboard dédié',
+      'Admin : gestion utilisateurs, paiements, dossiers, ambassadeurs',
       'Commission 50 % premier paiement + 10 % récurrent',
     ],
   },
