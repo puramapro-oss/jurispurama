@@ -401,10 +401,10 @@ export default function ParrainagePage() {
       <p className="mt-8 text-center text-xs text-[var(--text-muted)]">
         Envie de passer au niveau supérieur ?{' '}
         <Link
-          href="/apply/influenceur"
+          href="/apply/ambassadeur"
           className="underline hover:text-[var(--justice)]"
         >
-          Deviens influenceur JurisPurama
+          Deviens ambassadeur JurisPurama
         </Link>{' '}
         et touche jusqu&apos;à 25% de commission + plan gratuit.
       </p>

@@ -8,7 +8,7 @@ const ADMIN_NAV = [
   { href: '/admin/users', label: 'Utilisateurs', icon: '👥' },
   { href: '/admin/cases', label: 'Dossiers', icon: '📁' },
   { href: '/admin/payments', label: 'Paiements', icon: '💰' },
-  { href: '/admin/influenceurs', label: 'Influenceurs', icon: '⭐' },
+  { href: '/admin/ambassadeurs', label: 'Ambassadeurs', icon: '⭐' },
 ]
 
 export default async function AdminLayout({

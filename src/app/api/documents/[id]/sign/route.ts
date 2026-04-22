@@ -8,6 +8,7 @@ import {
   embedSignatureOnPdf,
   hashSignatureBytes,
 } from '@/lib/signature'
+import { stampHash } from '@/lib/opentimestamps'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -199,6 +200,16 @@ export async function POST(
     signedAtISO
   )
 
+  // Horodatage blockchain (OpenTimestamps — preuve 0€)
+  // Le hash est stampé sur Bitcoin. Preuve "pending" pendant ~1-2h puis définitive.
+  let otsProof: string | null = null
+  try {
+    otsProof = await stampHash(signatureHash)
+  } catch {
+    // Non-bloquant : si OpenTimestamps est indisponible, on continue
+    otsProof = null
+  }
+
   await admin.from('jurispurama_signatures').insert({
     document_id: doc.id,
     user_id: juriUser.id,
@@ -207,6 +218,8 @@ export async function POST(
     signed_at: signedAtISO,
     ip_address: ipAddress,
     user_agent: userAgent,
+    ots_proof: otsProof,
+    ots_stamped_at: otsProof ? signedAtISO : null,
   })
 
   // Update document row

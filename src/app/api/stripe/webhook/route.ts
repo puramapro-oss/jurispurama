@@ -167,10 +167,44 @@ export async function POST(req: NextRequest) {
         }
         if (plan && (status === 'active' || status === 'trialing')) {
           patch.subscription_plan = plan
+          // V7.1 §21 — subscription_started_at (gate retrait wallet 30j)
+          if (event.type === 'customer.subscription.created') {
+            patch.subscription_started_at = new Date(sub.start_date * 1000).toISOString()
+          }
         } else if (status === 'canceled' || status === 'unpaid') {
           patch.subscription_plan = 'free'
         }
         await sb.from('jurispurama_users').update(patch).eq('id', user.id)
+
+        // Prime J1 — 25€ crédit wallet à la création de l'abonnement
+        if (event.type === 'customer.subscription.created') {
+          try {
+            const { count: primeCount } = await sb
+              .from('jurispurama_wallet_transactions')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('source', 'prime_j1')
+            if ((primeCount ?? 0) === 0) {
+              await sb.from('jurispurama_wallet_transactions').insert({
+                user_id: user.id,
+                amount: 25,
+                type: 'credit',
+                source: 'prime_j1',
+                description: 'Prime de bienvenue J1 (art. L221-28)',
+              })
+              await sb.from('jurispurama_notifications').insert({
+                user_id: user.id,
+                type: 'prime_credited',
+                title: '💰 Prime J1 créditée',
+                message:
+                  '25€ de prime de bienvenue ajoutés à ton wallet. Prochaine tranche dans 30 jours.',
+                link: '/wallet',
+              })
+            }
+          } catch {
+            // non-bloquant
+          }
+        }
         break
       }
 
@@ -251,7 +285,78 @@ export async function POST(req: NextRequest) {
           title: 'Échec de paiement',
           message:
             'Ton paiement n\'a pas pu être prélevé. Vérifie ta carte dans le portail Stripe pour éviter une suspension.',
-          link: '/abonnement',
+          link: '/settings/abonnement',
+        })
+        break
+      }
+
+      case 'charge.refunded': {
+        // Rétractation Art. L221-28 — déduction prime si < 30j d'abonnement
+        const charge = event.data.object as Stripe.Charge
+        const customerId =
+          typeof charge.customer === 'string' ? charge.customer : null
+        if (!customerId) break
+        const user = await findUserByCustomerId(customerId)
+        if (!user) break
+
+        const { data: userRow } = await sb
+          .from('jurispurama_users')
+          .select('subscription_started_at')
+          .eq('id', user.id)
+          .single()
+
+        const startedAt = userRow?.subscription_started_at
+          ? new Date(userRow.subscription_started_at)
+          : null
+        const daysActive = startedAt
+          ? Math.floor((Date.now() - startedAt.getTime()) / (1000 * 60 * 60 * 24))
+          : 999
+
+        const amountRefunded = amountToEuros(charge.amount_refunded)
+        let primeDeducted = 0
+        if (daysActive < 30) {
+          // Déduction primes J1 créditées — 25€ max à ce stade
+          const { data: primeTx } = await sb
+            .from('jurispurama_wallet_transactions')
+            .select('amount')
+            .eq('user_id', user.id)
+            .eq('source', 'prime_j1')
+            .eq('type', 'credit')
+          primeDeducted = (primeTx ?? []).reduce(
+            (acc, r) => acc + Number(r.amount ?? 0),
+            0
+          )
+          if (primeDeducted > 0) {
+            await sb.from('jurispurama_wallet_transactions').insert({
+              user_id: user.id,
+              amount: -primeDeducted,
+              type: 'debit',
+              source: 'prime_deduction_retractation',
+              description: 'Déduction prime — annulation < 30 jours (CGV art. prime)',
+            })
+          }
+        }
+
+        await sb.from('jurispurama_retractations').insert({
+          user_id: user.id,
+          amount_refunded: amountRefunded,
+          prime_deducted: primeDeducted,
+          processed_at: new Date().toISOString(),
+          processed_by: 'auto',
+          stripe_refund_id: charge.id,
+          reason: 'Refund Stripe triggered',
+        })
+
+        await sb.from('jurispurama_notifications').insert({
+          user_id: user.id,
+          type: 'refund_processed',
+          title: 'Remboursement traité',
+          message: `${amountRefunded.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} remboursés. ${
+            primeDeducted > 0
+              ? `Prime déduite : ${primeDeducted.toFixed(2)}€ (CGV art. prime L221-28).`
+              : ''
+          }`,
+          link: '/settings/abonnement',
         })
         break
       }

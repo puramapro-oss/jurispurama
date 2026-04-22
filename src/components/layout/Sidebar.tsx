@@ -21,7 +21,8 @@ const NAV_ITEMS = [
   { href: '/points', label: 'Points', icon: '✨' },
   { href: '/financer', label: 'Financer', icon: '🏛️' },
   { href: '/parrainage', label: 'Parrainage', icon: '🎁' },
-  { href: '/influenceur', label: 'Influenceur', icon: '⭐' },
+  { href: '/ambassadeur', label: 'Ambassadeur', icon: '⭐' },
+  { href: '/fiscal', label: 'Fiscal', icon: '📋' },
 ]
 
 export default function Sidebar() {
