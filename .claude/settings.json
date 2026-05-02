@@ -8,13 +8,13 @@
   "autoCompact": true,
   "hooks": {
     "SessionStart": [
-      { "hooks": [{ "command": "cat ~/purama/LEARNINGS.md 2>/dev/null | tail -20 || true" }] }
+      { "hooks": [{ "type": "command", "command": "cat ~/purama/LEARNINGS.md 2>/dev/null | tail -20 || true" }] }
     ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "command": "npx prettier --write $CLAUDE_FILE_PATH 2>/dev/null || true" }
+          { "type": "command", "command": "npx prettier --write $CLAUDE_FILE_PATH 2>/dev/null || true" }
         ]
       }
     ],
@@ -22,12 +22,12 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "command": "echo $CLAUDE_FILE_PATH | grep -qE '\\.(env|lock)$' && echo 'BLOCKED' && exit 1 || exit 0" }
+          { "type": "command", "command": "echo $CLAUDE_FILE_PATH | grep -qE '\\.(env|lock)$' && echo 'BLOCKED' && exit 1 || exit 0" }
         ]
       }
     ],
     "Stop": [
-      { "hooks": [{ "command": "bash .claude/hooks/stop-verify.sh" }] }
+      { "hooks": [{ "type": "command", "command": "bash .claude/hooks/stop-verify.sh" }] }
     ]
   },
   "env": {

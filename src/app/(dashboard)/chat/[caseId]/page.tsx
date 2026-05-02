@@ -16,6 +16,14 @@ import type { CaseSidebarAction } from '@/components/chat/CaseSidebar'
 import type { JurisCase, JurisMessage } from '@/types'
 import type { DocumentTemplate } from '@/lib/pdf/types'
 
+interface JurisDocumentLite {
+  id: string
+  title: string
+  signature_status: 'pending' | 'signed' | 'expired'
+  sent_status: 'not_sent' | 'sent_email' | 'sent_recommande' | 'sent_teleservice'
+  created_at: string
+}
+
 interface UIMessage {
   id: string
   role: 'user' | 'assistant'
@@ -34,6 +42,7 @@ export default function ChatCasePage() {
     initialCaseId === 'new' ? null : initialCaseId
   )
   const [caseRow, setCaseRow] = useState<JurisCase | null>(null)
+  const [documents, setDocuments] = useState<JurisDocumentLite[]>([])
   const [messages, setMessages] = useState<UIMessage[]>([])
   const [loading, setLoading] = useState(initialCaseId !== 'new')
   const [input, setInput] = useState('')
@@ -89,11 +98,13 @@ export default function ChatCasePage() {
         return r.json() as Promise<{
           case: JurisCase
           messages: JurisMessage[]
+          documents?: JurisDocumentLite[]
         }>
       })
       .then((data) => {
         if (!active || !data) return
         setCaseRow(data.case)
+        setDocuments(data.documents ?? [])
         setMessages(
           data.messages
             .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -237,8 +248,12 @@ export default function ChatCasePage() {
             cache: 'no-store',
           })
           if (freshRes.ok) {
-            const fresh = (await freshRes.json()) as { case: JurisCase }
+            const fresh = (await freshRes.json()) as {
+              case: JurisCase
+              documents?: JurisDocumentLite[]
+            }
             setCaseRow(fresh.case)
+            setDocuments(fresh.documents ?? [])
           }
           if (initialCaseId === 'new') {
             window.history.replaceState(null, '', `/chat/${finalCaseId}`)
@@ -295,27 +310,79 @@ export default function ChatCasePage() {
     void sendMessage(text)
   }
 
-  const handleAction = useCallback((action: NextAction) => {
-    if (action === 'generate_document') {
-      setDocModalOpen(true)
-      return
-    }
-    if (action === 'sign' || action === 'send_email' || action === 'send_recommande') {
-      toast.info(
-        "Cette action sera active dans la prochaine mise à jour (signature + envoi AR24).",
-        { duration: 4000 }
-      )
-      return
-    }
-    if (action === 'book_appointment') {
-      toast.info('La prise de rendez-vous sera disponible bientôt.')
-      return
-    }
-    if (action === 'close') {
-      toast.info('Marque le dossier comme résolu depuis la page détail.')
-      return
-    }
-  }, [])
+  const handleAction = useCallback(
+    (action: NextAction) => {
+      if (action === 'generate_document') {
+        setDocModalOpen(true)
+        return
+      }
+
+      // Sign / send_email / send_recommande → on route vers le doc le plus récent
+      // qui contient l'UI de signature canvas + envoi (vrais endpoints API).
+      // Si aucun doc n'existe, on ouvre le modal de génération avec un message.
+      if (
+        action === 'sign' ||
+        action === 'send_email' ||
+        action === 'send_recommande'
+      ) {
+        const target = documents.find(
+          (d) => d.signature_status !== 'expired'
+        )
+        if (!target) {
+          toast.info(
+            'Génère d\'abord ton document. JurisIA va te guider.',
+            { duration: 4000 }
+          )
+          setDocModalOpen(true)
+          return
+        }
+        // Pour signer : doc doit être pending. Pour envoyer : peu importe (signed
+        // recommandé, mais l'API accepte aussi unsigned avec warning).
+        if (action === 'sign' && target.signature_status === 'signed') {
+          toast.info('Ce document est déjà signé. Tu peux l\'envoyer.', {
+            duration: 4000,
+          })
+        }
+        router.push(
+          `/documents/${target.id}${
+            action === 'send_email'
+              ? '#send-email'
+              : action === 'send_recommande'
+                ? '#send-recommande'
+                : '#sign'
+          }`
+        )
+        return
+      }
+
+      if (action === 'close') {
+        if (!caseId) return
+        void (async () => {
+          try {
+            const res = await fetch(`/api/cases/${caseId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'resolu' }),
+            })
+            if (!res.ok) throw new Error('Échec mise à jour')
+            toast.success('Dossier clôturé. Bravo !')
+            // Refresh case
+            const fresh = await fetch(`/api/cases/${caseId}`, {
+              cache: 'no-store',
+            })
+            if (fresh.ok) {
+              const data = (await fresh.json()) as { case: JurisCase }
+              setCaseRow(data.case)
+            }
+          } catch {
+            toast.error('Impossible de clôturer le dossier.')
+          }
+        })()
+        return
+      }
+    },
+    [caseId, documents, router]
+  )
 
   const handleSidebarAction = useCallback(
     (action: CaseSidebarAction) => {
@@ -350,8 +417,10 @@ export default function ChatCasePage() {
           const data = (await fresh.json()) as {
             case: JurisCase
             messages: JurisMessage[]
+            documents?: JurisDocumentLite[]
           }
           setCaseRow(data.case)
+          setDocuments(data.documents ?? [])
           setMessages(
             data.messages
               .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -436,7 +505,7 @@ export default function ChatCasePage() {
   }, [messages])
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-6rem)] w-full max-w-6xl flex-col gap-4 px-4 py-4 md:h-[calc(100vh-2rem)] md:py-6 lg:flex-row">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 md:py-6 lg:flex-row lg:h-[calc(100dvh-3rem)] h-[calc(100dvh-3.5rem-5.5rem)] lg:py-4">
       {/* Main chat column */}
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Phase stepper */}
