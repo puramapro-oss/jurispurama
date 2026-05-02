@@ -121,10 +121,7 @@ export default function MessageBubble({
               {content || ''}
             </ReactMarkdown>
             {streaming && (
-              <span
-                className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-[var(--justice)]/60"
-                aria-hidden="true"
-              />
+              <span className="cursor-blink" aria-hidden="true" />
             )}
           </div>
         ) : (
@@ -150,9 +147,13 @@ export default function MessageBubble({
       {!isAssistant && (
         <div
           aria-hidden="true"
-          className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/80 border border-[var(--border)] text-lg text-[var(--justice)] shadow-sm"
+          className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] text-[13px] font-semibold text-[var(--justice-dark)] shadow-sm"
         >
-          👤
+          {/* user initial fallback — handled by parent if needed */}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 21v-1a7 7 0 0 1 14 0v1" />
+          </svg>
         </div>
       )}
     </div>
