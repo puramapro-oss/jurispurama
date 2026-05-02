@@ -79,13 +79,21 @@ export default function LandingHeader() {
           </Link>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white lg:hidden"
-          aria-label="Ouvrir le menu"
-          aria-expanded={open}
-        >
+        {/* Mobile: CTA + burger toujours visibles */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <Link
+            href="/signup"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] px-4 text-[13px] font-semibold text-[var(--justice-dark)] shadow-md shadow-[rgba(201,168,76,0.3)] focus-ring"
+          >
+            {t.nav.signup}
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="touch-target inline-flex w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white focus-ring"
+            aria-label="Ouvrir le menu"
+            aria-expanded={open}
+          >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             {open ? (
               <>
@@ -101,6 +109,7 @@ export default function LandingHeader() {
             )}
           </svg>
         </button>
+        </div>
       </div>
 
       {open && (
