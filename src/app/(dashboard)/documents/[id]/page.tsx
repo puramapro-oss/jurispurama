@@ -118,6 +118,21 @@ export default function DocumentDetailPage() {
     }
   }, [id, router])
 
+  // Auto-open modal selon hash deep-link depuis le chat (ex: #sign, #send-recommande)
+  useEffect(() => {
+    if (loading || !doc) return
+    if (typeof window === 'undefined') return
+    const hash = window.location.hash.replace('#', '')
+    if (!hash) return
+    if (hash === 'sign' && doc.signature_status !== 'signed') {
+      setSignOpen(true)
+    } else if (hash === 'send-email' || hash === 'send-recommande') {
+      setSendOpen(true)
+    }
+    // Clear le hash pour éviter ré-ouvertures sur back/forward
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [loading, doc])
+
   const handleDelete = useCallback(async () => {
     if (!doc) return
     if (
