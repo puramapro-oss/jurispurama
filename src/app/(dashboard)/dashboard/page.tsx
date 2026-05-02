@@ -4,17 +4,12 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting } from '@/lib/utils'
-import Affirmation from '@/components/shared/Affirmation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Progress from '@/components/ui/Progress'
 import ParrainageBlock from '@/components/home/ParrainageBlock'
-import AmbassadeurBlock from '@/components/home/AmbassadeurBlock'
 import CrossPromoBlock from '@/components/home/CrossPromoBlock'
-import ImpactDashboard from '@/components/engagement/ImpactDashboard'
-import SocialFeed from '@/components/engagement/SocialFeed'
-import Flywheel from '@/components/engagement/Flywheel'
 import { LEGAL_DOMAINS } from '@/lib/constants'
 import type { JurisCase } from '@/types'
 import {
@@ -113,10 +108,8 @@ export default function DashboardPage() {
   return (
     <div className="container-narrow py-8 md:py-10">
       <header className="mb-8">
-        <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-          Tableau de bord
-        </p>
-        <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
+        <p className="text-eyebrow">Tableau de bord</p>
+        <h1 className="mt-1.5 text-display-3 text-[var(--justice)]">
           {getGreeting()}
           {firstName ? `, ${firstName}` : ''}
         </h1>
@@ -125,15 +118,11 @@ export default function DashboardPage() {
             ? 'Chargement de ton espace…'
             : 'Prêt à faire valoir tes droits ? JurisIA est à ta disposition.'}
         </p>
-        <div className="mt-4">
-          <Affirmation />
-        </div>
       </header>
 
-      {/* V7.1 §15 — 3 blocs above-the-fold */}
-      <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {/* Parrainage + écosystème (cohérent cabinet d'avocat — pas de bloc ambassadeur) */}
+      <section className="mb-8 grid gap-4 md:grid-cols-2">
         <ParrainageBlock />
-        <AmbassadeurBlock />
         <CrossPromoBlock />
       </section>
 
@@ -169,36 +158,30 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
-        <Card padding="md">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Dossiers actifs
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
+        <Card padding="md" elevation="raised">
+          <p className="text-eyebrow">Dossiers actifs</p>
+          <p className="mt-2 font-serif text-3xl font-bold text-[var(--justice)] tabular">
             {loadingCases ? '…' : stats.activeCount}
           </p>
           <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Plan actuel :{' '}
-            <span className="font-semibold capitalize">
+            Plan{' '}
+            <span className="font-semibold capitalize text-[var(--justice)]">
               {profile?.subscription_plan ?? 'free'}
             </span>
           </p>
         </Card>
-        <Card padding="md">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Argent potentiellement sauvé
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-emerald-700">
+        <Card padding="md" elevation="raised">
+          <p className="text-eyebrow">Argent potentiellement sauvé</p>
+          <p className="mt-2 font-serif text-3xl font-bold text-emerald-700 tabular">
             {loadingCases ? '…' : formatEuros(stats.totalSavings)}
           </p>
           <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Cumul sur tous tes dossiers
+            Cumul tous dossiers
           </p>
         </Card>
-        <Card padding="md">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Prochaine échéance
-          </p>
-          <p className="mt-1 font-serif text-xl font-bold text-[var(--justice)]">
+        <Card padding="md" elevation="raised">
+          <p className="text-eyebrow">Prochaine échéance</p>
+          <p className="mt-2 font-serif text-xl font-bold text-[var(--justice)] tabular">
             {stats.nextDeadline ? formatDeadline(stats.nextDeadline.date) : '—'}
           </p>
           <p className="mt-1 line-clamp-1 text-xs text-[var(--text-secondary)]">
@@ -391,14 +374,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* V7.1 §20 — Wealth Engine : impact + social feed + flywheel */}
-      <section className="mt-10 grid gap-4 md:grid-cols-2">
-        <ImpactDashboard />
-        <SocialFeed />
-      </section>
-      <section className="mt-4">
-        <Flywheel />
-      </section>
     </div>
   )
 }
