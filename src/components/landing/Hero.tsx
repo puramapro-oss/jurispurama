@@ -12,7 +12,7 @@ export default function Hero() {
   const domainsCount = LEGAL_DOMAINS.length
 
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 md:pt-44 md:pb-24">
+    <section className="relative overflow-hidden pt-24 pb-16 sm:pt-28 md:pt-32 md:pb-20">
       {/* V7.1 Design System V1 — Paper Shaders mesh (finance-premium-luxury-jurispurama) */}
       <div className="pointer-events-none absolute inset-0">
         <PuramaBackground
@@ -65,7 +65,7 @@ export default function Hero() {
           >
             <Link
               href="/signup"
-              className="pulse-gold group relative inline-flex h-13 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] px-7 py-0 text-[15px] font-semibold text-[var(--justice-dark)] shadow-2xl shadow-[rgba(201,168,76,0.35)] transition hover:brightness-110 sm:h-14 sm:px-8 sm:text-base"
+              className="pulse-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[var(--gold-dark)] via-[var(--gold)] to-[var(--gold-light)] px-7 py-0 text-[15px] font-semibold text-[var(--justice-dark)] shadow-2xl shadow-[rgba(201,168,76,0.35)] transition hover:brightness-110 focus-ring sm:px-8 sm:text-base"
               style={{ height: '56px' }}
             >
               <span className="relative z-10 flex items-center gap-2">
@@ -78,7 +78,7 @@ export default function Hero() {
             </Link>
             <Link
               href="/how-it-works"
-              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-7 text-[15px] font-medium text-white/90 backdrop-blur-md transition hover:border-[var(--gold)]/60 hover:bg-white/10 sm:px-8 sm:text-base"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-7 text-[15px] font-medium text-white/90 backdrop-blur-md transition hover:border-[var(--gold)]/60 hover:bg-white/10 focus-ring sm:px-8 sm:text-base"
               style={{ height: '56px' }}
             >
               {t.hero.ctaSecondary}

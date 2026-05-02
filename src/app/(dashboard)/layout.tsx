@@ -1,6 +1,6 @@
 import Sidebar from '@/components/layout/Sidebar'
 import BottomTabBar from '@/components/layout/BottomTabBar'
-import NotificationBell from '@/components/layout/NotificationBell'
+import MobileTopBar from '@/components/layout/MobileTopBar'
 
 export default function DashboardLayout({
   children,
@@ -8,12 +8,10 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen bg-parchment">
+    <div className="flex min-h-dvh-safe bg-parchment">
       <Sidebar />
-      <main className="flex-1 min-w-0 pb-24 lg:pb-0">
-        <div className="sticky top-0 z-30 flex justify-end border-b border-[var(--border)]/60 bg-white/70 px-4 py-2 backdrop-blur-xl lg:px-6">
-          <NotificationBell />
-        </div>
+      <main className="flex min-w-0 flex-1 flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
+        <MobileTopBar />
         {children}
       </main>
       <BottomTabBar />
