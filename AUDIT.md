@@ -47,3 +47,32 @@
 - **E** Vérifier OAuth Google live + AR24 mode + Stripe webhook
 - **F** Responsive 375→1920 Playwright snapshots
 - **G** Tests + deploy
+
+## Phase E — Verdict APIs prod (audit live 2026-05-02)
+
+| Service | Statut prod | Détail |
+|---|---|---|
+| Google OAuth | ✅ ENABLED | VPS `auth.purama.dev/auth/v1/settings` retourne `"google": true`. Flow `/authorize?provider=google` → `Allow: GET` (200 attendu sur GET, 405 sur HEAD = normal). |
+| Email signup | ✅ ENABLED | `"email": true`, `mailer_autoconfirm: true` (pas de double opt-in requis). |
+| Stripe Secret Key | ✅ encrypted Vercel | Production OK. ⚠️ La copie dans `.env.local` est invalide/rotated → dev local cassé pour Stripe (à mettre à jour). |
+| Stripe Webhook Secret | ✅ encrypted Vercel | Production + preview + development. |
+| Anthropic API | ✅ encrypted Vercel | Production. |
+| Resend (email) | ✅ encrypted Vercel | Production. |
+| AR24 (recommandé) | ⚠️ ABSENT prod | `AR24_API_KEY` non poussée. Lib `src/lib/ar24.ts` fallback automatique en mode `simulated` (tracking number `SIM-...`, AR auto-confirmé J+2). Flow utilisateur OK, **mais aucun vrai courrier physique envoyé**. Action externe : ouvrir compte AR24 pro avec SIRET PURAMA, ajouter `AR24_API_KEY` + `AR24_MODE=live` via `vercel env add`. |
+| DocuSeal | N/A — REMPLACÉ | Signature canvas Art.1366 CC + OpenTimestamps blockchain. Zéro dépendance externe, conforme légalement. Pas besoin de DocuSeal. |
+| Supabase RLS | À auditer manuellement | Tables `jurispurama_*` ont RLS policies depuis P1. Prochain audit : `gsd-secure-phase`. |
+
+### Smoke tests live
+- `GET /api/status` → 200 `{"ok":true,"app":"jurispurama","env":"production"}`
+- `POST /api/stripe/webhook` (no signature) → 200 (catch global, anti-retry-storm)
+- `POST /api/ai/chat` (no auth) → 401 (attendu)
+- 12/12 routes publiques 200 ✅
+- 11/11 routes auth-protected 307 → /login ✅
+
+### Action externe (hors codebase)
+**AR24 pro account** : pour passer du mode simulated au mode live, créer un compte pro AR24 (https://ar24.fr/inscription) avec SIRET PURAMA, récupérer la clé API, puis :
+```bash
+vercel env add AR24_API_KEY production --token $VERCEL_TOKEN --scope puramapro-oss
+vercel env add AR24_MODE production --token $VERCEL_TOKEN  # = "live"
+vercel --prod  # redeploy
+```
