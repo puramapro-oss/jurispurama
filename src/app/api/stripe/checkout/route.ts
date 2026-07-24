@@ -153,6 +153,7 @@ export async function POST(req: NextRequest) {
         plan,
         billing,
         referred_by: profile.referred_by ?? '',
+        app_slug: 'jurispurama',
       },
     },
     metadata: {
@@ -160,6 +161,7 @@ export async function POST(req: NextRequest) {
       plan,
       billing,
       referred_by: profile.referred_by ?? '',
+      app_slug: 'jurispurama',
     },
     success_url: `${origin}/confirmation?plan=${plan}&billing=${billing}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/abonnement?canceled=1`,

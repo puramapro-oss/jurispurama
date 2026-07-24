@@ -53,7 +53,14 @@ function amountToEuros(amount: number | null | undefined): number {
 }
 
 export async function POST(req: NextRequest) {
-  const signature = req.headers.get('stripe-signature')
+  // V13 — karma shared webhook dispatcher
+  const internalSecret = req.headers.get('x-internal-secret')
+  if (internalSecret !== process.env.INTERNAL_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  }
+
+  // Defense in depth: still verify Stripe signature (same secret across ecosystem)
+  const signature = req.headers.get('x-stripe-signature')
   const secret = process.env.STRIPE_WEBHOOK_SECRET
   if (!signature || !secret) {
     return NextResponse.json(

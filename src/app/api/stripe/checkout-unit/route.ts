@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
       unit_type: type,
       doc_id: metadata.doc_id ?? '',
       case_id: metadata.case_id ?? '',
+      app_slug: 'jurispurama',
     },
     payment_intent_data: {
       metadata: {
