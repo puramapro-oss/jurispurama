@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
 import { getAnthropic, DEFAULT_MODEL } from '@/lib/claude'
 import { APP_SCHEMA } from '@/lib/constants'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -92,6 +93,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Connecte-toi pour utiliser le scanner.' },
       { status: 401 }
+    )
+  }
+
+  // Rate limit: 10 uploads/minute per user
+  const { allowed } = await rateLimit(`ocr:${user.id}`, 10, 60)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de scans. Réessaie dans une minute.' },
+      { status: 429 }
     )
   }
 

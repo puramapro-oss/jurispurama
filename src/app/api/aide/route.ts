@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getAnthropic, FAST_MODEL } from '@/lib/claude'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -20,6 +21,16 @@ Si la question est trop complexe ou hors sujet, propose d'écrire à contact@pur
 Réponds en français. Maximum 200 mots.`
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 20 messages/minute
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+  const { allowed } = await rateLimit(`aide:${ip}`, 20, 60)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Réessaie dans une minute.' },
+      { status: 429 }
+    )
+  }
+
   const body = await req.json().catch(() => null)
   const parsed = bodySchema.safeParse(body)
   if (!parsed.success) {

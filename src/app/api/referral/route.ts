@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
 import { getReferralStats, trackReferralSignup } from '@/lib/referral'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -107,6 +108,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'request_withdrawal') {
+    // Rate limit: 5 withdrawal requests per day
+    const { allowed } = await rateLimit(`withdrawal:${user.id}`, 5, 86400)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Trop de demandes de retrait. Réessaie demain.' },
+        { status: 429 }
+      )
+    }
+
     const stats = await getReferralStats(profile.id)
     if (stats.pendingCommission < 5) {
       return NextResponse.json(

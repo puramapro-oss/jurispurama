@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -101,6 +102,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Connecte-toi pour postuler.' },
       { status: 401 }
+    )
+  }
+
+  // Rate limit: 3 influencer applications per hour
+  const { allowed } = await rateLimit(`influencer:${user.id}`, 3, 3600)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de candidatures. Réessaie dans une heure.' },
+      { status: 429 }
     )
   }
 

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
 import { SUPER_ADMIN_EMAIL } from '@/lib/constants'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -71,6 +72,16 @@ export async function PATCH(req: NextRequest) {
   if (!admin) {
     return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 })
   }
+
+  // Rate limit: 30 admin mutations/minute
+  const { allowed } = await rateLimit(`admin:${admin.id}`, 30, 60)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de modifications. Réessaie dans une minute.' },
+      { status: 429 }
+    )
+  }
+
   let body: unknown
   try {
     body = await req.json()

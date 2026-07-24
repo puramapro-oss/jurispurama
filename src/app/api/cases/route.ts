@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import type { CaseStatus, CaseType } from '@/types'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -116,6 +117,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Profil introuvable.' },
       { status: 404 }
+    )
+  }
+
+  // Rate limit: 10 case creations/minute
+  const { allowed } = await rateLimit(`cases:${user.id}`, 10, 60)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de dossiers créés. Réessaie dans une minute.' },
+      { status: 429 }
     )
   }
 
