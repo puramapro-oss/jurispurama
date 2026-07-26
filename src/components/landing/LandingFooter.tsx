@@ -53,27 +53,27 @@ export default function LandingFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/how-it-works" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/how-it-works" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   {t.nav.howItWorks}
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/pricing" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   {t.nav.pricing}
                 </Link>
               </li>
               <li>
-                <Link href="/ecosystem" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/ecosystem" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   {t.nav.ecosystem}
                 </Link>
               </li>
               <li>
-                <Link href="/changelog" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/changelog" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Changelog
                 </Link>
               </li>
               <li>
-                <Link href="/status" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/status" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Status
                 </Link>
               </li>
@@ -87,22 +87,22 @@ export default function LandingFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/aide" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/aide" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   {t.nav.help}
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/contact" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/blog" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/parrainage" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/parrainage" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Parrainage
                 </Link>
               </li>
@@ -116,12 +116,12 @@ export default function LandingFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/mentions-legales" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/mentions-legales" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Mentions légales
                 </Link>
               </li>
               <li>
-                <Link href="/apply/ambassadeur" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/apply/ambassadeur" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Devenir ambassadeur
                 </Link>
               </li>
@@ -130,7 +130,7 @@ export default function LandingFooter() {
                   href="https://github.com/puramapro-oss"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/70 hover:text-[var(--gold)]"
+                  className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]"
                 >
                   Open source
                 </a>
@@ -145,22 +145,22 @@ export default function LandingFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/cgu" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/cgu" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   CGU
                 </Link>
               </li>
               <li>
-                <Link href="/cgv" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/cgv" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   CGV
                 </Link>
               </li>
               <li>
-                <Link href="/politique-confidentialite" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/politique-confidentialite" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Confidentialité
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="text-white/70 hover:text-[var(--gold)]">
+                <Link href="/cookies" className="inline-block py-1.5 text-white/70 hover:text-[var(--gold)]">
                   Cookies
                 </Link>
               </li>
