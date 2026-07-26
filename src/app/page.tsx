@@ -1,17 +1,19 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { APP_DOMAIN, APP_NAME, APP_TAGLINE } from '@/lib/constants'
 import LandingHeader from '@/components/landing/LandingHeader'
 import Hero from '@/components/landing/Hero'
 import Demo from '@/components/landing/Demo'
-import Domains from '@/components/landing/Domains'
-import HowItWorks from '@/components/landing/HowItWorks'
-import Trust from '@/components/landing/Trust'
-import Compare from '@/components/landing/Compare'
-import PricingPreview from '@/components/landing/PricingPreview'
-import LandingFAQ from '@/components/landing/LandingFAQ'
-import CTAFinal from '@/components/landing/CTAFinal'
-import LandingFooter from '@/components/landing/LandingFooter'
-import CursorGlow from '@/components/landing/CursorGlow'
+
+const Domains = dynamic(() => import('@/components/landing/Domains'))
+const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks'))
+const Trust = dynamic(() => import('@/components/landing/Trust'))
+const Compare = dynamic(() => import('@/components/landing/Compare'))
+const PricingPreview = dynamic(() => import('@/components/landing/PricingPreview'))
+const LandingFAQ = dynamic(() => import('@/components/landing/LandingFAQ'))
+const CTAFinal = dynamic(() => import('@/components/landing/CTAFinal'))
+const LandingFooter = dynamic(() => import('@/components/landing/LandingFooter'))
+const CursorGlow = dynamic(() => import('@/components/landing/CursorGlow'))
 
 export const revalidate = 600
 
