@@ -20,17 +20,17 @@ export function useLocale(): {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (isValidLocale(stored)) {
-        setLocaleState(stored)
+        queueMicrotask(() => setLocaleState(stored))
         return
       }
       // Fallback: browser language
       const nav = navigator.language.slice(0, 2).toLowerCase()
       if (isValidLocale(nav)) {
-        setLocaleState(nav)
+        queueMicrotask(() => setLocaleState(nav))
       }
     } catch {
       /* storage unavailable */

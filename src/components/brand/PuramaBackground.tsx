@@ -33,25 +33,25 @@ export function PuramaBackground({
   fallbackImage,
   children,
 }: Props) {
-  const [webgl, setWebgl] = useState(true)
-  const [reduced, setReduced] = useState(false)
+  const [webgl, setWebgl] = useState(() => {
+    if (typeof document === 'undefined') return true
+    try {
+      const c = document.createElement('canvas')
+      return !!(c.getContext('webgl') || c.getContext('experimental-webgl'))
+    } catch {
+      return false
+    }
+  })
+  const [reduced, setReduced] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    return mq.matches
+  })
   const [visible, setVisible] = useState(true)
   const palette = useMemo(() => getPalette(seed, variant), [seed, variant])
 
   useEffect(() => {
-    try {
-      const c = document.createElement('canvas')
-      setWebgl(
-        !!(c.getContext('webgl') || c.getContext('experimental-webgl'))
-      )
-    } catch {
-      setWebgl(false)
-    }
-  }, [])
-
-  useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
     const h = (e: MediaQueryListEvent) => setReduced(e.matches)
     mq.addEventListener('change', h)
     return () => mq.removeEventListener('change', h)

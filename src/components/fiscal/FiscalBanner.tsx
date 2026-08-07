@@ -15,12 +15,11 @@ interface Props {
  * - Réapparaît 1er avril → disparaît définitivement 15 juin
  */
 export default function FiscalBanner({ totalGains, year }: Props) {
-  const [dismissed, setDismissed] = useState(false)
-
-  useEffect(() => {
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false
     const stored = localStorage.getItem(`jurispurama-fiscal-dismissed-${year}`)
-    if (stored === '1') setDismissed(true)
-  }, [year])
+    return stored === '1'
+  })
 
   if (dismissed || totalGains < 3000) return null
 

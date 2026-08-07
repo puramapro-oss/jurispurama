@@ -51,19 +51,16 @@ function SignupForm() {
   const [accepted, setAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [refCode, setRefCode] = useState<string | null>(null)
-
-  useEffect(() => {
+  const [refCode, setRefCode] = useState<string | null>(() => {
     const fromQuery = params.get('ref')
     if (fromQuery) {
       const normalized = fromQuery.trim().toUpperCase().slice(0, 16)
-      setRefCode(normalized)
       writeRefCookie(normalized)
-      return
+      return normalized
     }
     const fromCookie = readRefCookie()
-    if (fromCookie) setRefCode(fromCookie)
-  }, [params])
+    return fromCookie || null
+  })
 
   // If a logged-in user lands here via ?ref (middleware lets them pass), try
   // to bind the code to their existing profile once.

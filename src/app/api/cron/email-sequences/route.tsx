@@ -91,6 +91,15 @@ export async function GET(request: Request): Promise<Response> {
       const name = raw.full_name ?? raw.email.split('@')[0] ?? 'toi'
       const age = daysSince(raw.created_at)
 
+      // eslint-disable-next-line react-hooks/error-boundaries
+      const welcomeEmail = <WelcomeEmail userName={name} dashboardUrl={`${BASE_URL}/dashboard`} />
+      // eslint-disable-next-line react-hooks/error-boundaries
+      const day1TipEmail = <Day1TipEmail userName={name} dashboardUrl={`${BASE_URL}/dashboard`} />
+      // eslint-disable-next-line react-hooks/error-boundaries
+      const day7UpgradeEmail = <Day7UpgradeEmail userName={name} upgradeUrl={`${BASE_URL}/abonnement?promo=WELCOME20`} />
+      // eslint-disable-next-line react-hooks/error-boundaries
+      const winbackEmail = <WinbackEmail userName={name} dashboardUrl={`${BASE_URL}/dashboard`} />
+
       try {
         // D0 welcome
         if (age >= 0 && age <= 1 && !(await alreadySent(admin, raw.id, 'welcome'))) {
@@ -98,12 +107,7 @@ export async function GET(request: Request): Promise<Response> {
             from: FROM_NOTIFS,
             to: raw.email,
             subject: 'Bienvenue sur JurisPurama — ton avocat IA est prêt',
-            react: (
-              <WelcomeEmail
-                userName={name}
-                dashboardUrl={`${BASE_URL}/dashboard`}
-              />
-            ),
+            react: welcomeEmail,
           })
           if (res.ok) {
             welcome++
@@ -119,12 +123,7 @@ export async function GET(request: Request): Promise<Response> {
             from: FROM_NOTIFS,
             to: raw.email,
             subject: '💡 L\'astuce du jour — contester une amende',
-            react: (
-              <Day1TipEmail
-                userName={name}
-                dashboardUrl={`${BASE_URL}/dashboard`}
-              />
-            ),
+            react: day1TipEmail,
           })
           if (res.ok) {
             tip++
@@ -140,12 +139,7 @@ export async function GET(request: Request): Promise<Response> {
             from: FROM_NOTIFS,
             to: raw.email,
             subject: '🎁 -20 % sur ton premier mois (code WELCOME20)',
-            react: (
-              <Day7UpgradeEmail
-                userName={name}
-                upgradeUrl={`${BASE_URL}/abonnement?promo=WELCOME20`}
-              />
-            ),
+            react: day7UpgradeEmail,
           })
           if (res.ok) {
             upgrade++
@@ -161,12 +155,7 @@ export async function GET(request: Request): Promise<Response> {
             from: FROM_NOTIFS,
             to: raw.email,
             subject: 'Tu nous as manqué — reprends un dossier en 3 minutes',
-            react: (
-              <WinbackEmail
-                userName={name}
-                dashboardUrl={`${BASE_URL}/dashboard`}
-              />
-            ),
+            react: winbackEmail,
           })
           if (res.ok) {
             winback++

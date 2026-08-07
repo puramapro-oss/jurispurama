@@ -37,7 +37,7 @@ export default function DossiersPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
+    queueMicrotask(() => setLoading(true))
     fetch('/api/cases', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : { cases: [] }))
       .then((d: { cases?: JurisCase[] }) => {

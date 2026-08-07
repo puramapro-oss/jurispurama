@@ -26,11 +26,11 @@ export function useTheme(): {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
       if (stored === 'light' || stored === 'dark' || stored === 'system') {
-        setThemeState(stored)
+        queueMicrotask(() => setThemeState(stored))
         applyTheme(stored)
       } else {
         applyTheme('system')

@@ -69,7 +69,7 @@ export default function GratitudePage() {
           </h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Prends un instant pour noter ce dont tu es reconnaissant(e)
-            aujourd'hui.
+            aujourd&apos;hui.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function GratitudePage() {
         <Card>
           <div className="p-6">
             <h2 className="font-serif text-lg font-semibold text-[var(--text-primary)]">
-              De quoi es-tu reconnaissant(e) aujourd'hui ?
+              De quoi es-tu reconnaissant(e) aujourd&apos;hui ?
             </h2>
             <textarea
               value={content}

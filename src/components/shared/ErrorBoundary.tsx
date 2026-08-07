@@ -57,12 +57,12 @@ export default class ErrorBoundary extends Component<Props, State> {
               >
                 Réessayer
               </button>
-              <a
-                href="/"
+              <button
+                onClick={() => window.location.assign('/')}
                 className="rounded-xl border border-[var(--border-strong)] bg-white px-5 py-2.5 text-sm font-medium text-[var(--justice)] hover:bg-[var(--bg-nebula)]"
               >
                 Accueil
-              </a>
+              </button>
             </div>
           </div>
         </div>

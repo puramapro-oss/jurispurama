@@ -392,12 +392,12 @@ export default function FinancerPage() {
               <p className="text-sm text-[var(--text-secondary)]">
                 Tu as sélectionné {selectedAides.size} aide
                 {selectedAides.size > 1 ? 's' : ''}. Utilise JurisIA pour
-                t'aider à rédiger tes courriers et suivre tes démarches.
+                t&apos;aider à rédiger tes courriers et suivre tes démarches.
               </p>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="text-sm font-medium text-emerald-800">
                   Astuce : ouvre un nouveau dossier JurisIA en mentionnant
-                  l'aide que tu vises. L'IA t'accompagnera étape par étape.
+                  l&apos;aide que tu vises. L&apos;IA t&apos;accompagnera étape par étape.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -406,7 +406,7 @@ export default function FinancerPage() {
                 </Button>
                 <Link href="/chat" className="flex-1">
                   <Button fullWidth>
-                    Ouvrir JurisIA pour m'aider
+                    Ouvrir JurisIA pour m&apos;aider
                   </Button>
                 </Link>
               </div>

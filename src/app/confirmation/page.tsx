@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
@@ -17,6 +17,15 @@ function ConfirmationContent() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') ?? 'Essentiel'
   const [showConfetti, setShowConfetti] = useState(false)
+  const [confettiParticles] = useState(() =>
+    Array.from({ length: 40 }, (_, i) => ({
+      left: Math.random() * 100,
+      top: Math.random() * 20,
+      color: ['#1E3A5F', '#C9A84C', '#6D28D9', '#22C55E', '#F59E0B'][i % 5],
+      delay: Math.random() * 2,
+      duration: 2 + Math.random() * 2,
+    }))
+  )
 
   useEffect(() => {
     // Deep link mobile — tentative silencieuse, timeout 1.5s
@@ -33,7 +42,7 @@ function ConfirmationContent() {
       setTimeout(() => iframe.remove(), 1000)
     }
 
-    setShowConfetti(true)
+    queueMicrotask(() => setShowConfetti(true))
     return () => clearTimeout(t)
   }, [])
 
@@ -42,16 +51,16 @@ function ConfirmationContent() {
       {/* Confettis CSS (simple, pas de lib) */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-          {Array.from({ length: 40 }).map((_, i) => (
+          {confettiParticles.map((p, i) => (
             <span
               key={i}
               className="absolute block w-2 h-2 rounded-full animate-fall"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `-${Math.random() * 20}%`,
-                background: ['#1E3A5F', '#C9A84C', '#6D28D9', '#22C55E', '#F59E0B'][i % 5],
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
+                left: `${p.left}%`,
+                top: `-${p.top}%`,
+                background: p.color,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
               }}
             />
           ))}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Button from '@/components/ui/Button'
 
 interface Props {
@@ -18,6 +18,14 @@ interface Props {
  */
 export default function MagicMoment({ amount, onClose }: Props) {
   const [ready, setReady] = useState(false)
+  const [particles] = useState(() =>
+    Array.from({ length: 30 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 1 + Math.random() * 2,
+    }))
+  )
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 100)
@@ -61,15 +69,15 @@ export default function MagicMoment({ amount, onClose }: Props) {
       <div className="relative max-w-md w-full text-center text-white">
         {/* Particules fond */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          {Array.from({ length: 30 }).map((_, i) => (
+          {particles.map((p, i) => (
             <span
               key={i}
               className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-70 animate-ping"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${1 + Math.random() * 2}s`,
+                left: `${p.left}%`,
+                top: `${p.top}%`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
               }}
             />
           ))}
