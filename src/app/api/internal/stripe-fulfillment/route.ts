@@ -98,6 +98,15 @@ export async function POST(req: NextRequest) {
 
   const sb = createServiceClient()
 
+  // Idempotence — process each event exactly once (unique violation = already done).
+  const { error: dupErr } = await sb
+    .from('jurispurama_stripe_events')
+    .insert({ event_id: event.id, type: event.type })
+  if (dupErr) {
+    if (dupErr.code === '23505') return NextResponse.json({ received: true, duplicate: true })
+    return NextResponse.json({ error: 'Erreur idempotence' }, { status: 500 })
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {

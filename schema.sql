@@ -259,6 +259,13 @@ CREATE INDEX IF NOT EXISTS jurispurama_referrals_referrer_idx
 CREATE INDEX IF NOT EXISTS jurispurama_referrals_code_idx
   ON jurispurama.jurispurama_referrals (code);
 
+-- Idempotence webhook Stripe (forwardé par karma) : 1 event traité 1 seule fois.
+CREATE TABLE IF NOT EXISTS jurispurama.jurispurama_stripe_events (
+  event_id TEXT PRIMARY KEY,
+  type TEXT,
+  processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- =====================================================
 -- RLS policies
 -- =====================================================
