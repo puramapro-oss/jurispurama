@@ -14,10 +14,13 @@ import { PROMO_COOKIE_NAME } from '@/lib/cross-promo'
 
 export const runtime = 'nodejs'
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 const BodySchema = z.object({
   plan: z.enum(['essentiel', 'pro', 'avocat_virtuel']),
   billing: z.enum(['monthly', 'yearly']),
   couponCode: z.string().trim().max(40).optional(),
+  idempotencyKey: z.string().regex(uuidRegex, 'Clé invalide'),
 })
 
 export async function POST(req: NextRequest) {
@@ -37,10 +40,11 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     )
   }
-  const { plan, billing, couponCode } = parsed.data as {
+  const { plan, billing, couponCode, idempotencyKey } = parsed.data as {
     plan: PlanSlug
     billing: BillingCycle
     couponCode?: string
+    idempotencyKey: string
   }
 
   const supabase = await createServerSupabaseClient()
@@ -173,7 +177,7 @@ export async function POST(req: NextRequest) {
     billing_address_collection: 'auto',
     automatic_tax: { enabled: false },
     tax_id_collection: { enabled: false },
-  })
+  }, { idempotencyKey })
 
   if (!session.url) {
     return NextResponse.json(

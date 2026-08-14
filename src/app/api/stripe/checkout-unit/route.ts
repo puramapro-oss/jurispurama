@@ -10,6 +10,8 @@ import { APP_DOMAIN } from '@/lib/constants'
 
 export const runtime = 'nodejs'
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 const BodySchema = z.object({
   type: z.enum([
     'recommande_ar',
@@ -22,6 +24,7 @@ const BodySchema = z.object({
       case_id: z.string().uuid().optional(),
     })
     .default({}),
+  idempotencyKey: z.string().regex(uuidRegex, 'Clé invalide'),
 })
 
 export async function POST(req: NextRequest) {
@@ -38,9 +41,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     )
   }
-  const { type, metadata } = parsed.data as {
+  const { type, metadata, idempotencyKey } = parsed.data as {
     type: UnitSlug
     metadata: { doc_id?: string; case_id?: string }
+    idempotencyKey: string
   }
 
   const supabase = await createServerSupabaseClient()
@@ -126,7 +130,7 @@ export async function POST(req: NextRequest) {
     cancel_url: `${origin}/documents/${metadata.doc_id ?? ''}?canceled=1`,
     payment_method_types: ['card', 'link'],
     locale: 'fr',
-  })
+  }, { idempotencyKey })
 
   if (!session.url) {
     return NextResponse.json(

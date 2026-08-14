@@ -150,7 +150,7 @@ function AbonnementContent() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, billing }),
+        body: JSON.stringify({ plan, billing, idempotencyKey: crypto.randomUUID() }),
       })
       const data = (await res.json()) as { url?: string; error?: string }
       if (!res.ok || !data.url) {
