@@ -19,7 +19,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "dev.purama.jurispurama",
       "buildNumber": "1",
-      "associatedDomains": ["applinks:jurispurama.purama.dev"],
+      "associatedDomains": [
+        "applinks:jurispurama.purama.dev"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "JurisPurama utilise l'appareil photo pour scanner tes documents juridiques (OCR).",
         "NSPhotoLibraryUsageDescription": "JurisPurama accède à tes photos pour importer un document à analyser.",
@@ -40,8 +42,16 @@
         {
           "action": "VIEW",
           "autoVerify": true,
-          "data": [{ "scheme": "https", "host": "jurispurama.purama.dev" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "https",
+              "host": "jurispurama.purama.dev"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
@@ -71,17 +81,17 @@
     "experiments": {
       "typedRoutes": true
     },
-    "owner": "puramapro-oss",
+    "owner": "purama",
     "extra": {
       "router": {
         "origin": "https://jurispurama.purama.dev"
       },
       "eas": {
-        "projectId": "PLACEHOLDER_EAS_PROJECT_ID"
+        "projectId": "8f6db118-2f5b-493e-814e-9c92d9a85da3"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/PLACEHOLDER_EAS_PROJECT_ID"
+      "url": "https://u.expo.dev/8f6db118-2f5b-493e-814e-9c92d9a85da3"
     },
     "runtimeVersion": {
       "policy": "appVersion"
