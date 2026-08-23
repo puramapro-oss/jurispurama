@@ -7,62 +7,18 @@ import {
   buildUserContext,
   composeSystemPrompt,
   extractJurisMeta,
-  type JurisMeta,
 } from '@/lib/prompts/jurisia'
-import type { CaseStatus, CaseType } from '@/types'
+import type { CaseStatus } from '@/types'
+import {
+  bodySchema,
+  FREE_MONTHLY_LIMIT,
+  sseEncode,
+} from '@/lib/ai/chat-constants'
+import { applyMetaToCase } from '@/lib/ai/apply-meta-to-case'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
-
-const bodySchema = z.object({
-  caseId: z.string().uuid().optional(),
-  message: z.string().min(1).max(8000),
-  attachments: z
-    .array(
-      z.object({
-        url: z.string().optional(),
-        data: z.string().optional(),
-        media_type: z
-          .enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-          .optional(),
-        type: z.string().optional(),
-        name: z.string().optional(),
-      })
-    )
-    .optional(),
-})
-
-const FREE_MONTHLY_LIMIT = 3
-
-const VALID_CASE_TYPES: CaseType[] = [
-  'amende',
-  'travail',
-  'logement',
-  'consommation',
-  'famille',
-  'administratif',
-  'fiscal',
-  'penal',
-  'sante',
-  'assurance',
-  'numerique',
-  'affaires',
-]
-
-const VALID_STATUSES: CaseStatus[] = [
-  'diagnostic',
-  'analyse',
-  'document_pret',
-  'signe',
-  'envoye',
-  'en_attente',
-  'resolu',
-]
-
-function sseEncode(obj: unknown): string {
-  return `data: ${JSON.stringify(obj)}\n\n`
-}
 
 function errorResponse(message: string, status: number) {
   return NextResponse.json({ error: message }, { status })
@@ -168,7 +124,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 7) Persist user message
-  const userAttachments = (body.attachments ?? []).map((a) => ({
+  const userAttachments = (body.attachments ?? []).map((a: { url?: string; data?: string; media_type?: string; type?: string; name?: string }) => ({
     url: a.url ?? '',
     type: a.media_type ?? a.type ?? 'unknown',
     name: a.name ?? 'fichier',
@@ -351,48 +307,3 @@ export async function POST(req: NextRequest) {
   })
 }
 
-type ServiceClient = ReturnType<typeof createServiceClient>
-
-async function applyMetaToCase(
-  admin: ServiceClient,
-  caseId: string,
-  meta: JurisMeta
-) {
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
-
-  if (meta.case_type && VALID_CASE_TYPES.includes(meta.case_type as CaseType)) {
-    patch.type = meta.case_type
-  }
-  if (meta.sub_type) patch.sub_type = meta.sub_type
-  if (meta.phase && VALID_STATUSES.includes(meta.phase as CaseStatus)) {
-    patch.status = meta.phase
-  }
-  if (
-    meta.success_probability != null &&
-    meta.success_probability >= 0 &&
-    meta.success_probability <= 100
-  ) {
-    patch.success_probability = Math.round(meta.success_probability)
-  }
-  if (meta.strategy) {
-    patch.strategy = {
-      recommended: meta.strategy.recommended ?? null,
-      alternatives: meta.strategy.alternatives ?? [],
-      legal_basis: meta.strategy.legal_basis ?? [],
-      next_actions: meta.next_actions ?? [],
-    }
-  }
-  if (Array.isArray(meta.deadlines)) {
-    patch.deadlines = meta.deadlines.map((d) => ({
-      date: d.date,
-      description: d.description,
-      critical: !!d.critical,
-      notified: !!d.notified,
-    }))
-  }
-  if (meta.estimated_savings != null && meta.estimated_savings >= 0) {
-    patch.money_saved = meta.estimated_savings
-  }
-
-  await admin.from('jurispurama_cases').update(patch).eq('id', caseId)
-}
