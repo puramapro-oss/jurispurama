@@ -4,22 +4,18 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { getGreeting } from '@/lib/utils'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Badge from '@/components/ui/Badge'
-import Progress from '@/components/ui/Progress'
 import ParrainageBlock from '@/components/home/ParrainageBlock'
 import CrossPromoBlock from '@/components/home/CrossPromoBlock'
-import { LEGAL_DOMAINS } from '@/lib/constants'
+import StatsCard from '@/components/dashboard/StatsCard'
+import CriticalDeadlineAlert from '@/components/dashboard/CriticalDeadlineAlert'
+import ProfileProgressCard from '@/components/dashboard/ProfileProgressCard'
+import DocumentsCard from '@/components/dashboard/DocumentsCard'
+import NewCaseCTA from '@/components/dashboard/NewCaseCTA'
+import EmptyCasesState from '@/components/dashboard/EmptyCasesState'
+import CaseCard from '@/components/dashboard/CaseCard'
+import LegalDomainsGrid from '@/components/dashboard/LegalDomainsGrid'
 import type { JurisCase } from '@/types'
-import {
-  CASE_STATUS_LABELS,
-  CASE_TYPE_LABELS,
-  daysUntil,
-  formatDeadline,
-  formatEuros,
-  formatRelativeDate,
-} from '@/lib/case-helpers'
+import { daysUntil, formatDeadline, formatEuros } from '@/lib/case-helpers'
 import { profileCompletion, type LegalProfileInput } from '@/lib/profile-schema'
 
 interface DeadlineItem {
@@ -126,153 +122,39 @@ export default function DashboardPage() {
         <CrossPromoBlock />
       </section>
 
-      {/* Critical deadline alert */}
-      {stats.criticalDeadlines.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl" aria-hidden="true">
-              ⚠️
-            </span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-800">
-                {stats.criticalDeadlines.length} échéance
-                {stats.criticalDeadlines.length > 1 ? 's' : ''} critique
-                {stats.criticalDeadlines.length > 1 ? 's' : ''}
-              </p>
-              <ul className="mt-1 space-y-0.5 text-sm text-red-700">
-                {stats.criticalDeadlines.slice(0, 3).map((d, i) => (
-                  <li key={`${d.caseId}-${i}`}>
-                    <Link
-                      href={`/dossiers/${d.caseId}`}
-                      className="hover:underline"
-                    >
-                      <strong>{formatDeadline(d.date)}</strong> — {d.description}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+      <CriticalDeadlineAlert deadlines={stats.criticalDeadlines} />
 
-      {/* Stats */}
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
-        <Card padding="md" elevation="raised">
-          <p className="text-eyebrow">Dossiers actifs</p>
-          <p className="mt-2 font-serif text-3xl font-bold text-[var(--justice)] tabular">
-            {loadingCases ? '…' : stats.activeCount}
-          </p>
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Plan{' '}
-            <span className="font-semibold capitalize text-[var(--justice)]">
-              {profile?.subscription_plan ?? 'free'}
-            </span>
-          </p>
-        </Card>
-        <Card padding="md" elevation="raised">
-          <p className="text-eyebrow">Argent potentiellement sauvé</p>
-          <p className="mt-2 font-serif text-3xl font-bold text-emerald-700 tabular">
-            {loadingCases ? '…' : formatEuros(stats.totalSavings)}
-          </p>
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Cumul tous dossiers
-          </p>
-        </Card>
-        <Card padding="md" elevation="raised">
-          <p className="text-eyebrow">Prochaine échéance</p>
-          <p className="mt-2 font-serif text-xl font-bold text-[var(--justice)] tabular">
-            {stats.nextDeadline ? formatDeadline(stats.nextDeadline.date) : '—'}
-          </p>
-          <p className="mt-1 line-clamp-1 text-xs text-[var(--text-secondary)]">
-            {stats.nextDeadline?.description ?? 'Aucune échéance'}
-          </p>
-        </Card>
+        <StatsCard
+          label="Dossiers actifs"
+          value={stats.activeCount}
+          subtitle={`Plan ${profile?.subscription_plan ?? 'free'}`}
+          loading={loadingCases}
+        />
+        <StatsCard
+          label="Argent potentiellement sauvé"
+          value={formatEuros(stats.totalSavings)}
+          subtitle="Cumul tous dossiers"
+          valueColor="rgb(4 120 87)"
+          loading={loadingCases}
+        />
+        <StatsCard
+          label="Prochaine échéance"
+          value={stats.nextDeadline ? formatDeadline(stats.nextDeadline.date) : '—'}
+          subtitle={stats.nextDeadline?.description ?? 'Aucune échéance'}
+          loading={false}
+        />
       </div>
 
-      {/* P3 cards */}
       <div className="mb-8 grid gap-3 sm:grid-cols-2">
-        <Link href="/profil" className="block">
-          <Card
-            padding="md"
-            className="h-full transition-all hover:border-[var(--justice)]/30 hover:shadow-md"
-          >
-            <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                  Profil juridique
-                </p>
-                <p className="mt-1 font-serif text-2xl font-bold text-[var(--justice)]">
-                  {legalProfile == null ? '…' : `${profilePercent}% complété`}
-                </p>
-                <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                  {profilePercent < 40
-                    ? 'Complète ton profil pour des documents mieux pré-remplis.'
-                    : 'Ton profil est bien renseigné. Modifie-le à tout moment.'}
-                </p>
-              </div>
-              <span className="text-4xl" aria-hidden="true">
-                👤
-              </span>
-            </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--justice)]/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[var(--justice)] via-[var(--justice-light)] to-[var(--gold)] transition-all"
-                style={{ width: `${profilePercent}%` }}
-              />
-            </div>
-          </Card>
-        </Link>
-        <Link href="/documents" className="block">
-          <Card
-            padding="md"
-            className="h-full transition-all hover:border-[var(--justice)]/30 hover:shadow-md"
-          >
-            <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                  Documents générés
-                </p>
-                <p className="mt-1 font-serif text-2xl font-bold text-[var(--justice)]">
-                  {docsCount == null ? '…' : docsCount}
-                </p>
-                <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                  {docsCount === 0
-                    ? 'Aucun document pour l\'instant.'
-                    : 'Accède à tous tes actes signables en un clic.'}
-                </p>
-              </div>
-              <span className="text-4xl" aria-hidden="true">
-                📄
-              </span>
-            </div>
-          </Card>
-        </Link>
+        <ProfileProgressCard
+          profilePercent={profilePercent}
+          loading={legalProfile == null}
+        />
+        <DocumentsCard docsCount={docsCount} />
       </div>
 
-      {/* CTA */}
-      <Card
-        padding="lg"
-        className="mb-8 border-none bg-gradient-to-br from-[var(--justice)] to-[var(--justice-light)]"
-      >
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl">
-            <h2 className="font-serif text-2xl font-semibold text-white md:text-3xl">
-              Nouveau dossier juridique
-            </h2>
-            <p className="mt-2 text-white/80">
-              Raconte ton problème à JurisIA. En 3 minutes, tu as un plan
-              d&apos;action, les articles de loi qui te protègent et un
-              document prêt à signer.
-            </p>
-          </div>
-          <Link href="/chat">
-            <Button variant="gold" size="lg">
-              Démarrer un dossier
-            </Button>
-          </Link>
-        </div>
-      </Card>
+      <NewCaseCTA />
 
       {/* Recent cases */}
       <section className="mb-10">
@@ -299,80 +181,19 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : recent.length === 0 ? (
-          <Card padding="lg" className="text-center">
-            <div className="mb-3 text-5xl">📂</div>
-            <h3 className="font-serif text-xl font-semibold text-[var(--justice)]">
-              Bienvenue sur JurisPurama
-            </h3>
-            <p className="mt-2 mb-6 text-sm text-[var(--text-secondary)] max-w-md mx-auto">
-              Raconte ton premier problème juridique à JurisIA. Un dossier
-              sera créé automatiquement et tu pourras y revenir à tout moment.
-            </p>
-            <Link href="/chat">
-              <Button variant="primary" size="md">
-                Créer mon premier dossier
-              </Button>
-            </Link>
-          </Card>
+          <EmptyCasesState />
         ) : (
           <ul className="grid gap-3 md:grid-cols-3">
-            {recent.map((c) => {
-              const typeInfo = CASE_TYPE_LABELS[c.type]
-              const statusInfo = CASE_STATUS_LABELS[c.status]
-              return (
-                <li key={c.id}>
-                  <Link
-                    href={`/chat/${c.id}`}
-                    className="block h-full rounded-2xl border border-[var(--border)] bg-white/70 p-4 transition-all hover:border-[var(--justice)]/30 hover:bg-white hover:shadow-md"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xl" aria-hidden="true">
-                        {typeInfo.icon}
-                      </span>
-                      <Badge variant={statusInfo.variant} size="sm">
-                        {statusInfo.label}
-                      </Badge>
-                    </div>
-                    <p className="line-clamp-2 text-sm font-medium text-[var(--text-primary)]">
-                      {c.summary ?? 'Dossier sans titre'}
-                    </p>
-                    {c.success_probability != null && (
-                      <div className="mt-2">
-                        <Progress value={c.success_probability} />
-                      </div>
-                    )}
-                    <p className="mt-2 text-[11px] text-[var(--text-muted)]">
-                      {formatRelativeDate(c.updated_at)}
-                    </p>
-                  </Link>
-                </li>
-              )
-            })}
+            {recent.map((c) => (
+              <li key={c.id}>
+                <CaseCard case={c} />
+              </li>
+            ))}
           </ul>
         )}
       </section>
 
-      {/* Legal domains */}
-      <section>
-        <h2 className="mb-4 font-serif text-2xl font-semibold text-[var(--justice)]">
-          Les 12 domaines du droit couverts
-        </h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-          {LEGAL_DOMAINS.map((d) => (
-            <div
-              key={d.id}
-              className="glass flex items-center gap-3 rounded-xl p-4"
-            >
-              <span className="text-2xl" aria-hidden="true">
-                {d.icon}
-              </span>
-              <span className="text-sm font-medium text-[var(--text-primary)]">
-                {d.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <LegalDomainsGrid />
 
     </div>
   )
