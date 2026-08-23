@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `Tarifs — ${APP_NAME}`,
     description:
-      "4 plans adaptés à tous les besoins. Gratuit, Essentiel, Pro, Avocat Virtuel. 14 jours d'essai gratuit sans carte bancaire.",
+      "4 plans adaptés à tous les besoins. Gratuit, Essentiel, Pro, Premium. 14 jours d'essai gratuit sans carte bancaire.",
     url: `https://${APP_DOMAIN}/pricing`,
     images: [
       {

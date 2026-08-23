@@ -53,7 +53,7 @@ export const JURIS_PLANS: Record<PlanSlug, StripePlanDefinition> = {
   },
   avocat_virtuel: {
     slug: 'avocat_virtuel',
-    name: 'Avocat Virtuel',
+    name: 'Premium',
     monthly: { amount: 3999, envKey: 'STRIPE_PRICE_AVOCAT_MONTHLY' },
     yearly: { amount: 33590, envKey: 'STRIPE_PRICE_AVOCAT_YEARLY' },
   },

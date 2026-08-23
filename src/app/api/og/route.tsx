@@ -12,7 +12,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const title =
     searchParams.get('title')?.slice(0, 120) ??
-    "L'avocat qui ne dort jamais"
+    'Ton copilote juridique, disponible 24/7'
   const subtitle = searchParams.get('subtitle')?.slice(0, 160) ?? 'JurisPurama'
 
   return new ImageResponse(

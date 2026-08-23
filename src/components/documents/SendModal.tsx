@@ -398,7 +398,7 @@ export default function SendModal({
                   Valeur juridique équivalente à une lettre recommandée AR
                   papier. Preuve d&apos;envoi horodatée et accusé de réception
                   stockés dans ton dossier. Inclus dans les forfaits Pro
-                  (3/mois) et Avocat Virtuel (illimité).
+                  (3/mois) et Premium (illimité).
                 </p>
               </div>
               <div className="flex justify-end gap-2 pt-2">

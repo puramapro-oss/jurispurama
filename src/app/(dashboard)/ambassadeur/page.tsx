@@ -58,7 +58,7 @@ const TIER_INFO: Record<
   or: {
     label: 'Or',
     emoji: '🥇',
-    benefits: ['Avocat Virtuel offert', 'Page perso premium', 'Coach IA 20 msg/jour'],
+    benefits: ['Plan Premium offert', 'Page perso premium', 'Coach IA 20 msg/jour'],
     commissionPct: 12,
   },
   platine: {

@@ -98,7 +98,7 @@ export const FAQ_ARTICLES: FaqArticle[] = [
     category: 'documents',
     question: 'Comment envoyer un document à sa destination ?',
     answer:
-      "Depuis la vue document, tu as deux options : (1) Email avec accusé de lecture — gratuit sur tous les plans, livraison immédiate. (2) Recommandé électronique AR24 — 5,99 € à l'unité ou inclus dans les plans Pro/Avocat Virtuel, valeur juridique équivalente au recommandé postal (article L100 du Code des postes).",
+      "Depuis la vue document, tu as deux options : (1) Email avec accusé de lecture — gratuit sur tous les plans, livraison immédiate. (2) Recommandé électronique AR24 — 5,99 € à l'unité ou inclus dans les plans Pro/Premium, valeur juridique équivalente au recommandé postal (article L100 du Code des postes).",
     keywords: ['envoi', 'email', 'recommande', 'ar24', 'courrier'],
   },
 
@@ -184,7 +184,7 @@ export const FAQ_ARTICLES: FaqArticle[] = [
     category: 'securite',
     question: 'Puis-je activer la double authentification (2FA) ?',
     answer:
-      "Oui. Depuis Paramètres → Sécurité → 2FA, active la double authentification avec une application comme Google Authenticator ou Authy. À chaque connexion, tu devras saisir un code à 6 chiffres généré sur ton téléphone. Fortement recommandé pour les comptes Pro et Avocat Virtuel.",
+      "Oui. Depuis Paramètres → Sécurité → 2FA, active la double authentification avec une application comme Google Authenticator ou Authy. À chaque connexion, tu devras saisir un code à 6 chiffres généré sur ton téléphone. Fortement recommandé pour les comptes Pro et Premium.",
     keywords: ['2fa', 'authentification', 'double', 'authenticator', 'securite'],
   },
 ]

@@ -53,7 +53,7 @@ const RELEASES: Release[] = [
     title: 'Stripe, parrainage et ambassadeurs',
     tag: 'minor',
     features: [
-      '4 plans Stripe (Gratuit, Essentiel, Pro, Avocat Virtuel) + achats unitaires',
+      '4 plans Stripe (Gratuit, Essentiel, Pro, Premium) + achats unitaires',
       'Webhook Stripe avec gestion complète des cycles d\'abonnement',
       'Système de parrainage avec 6 paliers (Bronze → Légende)',
       'Wallet et retraits IBAN à partir de 5 €',

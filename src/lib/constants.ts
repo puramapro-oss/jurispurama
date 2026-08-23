@@ -28,8 +28,8 @@ export const PLANS = {
     priceMonthly: 0,
     priceYearly: 0,
     features: [
-      '3 consultations IA par mois',
-      'Analyse juridique basique',
+      '3 échanges avec JurisIA par mois',
+      'Information juridique de base',
       'Accès au chat JurisIA',
     ],
   },
@@ -39,7 +39,7 @@ export const PLANS = {
     priceMonthly: 999,
     priceYearly: 8390,
     features: [
-      'Consultations illimitées',
+      'Échanges illimités avec JurisIA',
       '5 documents générés / mois',
       'Signature électronique incluse',
       'Suivi de dossier',
@@ -60,7 +60,7 @@ export const PLANS = {
   },
   avocat_virtuel: {
     id: 'avocat_virtuel',
-    label: 'Avocat Virtuel',
+    label: 'Premium',
     priceMonthly: 3999,
     priceYearly: 33590,
     features: [

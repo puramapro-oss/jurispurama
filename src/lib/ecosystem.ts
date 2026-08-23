@@ -13,9 +13,9 @@ export const PURAMA_APPS: PuramaApp[] = [
   {
     slug: 'jurispurama',
     name: 'JurisPurama',
-    tagline: "L'avocat qui ne dort jamais",
+    tagline: "Ton copilote juridique, disponible 24/7",
     description:
-      "L'assistant juridique IA qui remplace ton avocat à 99 %. Contestation d'amende, mise en demeure, litige en 3 clics.",
+      "L'assistant juridique IA qui t'aide à comprendre tes droits et à agir. Contestation d'amende, mise en demeure, litige en 3 clics — pour les affaires complexes, on t'oriente vers un avocat.",
     url: 'https://jurispurama.purama.dev',
     color: '#1E3A5F',
     icon: '⚖️',

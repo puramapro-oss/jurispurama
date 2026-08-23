@@ -156,7 +156,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
     },
     hero: {
       badge: 'Assistant juridique IA · Droit français',
-      title: "L'avocat qui ne dort jamais",
+      title: "Ton copilote juridique, disponible 24/7",
       subtitle:
         "Raconte ton problème en français courant. JurisIA identifie les articles applicables, rédige tes courriers et te guide jusqu'au résultat. Un vrai dossier, pas une consultation.",
       ctaPrimary: 'Démarrer mon dossier',
@@ -245,8 +245,8 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       title: 'Questions qui reviennent',
       q1: 'Est-ce que c\'est légal ?',
       a1: "Oui. JurisPurama est un service d'assistance juridique — tu rédiges et signes tes documents toi-même, avec l'aide d'une IA qui cite les articles de loi. C'est autorisé par le Code de la consommation (art. L222-5) tant que nous ne faisons pas de consultation juridique nominative. Notre IA t'informe, tu décides.",
-      q2: "Est-ce que ça remplace vraiment un avocat ?",
-      a2: "Pour 95 % des situations quotidiennes (amende, litige logement, droit du travail, consommation), oui. Pour les dossiers complexes (divorce contentieux, pénal, affaires), nous recommandons un avocat — et nous pouvons préparer ton dossier pour lui faire gagner des heures. Tu as le meilleur des deux mondes.",
+      q2: "Ai-je quand même besoin d'un avocat ?",
+      a2: "Ça dépend de ta situation. JurisPurama te donne de l'information juridique générale et t'aide à préparer ton dossier (amende, litige logement, droit du travail, consommation…) — pour beaucoup de démarches simples, tu n'as besoin de rien d'autre. Mais pour toute situation contentieuse, complexe ou à enjeu important (divorce contentieux, pénal, affaires), JurisIA te recommande de consulter un avocat inscrit au barreau — et prépare ton dossier pour lui faire gagner des heures. Tu arrives préparé, pas seul.",
       q3: 'Mes données sont-elles protégées ?',
       a3: "Absolument. Ton profil juridique est chiffré en AES-256 avant d'être stocké. Nos serveurs sont en France (Hetzner Falkenstein). Nous sommes conformes RGPD, DORA et ePrivacy. Tu peux exporter ou supprimer toutes tes données en 1 clic depuis ton espace.",
       q4: 'Puis-je annuler à tout moment ?',
@@ -254,7 +254,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       q5: 'Et si ma situation est trop complexe ?',
       a5: "JurisIA te le dira honnêtement. Si ton dossier nécessite un avocat, elle te le recommande et peut même préparer un dossier complet (chronologie, pièces, articles applicables) pour que ton avocat gagne du temps — et donc que tu économises sur ses honoraires.",
       q6: 'Combien coûte réellement un envoi recommandé ?',
-      a6: "L'envoi par email avec accusé de lecture est gratuit sur tous les plans. Le recommandé électronique AR24 (valeur juridique équivalente au recommandé postal, art. L100 du Code des postes) coûte 5,99 € à l'unité — ou est inclus dans les plans Pro (3/mois) et Avocat Virtuel (illimité).",
+      a6: "L'envoi par email avec accusé de lecture est gratuit sur tous les plans. Le recommandé électronique AR24 (valeur juridique équivalente au recommandé postal, art. L100 du Code des postes) coûte 5,99 € à l'unité — ou est inclus dans les plans Pro (3/mois) et Premium (illimité).",
     },
     ctaFinal: {
       title: 'Ton problème juridique mérite une solution. Pas un devis.',
@@ -292,7 +292,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
     },
     hero: {
       badge: 'AI legal assistant · French law',
-      title: 'The lawyer that never sleeps',
+      title: 'Your legal copilot, available 24/7',
       subtitle:
         'Describe your problem in plain language. JurisIA identifies the applicable laws, drafts your letters and guides you to the outcome. A real case, not a consultation.',
       ctaPrimary: 'Start my case',
@@ -377,8 +377,8 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       title: 'Frequently asked questions',
       q1: 'Is this legal?',
       a1: 'Yes. JurisPurama is a legal assistance service — you draft and sign your own documents, with help from an AI that cites the laws. Allowed under Article L222-5 of the French Consumer Code, as long as we don\'t provide nominative legal consultation. Our AI informs you; you decide.',
-      q2: 'Does it really replace a lawyer?',
-      a2: "For 95% of everyday situations (fines, housing disputes, labor, consumer), yes. For complex cases (contested divorce, criminal, business), we recommend a lawyer — and we can prepare your case to save them hours. Best of both worlds.",
+      q2: 'Do I still need a lawyer?',
+      a2: "It depends on your situation. JurisPurama gives you general legal information and helps you prepare your case (fines, housing disputes, labor, consumer...) — for many simple matters, that's all you need. But for any contentious, complex, or high-stakes situation (contested divorce, criminal, business), JurisIA recommends consulting a licensed lawyer — and prepares your file to save them hours. You show up prepared, not alone.",
       q3: 'Is my data protected?',
       a3: 'Absolutely. Your legal profile is encrypted in AES-256 before storage. Our servers are in France (Hetzner Falkenstein). We\'re GDPR, DORA and ePrivacy compliant. You can export or delete all your data in 1 click from your workspace.',
       q4: 'Can I cancel anytime?',
@@ -386,7 +386,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       q5: 'What if my situation is too complex?',
       a5: "JurisIA will tell you honestly. If your case requires a lawyer, it recommends one and can even prepare a complete file (timeline, exhibits, applicable articles) so your lawyer saves time — and you save on fees.",
       q6: 'What does registered mail really cost?',
-      a6: "Email with read receipt is free on all plans. AR24 registered e-mail (legally equivalent to postal registered mail, Art. L100 of the French Postal Code) costs €5.99 per unit — or is included in Pro (3/month) and Virtual Lawyer (unlimited) plans.",
+      a6: "Email with read receipt is free on all plans. AR24 registered e-mail (legally equivalent to postal registered mail, Art. L100 of the French Postal Code) costs €5.99 per unit — or is included in Pro (3/month) and Premium (unlimited) plans.",
     },
     ctaFinal: {
       title: 'Your legal problem deserves a solution. Not a quote.',
@@ -423,7 +423,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
     },
     hero: {
       badge: 'Asistente jurídico IA · Derecho francés',
-      title: 'El abogado que nunca duerme',
+      title: 'Tu copiloto jurídico, disponible 24/7',
       subtitle:
         'Cuenta tu problema en lenguaje sencillo. JurisIA identifica los artículos aplicables, redacta tus cartas y te guía hasta el resultado. Un verdadero expediente, no una consulta.',
       ctaPrimary: 'Iniciar mi caso',
@@ -509,8 +509,8 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       title: 'Preguntas frecuentes',
       q1: '¿Es legal?',
       a1: 'Sí. JurisPurama es un servicio de asistencia jurídica — tú redactas y firmas tus documentos, con la ayuda de una IA que cita las leyes. Autorizado por el artículo L222-5 del Código de Consumo francés, mientras no demos consulta legal nominativa. Nuestra IA te informa, tú decides.',
-      q2: '¿Sustituye realmente a un abogado?',
-      a2: "Para el 95% de las situaciones cotidianas (multas, vivienda, trabajo, consumo), sí. Para casos complejos (divorcio contencioso, penal, empresarial), recomendamos un abogado — y podemos preparar tu expediente para ahorrarle horas. Lo mejor de ambos mundos.",
+      q2: '¿Todavía necesito un abogado?',
+      a2: "Depende de tu situación. JurisPurama te da información jurídica general y te ayuda a preparar tu expediente (multas, vivienda, trabajo, consumo...) — para muchos trámites sencillos, no necesitas nada más. Pero para cualquier situación contenciosa, compleja o de alto riesgo (divorcio contencioso, penal, empresarial), JurisIA te recomienda consultar a un abogado colegiado — y prepara tu expediente para ahorrarle horas. Llegas preparado, no solo.",
       q3: '¿Mis datos están protegidos?',
       a3: 'Absolutamente. Tu perfil jurídico se cifra en AES-256 antes de guardarse. Nuestros servidores están en Francia (Hetzner Falkenstein). Cumplimos RGPD, DORA y ePrivacy. Puedes exportar o eliminar todos tus datos en 1 clic desde tu espacio.',
       q4: '¿Puedo cancelar en cualquier momento?',
@@ -518,7 +518,7 @@ export const TRANSLATIONS: Partial<Record<Locale, TranslationKeys>> = {
       q5: '¿Y si mi situación es demasiado compleja?',
       a5: "JurisIA te lo dirá honestamente. Si tu caso requiere un abogado, te lo recomienda y puede preparar un expediente completo (cronología, pruebas, artículos) para que tu abogado ahorre tiempo — y tú en sus honorarios.",
       q6: '¿Cuánto cuesta realmente un burofax?',
-      a6: "El email con acuse de lectura es gratis en todos los planes. El burofax electrónico AR24 (valor legal equivalente al burofax postal, art. L100 del Código Postal francés) cuesta 5,99€ por unidad — o está incluido en los planes Pro (3/mes) y Abogado Virtual (ilimitado).",
+      a6: "El email con acuse de lectura es gratis en todos los planes. El burofax electrónico AR24 (valor legal equivalente al burofax postal, art. L100 del Código Postal francés) cuesta 5,99€ por unidad — o está incluido en los planes Pro (3/mes) y Premium (ilimitado).",
     },
     ctaFinal: {
       title: 'Tu problema jurídico merece una solución. No un presupuesto.',

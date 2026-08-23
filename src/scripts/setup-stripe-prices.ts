@@ -58,7 +58,7 @@ const SEEDS: PriceSeed[] = [
   },
   {
     lookupKey: 'jurispurama_avocat_virtuel_monthly',
-    productName: 'JurisPurama — Avocat Virtuel',
+    productName: 'JurisPurama — Premium',
     productDesc:
       'Tout illimité, recommandés illimités, alertes avancées, suivi prioritaire.',
     amount: 3999,
@@ -67,7 +67,7 @@ const SEEDS: PriceSeed[] = [
   },
   {
     lookupKey: 'jurispurama_avocat_virtuel_yearly',
-    productName: 'JurisPurama — Avocat Virtuel',
+    productName: 'JurisPurama — Premium',
     productDesc:
       'Tout illimité, recommandés illimités, alertes avancées, suivi prioritaire.',
     amount: 33590,

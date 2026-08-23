@@ -72,7 +72,7 @@ const PLAN_CARDS: PlanCard[] = [
   },
   {
     slug: 'avocat_virtuel',
-    label: 'Avocat Virtuel',
+    label: 'Premium',
     monthly: 3999,
     yearly: 33590,
     yearlyMonthlyBarred: 5680,
@@ -83,7 +83,7 @@ const PLAN_CARDS: PlanCard[] = [
       'Suivi multi-dossiers avancé',
       'Accès prioritaire aux nouveautés',
     ],
-    cta: 'Choisir Avocat Virtuel',
+    cta: 'Choisir Premium',
   },
 ]
 
@@ -365,7 +365,7 @@ function AbonnementContent() {
                 <th className="py-2 text-center">Gratuit</th>
                 <th className="py-2 text-center">Essentiel</th>
                 <th className="py-2 text-center">Pro</th>
-                <th className="py-2 text-center">Avocat Virtuel</th>
+                <th className="py-2 text-center">Premium</th>
               </tr>
             </thead>
             <tbody>

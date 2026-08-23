@@ -165,7 +165,7 @@ export default function AdminOverviewPage() {
                 {p === 'free'
                   ? 'Gratuit'
                   : p === 'avocat_virtuel'
-                    ? 'Avocat Virtuel'
+                    ? 'Premium'
                     : p.charAt(0).toUpperCase() + p.slice(1)}
               </p>
               <p className="mt-1 font-serif text-2xl font-bold text-[var(--justice)]">

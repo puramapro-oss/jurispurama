@@ -126,7 +126,7 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          'L\'envoi recommandé AR est inclus dans les plans Pro (3/mois) et Avocat Virtuel (illimité). Passe à Pro pour en bénéficier.',
+          'L\'envoi recommandé AR est inclus dans les plans Pro (3/mois) et Premium (illimité). Passe à Pro pour en bénéficier.',
       },
       { status: 402 }
     )

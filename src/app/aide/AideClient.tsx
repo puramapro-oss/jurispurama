@@ -10,6 +10,8 @@ import {
   type FaqCategory,
 } from '@/lib/faq'
 import Reveal from '@/components/landing/Reveal'
+import AIDisclosure from '@/lib/legal/components/AIDisclosure'
+import { APP_NAME } from '@/lib/constants'
 
 export default function AideClient() {
   const [query, setQuery] = useState('')
@@ -357,6 +359,8 @@ function ChatModal({ onClose }: { onClose: () => void }) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M6 18L18 6" /></svg>
           </button>
         </div>
+
+        <AIDisclosure appName={APP_NAME} className="border-b border-white/10 px-6 py-2 text-[11px] text-white/50" />
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">

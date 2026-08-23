@@ -18,7 +18,7 @@ interface FeatureRow {
 
 const FEATURE_ROWS: FeatureRow[] = [
   {
-    label: 'Consultations JurisIA',
+    label: 'Échanges avec JurisIA',
     values: {
       free: '3 / mois',
       essentiel: 'Illimitées',
