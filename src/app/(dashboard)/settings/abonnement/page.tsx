@@ -21,7 +21,7 @@ interface SubscriptionInfo {
 }
 
 export default function SettingsAbonnementPage() {
-  const { profile } = useAuth()
+  const { profile: _profile } = useAuth()
   const [info, setInfo] = useState<SubscriptionInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [pauseLoading, setPauseLoading] = useState(false)

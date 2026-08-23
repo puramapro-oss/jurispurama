@@ -1,4 +1,4 @@
-import { test, expect, devices, Page } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 
 const BASE = process.env.PW_BASE_URL ?? 'http://localhost:3001'
 

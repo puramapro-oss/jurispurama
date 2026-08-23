@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
-import { PLANS, type PlanId } from '@/lib/constants'
+import { PLANS } from '@/lib/constants'
 import { formatPrice } from '@/lib/utils'
 import Reveal from '@/components/landing/Reveal'
 import { PLAN_ORDER, FEATURE_ROWS, FAQ, type Cycle } from '@/lib/pricing-data'

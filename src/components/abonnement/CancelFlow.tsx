@@ -26,7 +26,7 @@ interface Losses {
  * Step 2 → proposer pause 1 mois alternative
  * Step 3 → feedback (raison) + confirmation → Stripe cancel_at_period_end=true
  */
-export default function CancelFlow({ onClose, subscriptionInfo }: Props) {
+export default function CancelFlow({ onClose, subscriptionInfo: _subscriptionInfo }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [losses, setLosses] = useState<Losses | null>(null)
   const [reason, setReason] = useState<string>('')

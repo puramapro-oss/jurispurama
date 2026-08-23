@@ -41,7 +41,7 @@ const STATUS_MAP: Record<string, { label: string; variant: 'green' | 'amber' | '
 }
 
 export default function WalletPage() {
-  const { profile } = useAuth()
+  const { profile: _profile } = useAuth()
   const [data, setData] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
