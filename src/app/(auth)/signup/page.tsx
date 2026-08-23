@@ -7,6 +7,24 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import LegalAcceptanceNotice from '@/lib/legal/components/LegalAcceptanceNotice'
+import { CURRENT_LEGAL_VERSIONS } from '@/lib/legal/versions'
+import type { LegalDocType } from '@/lib/legal/types'
+
+const LEGAL_DOC_TYPES = Object.keys(CURRENT_LEGAL_VERSIONS) as LegalDocType[]
+
+async function acceptCurrentLegalVersions() {
+  await (
+    fetch('/api/legal/accept', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docTypes: LEGAL_DOC_TYPES }),
+    }).catch(() => {
+      // Best-effort : une preuve manquante n'empêche pas la création de compte,
+      // `LegalReacceptanceGate` re-sollicitera l'utilisateur si besoin.
+    })
+  )
+}
 
 const REF_COOKIE = 'juris_ref'
 
@@ -48,7 +66,6 @@ function SignupForm() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [accepted, setAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [refCode, setRefCode] = useState<string | null>(() => {
@@ -85,7 +102,7 @@ function SignupForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!fullName || !email || !password || !accepted) return
+    if (!fullName || !email || !password) return
     if (password.length < 8) {
       toast.error('Le mot de passe doit faire au moins 8 caractères.')
       return
@@ -102,6 +119,7 @@ function SignupForm() {
       return
     }
     toast.success('Bienvenue chez JurisPurama')
+    void acceptCurrentLegalVersions()
     if (refCode) {
       // Fire-and-forget; the hook will retry on next load if profile not ready yet
       void applyReferral(refCode)
@@ -208,32 +226,7 @@ function SignupForm() {
             required
           />
 
-          <label className="flex cursor-pointer items-start gap-2 text-sm text-[var(--text-secondary)]">
-            <input
-              type="checkbox"
-              className="mt-0.5 accent-[var(--justice)]"
-              checked={accepted}
-              onChange={(e) => setAccepted(e.target.checked)}
-              required
-            />
-            <span>
-              J&apos;accepte les{' '}
-              <Link href="/cgu" className="text-[var(--justice)] hover:underline">
-                CGU
-              </Link>
-              ,{' '}
-              <Link href="/cgv" className="text-[var(--justice)] hover:underline">
-                CGV
-              </Link>{' '}
-              et la{' '}
-              <Link
-                href="/politique-confidentialite"
-                className="text-[var(--justice)] hover:underline"
-              >
-                politique de confidentialité
-              </Link>
-            </span>
-          </label>
+          <LegalAcceptanceNotice actionLabel="Créer mon compte" />
 
           <Button
             type="submit"
@@ -241,7 +234,7 @@ function SignupForm() {
             size="lg"
             fullWidth
             loading={loading}
-            disabled={!fullName || !email || !password || !accepted}
+            disabled={!fullName || !email || !password}
           >
             Créer mon compte
           </Button>

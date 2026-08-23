@@ -446,6 +446,15 @@ function AbonnementContent() {
         </Link>
         .
       </p>
+
+      <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+        <Link
+          href="/settings/ma-memoire"
+          className="underline hover:text-[var(--justice)]"
+        >
+          Voir, exporter ou supprimer mes données (Ma mémoire)
+        </Link>
+      </p>
     </div>
   )
 }

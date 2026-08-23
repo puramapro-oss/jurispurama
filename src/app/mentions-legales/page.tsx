@@ -122,16 +122,10 @@ export default function MentionsLegalesPage() {
               </h2>
               <p>
                 Conformément aux articles L.611-1 et suivants du Code de la
-                consommation, l&apos;utilisateur peut recourir gratuitement au
-                service de médiation CNPM-MÉDIATION DE LA CONSOMMATION, 27
-                avenue de la Libération, 42400 Saint-Chamond — site :{' '}
-                <a
-                  href="https://cnpm-mediation-consommation.eu"
-                  className="text-[var(--justice)] underline"
-                >
-                  cnpm-mediation-consommation.eu
-                </a>
-                .
+                consommation, {COMPANY_INFO.name} est en cours de désignation
+                d&apos;un médiateur de la consommation agréé. Les coordonnées
+                du médiateur seront publiées sur cette page dès son
+                immatriculation effective.
               </p>
             </section>
 

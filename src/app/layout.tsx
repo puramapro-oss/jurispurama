@@ -5,6 +5,7 @@ import ErrorBoundary from '@/components/shared/ErrorBoundary'
 import ThemeScript from '@/components/shared/ThemeScript'
 import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
 import InstallBanner from '@/components/shared/InstallBanner'
+import CookieBanner from '@/components/shared/CookieBanner'
 import { APP_NAME, APP_TAGLINE, APP_DOMAIN } from '@/lib/constants'
 import './globals.css'
 
@@ -167,6 +168,7 @@ export default function RootLayout({
         />
         <ServiceWorkerRegister />
         <InstallBanner />
+        <CookieBanner />
       </body>
     </html>
   )

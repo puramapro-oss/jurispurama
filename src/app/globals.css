@@ -35,6 +35,16 @@
 
   /* Touch target minimum (Apple HIG) */
   --touch-min: 44px;
+
+  /* Socle légal @purama/legal — alias vers la palette justice/gold existante
+     (les composants partagés utilisent ces noms sémantiques génériques). */
+  --primary: var(--justice);
+  --primary-on-dark: var(--gold-light);
+  --background-soft: var(--bg-card);
+  --foreground: var(--text-primary);
+  --muted-foreground: var(--text-muted);
+  --destructive: #DC2626;
+  --radius-pill: 9999px;
 }
 
 [data-theme='dark'] {
@@ -71,6 +81,16 @@
   --color-gold-light: var(--gold-light);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
+
+  /* Socle légal @purama/legal */
+  --color-primary: var(--primary);
+  --color-primary-on-dark: var(--primary-on-dark);
+  --color-background-soft: var(--background-soft);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --radius-pill: var(--radius-pill);
 }
 
 * {

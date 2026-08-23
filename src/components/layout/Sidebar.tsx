@@ -32,6 +32,7 @@ const SECONDARY_NAV = [
   { href: '/ambassadeur', label: 'Ambassadeur' },
   { href: '/financer', label: 'Financer' },
   { href: '/aide', label: 'Aide & FAQ' },
+  { href: '/settings/ma-memoire', label: 'Ma mémoire' },
 ] as const
 
 export default function Sidebar() {

@@ -12,9 +12,11 @@ import ActionButtons, {
   type NextAction,
 } from '@/components/chat/ActionButtons'
 import GenerateDocumentModal from '@/components/chat/GenerateDocumentModal'
+import AIDisclosure from '@/lib/legal/components/AIDisclosure'
 import type { CaseSidebarAction } from '@/components/chat/CaseSidebar'
 import type { JurisCase, JurisMessage } from '@/types'
 import type { DocumentTemplate } from '@/lib/pdf/types'
+import { APP_NAME } from '@/lib/constants'
 
 interface JurisDocumentLite {
   id: string
@@ -510,6 +512,7 @@ export default function ChatCasePage() {
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Phase stepper */}
         <PhaseStepper current={currentStatus} className="mb-3" />
+        <AIDisclosure appName={APP_NAME} className="mb-3 text-xs text-[var(--text-muted)]" />
 
         {/* Messages scroll area */}
         <div

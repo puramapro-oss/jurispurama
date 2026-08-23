@@ -14,6 +14,17 @@
 Web v1.0 100 % live (P1→P7) + Mobile Expo prêt à builder (P8). App = web + iOS + Android.
 JurisPurama n'est PAS une app santé/bien-être → P8 Watch (Apple Watch + Wear OS) **non applicable**.
 
+## Socle légal NIYAMA (2026-08-23) ✅
+Socle `packages/legal` appliqué (aPaiement=true, aChatIA=true) :
+- `src/lib/legal/` = copie en bloc de `packages/legal/src/` (composants/content/hooks/versions inchangés)
+- Routes `api/legal/{accept,my-data,cookie-consent}`, `api/account/delete`, `api/cron/account-deletion`, `lib/cron-auth.ts` adaptées à `createServerSupabaseClient()` + `rateLimit()` réels de l'app
+- `api/legal/my-data` : logique sur-mesure (pas le template générique) car `jurispurama_users.id` ≠ `auth.users.id` — voir commentaire en tête du fichier
+- 4 pages légales existantes (mentions/CGU/CGV/confidentialité, réelles depuis P1) conservées — contenu vérifié à jour (adresse Vercel, hébergeur DB Paris/Hostinger confirmés), sauf mention du médiateur CNPM corrigée (non confirmée souscrite, cf ERRORS.md)
+- `CookieConsentBanner` ajouté (aucun bandeau existant), `AIDisclosure` sur les 2 pages chat réelles, `LegalAcceptanceNotice` remplace la case à cocher signup (zéro-checkbox), lien « Ma mémoire » (`/settings/ma-memoire`) dans sidebar + page abonnement
+- Tokens Tailwind génériques du socle (`bg-primary`, `text-muted-foreground`, `rounded-pill`...) aliasés dans `globals.css` vers la palette justice/gold existante (sinon 0 règle CSS générée, piège pashu)
+- Migration `001_legal_core.sql` exécutée sur le schéma dédié `jurispurama` (SSH VPS down au moment du run, migration faite via le pooler externe — cf ERRORS.md), vérifiée (tables + GRANTs + PostgREST 200)
+- `tsc --noEmit` 0 erreur, `next build` 0 erreur, `eslint` 0 erreur sur les fichiers touchés
+
 ## P8 — Mobile Expo (2026-04-11)
 
 ### Stack

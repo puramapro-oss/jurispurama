@@ -7,7 +7,8 @@ import { toast } from 'sonner'
 import ChatInput from '@/components/chat/ChatInput'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
-import { LEGAL_DOMAINS } from '@/lib/constants'
+import AIDisclosure from '@/lib/legal/components/AIDisclosure'
+import { LEGAL_DOMAINS, APP_NAME } from '@/lib/constants'
 import type { JurisCase, CaseType } from '@/types'
 import {
   CASE_STATUS_LABELS,
@@ -74,6 +75,7 @@ export default function NewCasePage() {
           domaine juridique, pose les questions pertinentes et construit ton
           dossier en temps réel.
         </p>
+        <AIDisclosure appName={APP_NAME} className="mt-2 text-xs text-[var(--text-muted)]" />
       </header>
 
       {/* 12 legal domains */}

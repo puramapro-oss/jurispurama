@@ -169,15 +169,11 @@ export default function CGVPage() {
                 8. Médiation
               </h2>
               <p>
-                En cas de litige, tu peux recourir gratuitement au service de
-                médiation CNPM-MÉDIATION DE LA CONSOMMATION —{' '}
-                <a
-                  href="https://cnpm-mediation-consommation.eu"
-                  className="text-[var(--justice)] underline"
-                >
-                  cnpm-mediation-consommation.eu
-                </a>
-                .
+                {COMPANY_INFO.name} est en cours de désignation d&apos;un
+                médiateur de la consommation agréé (art. L.611-1 et suivants
+                du Code de la consommation). Les coordonnées du médiateur
+                seront publiées sur cette page dès son immatriculation
+                effective.
               </p>
             </section>
 
