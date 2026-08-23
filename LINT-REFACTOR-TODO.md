@@ -1,8 +1,9 @@
-# Découpage max-lines — État 2026-08-23 16h25
+# Découpage max-lines — État 2026-08-23 session 3 terminée
 
-## État actuel
-- **26 problèmes** (16 erreurs max-lines, 10 warnings)
-- **15 fichiers** >300 lignes restent
+## État actuel (après session 3)
+- **25 problèmes** (12 erreurs max-lines, 13 warnings)
+- **12 fichiers** >300 lignes restent
+- **Progrès session 3** : 16→12 erreurs (-25%), 4 fichiers découpés (marketing, dashboard, ocr, ai/chat)
 
 ## Fichiers restants (ordre décroissant)
 1. `src/app/(dashboard)/chat/[caseId]/page.tsx` — **626 lignes** (1 export, beaucoup de JSX)
@@ -36,11 +37,17 @@
 5. **i18n.ts** (553 lignes) — diviser par langue (plus long, ~1h)
 6. **Pages dashboard complexes** (chat 626, scanner 564, dossiers 498, etc.) — cas par cas, 30-60min chacune
 
-## Commits de cette session
+## Commits sessions précédentes
 - `890a943` : refactor(profil): découpe page 452→218 lignes (profile-fields.ts+3 composants)
 - `b0bd084` : refactor(email): découpe templates 420→4 lignes (4 composants+styles séparés)
 - `c12d6d0` : fix(ts): typos _useMemo→useMemo, _useEffect→useEffect, _devices→devices
 - `d9cc6bf` : docs(errors): session 2026-08-23 découpage profil+templates (22→16 erreurs max-lines)
+
+## Commits session 3 (2026-08-23)
+- `2fa3914` : refactor(email): découpe marketing.tsx 366→7 lignes (5 composants+styles+index séparés)
+- `cea132f` : refactor(dashboard): découpe page 358→200 lignes (8 composants extraits)
+- `40457e8` : refactor(ocr): découpe route 435→176 lignes (6 helpers extraits dans lib/ocr/)
+- `6bdcdc2` : refactor(ai): découpe chat route 399→309 lignes (helpers extraits dans lib/ai/)
 
 ## Temps estimé pour 0 erreur
 - **Routes API** (ocr, ai/chat) : ~40min
