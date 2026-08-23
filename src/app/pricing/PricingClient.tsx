@@ -7,44 +7,8 @@ import { PLANS, type PlanId } from '@/lib/constants'
 import { formatPrice } from '@/lib/utils'
 import Reveal from '@/components/landing/Reveal'
 import { PLAN_ORDER, FEATURE_ROWS, FAQ, type Cycle } from '@/lib/pricing-data'
-
-function CheckIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-[var(--gold)]"
-      aria-label="Inclus"
-    >
-      <path d="M5 12l5 5L20 7" />
-    </svg>
-  )
-}
-
-function CrossIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      className="text-white/30"
-      aria-label="Non inclus"
-    >
-      <path d="M6 6l12 12" />
-      <path d="M6 18L18 6" />
-    </svg>
-  )
-}
+import { CheckIcon, CrossIcon } from '@/components/pricing/icons'
+import FinancementBanner from '@/components/pricing/FinancementBanner'
 
 export default function PricingClient() {
   const { t } = useLocale()
@@ -53,22 +17,7 @@ export default function PricingClient() {
 
   return (
     <>
-      {/* Bandeau financement */}
-      <div className="bg-emerald-600/90 backdrop-blur-md">
-        <div className="container-wide flex items-center justify-center gap-3 py-3 text-center text-sm font-medium text-white">
-          <span>🏛️</span>
-          <span>
-            La plupart de nos clients ne paient rien grâce aux aides
-            juridiques.
-          </span>
-          <Link
-            href="/financer"
-            className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold hover:bg-white/30 transition"
-          >
-            Découvrir &rarr;
-          </Link>
-        </div>
-      </div>
+      <FinancementBanner />
 
       <section className="relative pt-6">
         <div className="container-wide">
