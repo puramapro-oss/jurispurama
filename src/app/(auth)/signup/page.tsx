@@ -68,7 +68,7 @@ function SignupForm() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [refCode, setRefCode] = useState<string | null>(() => {
+  const [refCode, _setRefCode] = useState<string | null>(() => {
     const fromQuery = params.get('ref')
     if (fromQuery) {
       const normalized = fromQuery.trim().toUpperCase().slice(0, 16)

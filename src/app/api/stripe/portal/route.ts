@@ -55,7 +55,6 @@ export async function GET(req: NextRequest) {
     const price = item?.price
     // Stripe type-narrow: period_end is on the subscription's first item.current_period_end,
     // but historically it was on the sub itself. We try both.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const periodEndTs =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (item as any)?.current_period_end ?? (sub as any).current_period_end ?? null

@@ -28,7 +28,7 @@ export async function embedSignatureOnPdf({
 
   const pages = pdfDoc.getPages()
   const lastPage = pages[pages.length - 1]
-  const { width, height } = lastPage.getSize()
+  const { width, height: _height } = lastPage.getSize()
 
   // Target the bottom-right "Signature" area left by BaseLetter.
   // Page 595x842 (A4 points) with 2.5cm margins = 70pt. Signature block is ~160pt wide.

@@ -26,7 +26,6 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (typeof window !== 'undefined') {
       // Report client-side errors — swallow silently, user sees fallback.
       if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
         console.error('ErrorBoundary caught:', error, info)
       }
     }

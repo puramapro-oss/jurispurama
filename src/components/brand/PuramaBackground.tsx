@@ -33,7 +33,7 @@ export function PuramaBackground({
   fallbackImage,
   children,
 }: Props) {
-  const [webgl, setWebgl] = useState(() => {
+  const [webgl, _setWebgl] = useState(() => {
     if (typeof document === 'undefined') return true
     try {
       const c = document.createElement('canvas')
