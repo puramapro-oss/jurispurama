@@ -1,14 +1,18 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { APP_DOMAIN } from '@/lib/constants'
 import { copyToClipboard } from '@/lib/utils'
+import NotInfluencerYet from '@/components/ambassadeur/NotInfluencerYet'
+import InfluencerStats from '@/components/ambassadeur/InfluencerStats'
+import InfluencerLinks from '@/components/ambassadeur/InfluencerLinks'
+import TierBenefits from '@/components/ambassadeur/TierBenefits'
+import CreatorKit from '@/components/ambassadeur/CreatorKit'
+import PublicationTemplates from '@/components/ambassadeur/PublicationTemplates'
+import AmbassadorLeaderboard from '@/components/ambassadeur/AmbassadorLeaderboard'
 
 interface Influencer {
   id: string
@@ -200,40 +204,7 @@ export default function AmbassadeurPage() {
 
   // Not influencer yet
   if (!influencer) {
-    return (
-      <div className="container-narrow py-10">
-        <header className="mb-8">
-          <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-            Programme partenaire
-          </p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
-            Deviens ambassadeur JurisPurama
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-[var(--text-secondary)]">
-            Validation automatique en 1 clic. Plan Essentiel offert à vie,
-            commissions jusqu&apos;à 25%, page publique personnalisée.
-          </p>
-        </header>
-        <Card padding="lg">
-          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-serif text-xl font-semibold text-[var(--justice)]">
-                Tu n&apos;es pas encore partenaire
-              </p>
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                Remplis le formulaire (2 minutes) et accède à ton espace dédié
-                immédiatement.
-              </p>
-            </div>
-            <Link href="/apply/ambassadeur">
-              <Button variant="primary" size="md">
-                Candidater maintenant →
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </div>
-    )
+    return <NotInfluencerYet />
   }
 
   const tierInfo = TIER_INFO[influencer.tier]
@@ -260,200 +231,31 @@ export default function AmbassadeurPage() {
         </Badge>
       </header>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Clics</p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {influencer.total_clicks}
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Inscriptions</p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {influencer.total_signups}
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Conversions</p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {influencer.total_conversions}
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Commissions</p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--gold-dark)]">
-            {Number(influencer.total_commissions ?? 0).toFixed(2)} €
-          </p>
-        </Card>
-      </div>
+      <InfluencerStats
+        totalClicks={influencer.total_clicks}
+        totalSignups={influencer.total_signups}
+        totalConversions={influencer.total_conversions}
+        totalCommissions={influencer.total_commissions}
+      />
 
-      {/* Links */}
-      <div className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Ton lien d&apos;affiliation
-          </p>
-          <div className="mt-2 rounded-xl border border-[var(--border)] bg-white/60 p-3 text-sm font-mono break-all text-[var(--text-primary)]">
-            {goLink}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button variant="primary" size="sm" onClick={() => handleCopy(goLink)}>
-              📋 Copier
-            </Button>
-            <a href={goLink} target="_blank" rel="noreferrer">
-              <Button variant="secondary" size="sm">
-                Tester
-              </Button>
-            </a>
-          </div>
+      <InfluencerLinks
+        goLink={goLink}
+        publicLink={publicLink}
+        qrUrl={qrUrl}
+        onCopy={handleCopy}
+      />
 
-          <div className="mt-6">
-            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-              Ta page publique
-            </p>
-            <div className="mt-2 rounded-xl border border-[var(--border)] bg-white/60 p-3 text-sm font-mono break-all text-[var(--text-primary)]">
-              {publicLink}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={() => handleCopy(publicLink)}>
-                📋 Copier
-              </Button>
-              <a href={publicLink} target="_blank" rel="noreferrer">
-                <Button variant="ghost" size="sm">
-                  Voir la page
-                </Button>
-              </a>
-            </div>
-          </div>
-        </Card>
+      <TierBenefits tierInfo={tierInfo} />
 
-        <Card padding="lg" className="flex flex-col items-center">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">QR Code</p>
-          {qrUrl ? (
-            <img src={qrUrl} alt="QR Code de ton lien partenaire" className="mt-3 h-48 w-48" />
-          ) : (
-            <div className="mt-3 flex h-48 w-48 items-center justify-center rounded-xl bg-[var(--parchment)] text-xs text-[var(--text-muted)]">
-              Génération…
-            </div>
-          )}
-        </Card>
-      </div>
+      <CreatorKit banners={KIT_BANNERS} />
 
-      {/* Tier benefits */}
-      <Card padding="lg" className="mt-6">
-        <div className="mb-3">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Avantages {tierInfo.label}
-          </p>
-          <p className="font-serif text-xl font-semibold text-[var(--justice)]">
-            {tierInfo.emoji} Palier {tierInfo.label}
-          </p>
-        </div>
-        <ul className="grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2">
-          {tierInfo.benefits.map((b) => (
-            <li key={b} className="flex items-start gap-2">
-              <span className="mt-0.5 text-[var(--gold)]">✓</span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <PublicationTemplates
+        templates={TEMPLATES}
+        goLink={goLink}
+        onCopy={handleCopy}
+      />
 
-      {/* Kit créateur */}
-      <Card padding="lg" className="mt-6">
-        <h2 className="mb-3 font-serif text-xl font-semibold text-[var(--justice)]">
-          Kit créateur
-        </h2>
-        <p className="mb-4 text-sm text-[var(--text-secondary)]">
-          Bannières prêtes à utiliser, générées par Pollinations. Clic droit →
-          enregistrer l&apos;image.
-        </p>
-        <div className="grid gap-3 md:grid-cols-3">
-          {KIT_BANNERS.map((b) => (
-            <a
-              key={b.title}
-              href={b.url}
-              target="_blank"
-              rel="noreferrer"
-              className="group overflow-hidden rounded-xl border border-[var(--border)] bg-white transition hover:border-[var(--justice)]"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={b.url}
-                alt={b.title}
-                loading="lazy"
-                className="h-32 w-full object-cover transition group-hover:scale-[1.02]"
-              />
-              <p className="px-3 py-2 text-xs font-medium text-[var(--text-secondary)]">
-                {b.title}
-              </p>
-            </a>
-          ))}
-        </div>
-      </Card>
-
-      {/* Templates */}
-      <Card padding="lg" className="mt-6">
-        <h2 className="mb-3 font-serif text-xl font-semibold text-[var(--justice)]">
-          Templates de publication
-        </h2>
-        <div className="space-y-3">
-          {TEMPLATES.map((t) => {
-            const fullText = t.text + goLink
-            return (
-              <div
-                key={t.title}
-                className="rounded-xl border border-[var(--border)] bg-white/60 p-4"
-              >
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--gold-dark)]">
-                  {t.title}
-                </p>
-                <p className="text-sm text-[var(--text-primary)]">{fullText}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => handleCopy(fullText)}
-                >
-                  📋 Copier le texte
-                </Button>
-              </div>
-            )
-          })}
-        </div>
-      </Card>
-
-      {/* Leaderboard */}
-      <Card padding="lg" className="mt-6">
-        <h2 className="mb-3 font-serif text-xl font-semibold text-[var(--justice)]">
-          Top 10 ambassadeurs du mois
-        </h2>
-        <ul className="space-y-2">
-          {LEADERBOARD.map((row) => (
-            <li
-              key={row.rank}
-              className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white/60 px-4 py-2 text-sm"
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-6 font-bold text-[var(--gold-dark)]">
-                  #{row.rank}
-                </span>
-                <span className="text-[var(--text-primary)]">{row.name}</span>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
-                <span>{row.conversions} conv.</span>
-                <span className="font-mono font-semibold text-[var(--justice)]">
-                  {(row.commissions / 100).toFixed(2)} €
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-xs text-[var(--text-muted)]">
-          Classement actualisé chaque lundi à 9h (Paris).
-        </p>
-      </Card>
+      <AmbassadorLeaderboard leaderboard={LEADERBOARD} />
     </div>
   )
 }

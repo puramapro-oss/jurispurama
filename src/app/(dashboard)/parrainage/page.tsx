@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Badge from '@/components/ui/Badge'
 import { useAuth } from '@/hooks/useAuth'
 import { APP_DOMAIN } from '@/lib/constants'
 import { copyToClipboard } from '@/lib/utils'
+import ReferralHeader from '@/components/parrainage/ReferralHeader'
+import ReferralCodeCard from '@/components/parrainage/ReferralCodeCard'
+import ReferralQRCard from '@/components/parrainage/ReferralQRCard'
+import ReferralStats from '@/components/parrainage/ReferralStats'
+import ReferralTierProgress from '@/components/parrainage/ReferralTierProgress'
+import ReferralHistory from '@/components/parrainage/ReferralHistory'
 
 interface ReferralStatsResponse {
   stats: {
@@ -160,243 +163,32 @@ export default function ParrainagePage() {
 
   return (
     <div className="container-narrow py-10">
-      <header className="mb-8">
-        <p className="text-xs uppercase tracking-wider text-[var(--gold-dark)]">
-          Parrainage
-        </p>
-        <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--justice)] md:text-4xl">
-          Parraine des amis, gagne de l&apos;argent
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-[var(--text-secondary)]">
-          Pour chaque ami qui s&apos;abonne via ton lien, tu touches{' '}
-          <strong>50% de son premier paiement</strong> +{' '}
-          <strong>10% récurrent à vie</strong>, payés par virement dès 5 €
-          accumulés.
-        </p>
-      </header>
+      <ReferralHeader />
 
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Ton code parrain
-          </p>
-          <p className="mt-1 font-serif text-4xl font-bold text-[var(--justice)]">
-            {code ?? '—'}
-          </p>
-          <div className="mt-4 rounded-xl border border-[var(--border)] bg-white/60 p-3 text-sm font-mono break-all text-[var(--text-primary)]">
-            {link}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button variant="primary" size="md" onClick={handleCopy}>
-              📋 Copier le lien
-            </Button>
-            <Button variant="secondary" size="md" onClick={handleNativeShare}>
-              📤 Partager
-            </Button>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.whatsapp}
-              target="_blank"
-              rel="noreferrer"
-            >
-              WhatsApp
-            </a>
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.sms}
-            >
-              SMS
-            </a>
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.telegram}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Telegram
-            </a>
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.twitter}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Twitter
-            </a>
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.facebook}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Facebook
-            </a>
-            <a
-              className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-center text-sm transition hover:border-[var(--justice)]"
-              href={share.email}
-            >
-              Email
-            </a>
-          </div>
-        </Card>
-
-        <Card padding="lg" className="flex flex-col items-center">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            QR Code
-          </p>
-          {qrUrl ? (
-            <img
-              src={qrUrl}
-              alt="QR Code de ton lien de parrainage"
-              className="mt-3 h-48 w-48"
-            />
-          ) : (
-            <div className="mt-3 flex h-48 w-48 items-center justify-center rounded-xl bg-[var(--parchment)] text-xs text-[var(--text-muted)]">
-              Génération…
-            </div>
-          )}
-          <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
-            Imprime-le, colle-le partout
-          </p>
-        </Card>
+        <ReferralCodeCard
+          code={code}
+          link={link}
+          share={share}
+          onCopy={handleCopy}
+          onNativeShare={handleNativeShare}
+        />
+        <ReferralQRCard qrUrl={qrUrl} />
       </div>
 
-      {/* Stats + tier */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Inscriptions
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {loading ? '…' : stats?.totalSignups ?? 0}
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Conversions payantes
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {loading ? '…' : stats?.totalConversions ?? 0}
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Commissions totales
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--justice)]">
-            {(stats?.totalCommission ?? 0).toFixed(2)} €
-          </p>
-        </Card>
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-            Disponible pour retrait
-          </p>
-          <p className="mt-1 font-serif text-3xl font-bold text-[var(--gold-dark)]">
-            {(stats?.pendingCommission ?? 0).toFixed(2)} €
-          </p>
-          <Button
-            variant="secondary"
-            size="sm"
-            fullWidth
-            onClick={handleWithdraw}
-            loading={withdrawLoading}
-            disabled={(stats?.pendingCommission ?? 0) < 5}
-            className="mt-3"
-          >
-            Demander un virement
-          </Button>
-        </Card>
-      </div>
+      <ReferralStats
+        totalSignups={stats?.totalSignups ?? 0}
+        totalConversions={stats?.totalConversions ?? 0}
+        totalCommission={stats?.totalCommission ?? 0}
+        pendingCommission={stats?.pendingCommission ?? 0}
+        loading={loading}
+        withdrawLoading={withdrawLoading}
+        onWithdraw={handleWithdraw}
+      />
 
-      {/* Tier progression */}
-      <Card padding="lg" className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-              Palier actuel
-            </p>
-            <p className="mt-1 font-serif text-2xl font-semibold text-[var(--justice)]">
-              {tier ? `${tier.emoji} ${tier.label}` : '🌱 Débutant'}
-            </p>
-            {tier && tier.bonusRecurringPct > 0 && (
-              <p className="text-xs text-[var(--gold-dark)]">
-                Bonus +{tier.bonusRecurringPct}% récurrent
-              </p>
-            )}
-          </div>
-          {next && (
-            <div className="text-right">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-                Prochain palier
-              </p>
-              <p className="font-serif text-lg text-[var(--justice)]">
-                {next.emoji} {next.label}
-              </p>
-              <p className="text-xs text-[var(--text-muted)]">
-                {next.minConversions} parrainages
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
-          <div
-            className="h-full bg-gradient-to-r from-[var(--justice)] to-[var(--gold)] transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="mt-3 text-xs text-[var(--text-muted)]">
-          Paliers : 🌱 Débutant · 🥉 Bronze (5) · 🥈 Argent (10) · 🥇 Or (25)
-          · 💎 Platine (50) · 💠 Diamant (75) · 👑 Légende (100)
-        </p>
-      </Card>
+      <ReferralTierProgress tier={tier} next={next} progress={progress} />
 
-      {/* Filleuls */}
-      <Card padding="lg" className="mt-6">
-        <h2 className="mb-4 font-serif text-xl font-semibold text-[var(--justice)]">
-          Historique de tes filleuls
-        </h2>
-        {!stats || stats.recentReferrals.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">
-            Aucun filleul pour le moment. Partage ton lien pour commencer à
-            gagner.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {stats.recentReferrals.map((r, i) => (
-              <li
-                key={r.id}
-                className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white/60 p-3"
-              >
-                <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">
-                    Filleul #{i + 1}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {new Date(r.created_at).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {r.status === 'converted' ? (
-                    <Badge variant="green">Payant</Badge>
-                  ) : (
-                    <Badge variant="gray">En attente</Badge>
-                  )}
-                  <span className="font-mono text-sm font-semibold text-[var(--justice)]">
-                    {Number(r.commission_paid ?? 0).toFixed(2)} €
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      <ReferralHistory referrals={stats?.recentReferrals ?? null} />
 
       <p className="mt-8 text-center text-xs text-[var(--text-muted)]">
         Envie de passer au niveau supérieur ?{' '}
