@@ -1,6 +1,6 @@
 'use client'
 
-import { _useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 interface Props {
