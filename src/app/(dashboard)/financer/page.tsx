@@ -6,50 +6,8 @@ import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
-
-interface Aide {
-  id: string
-  nom: string
-  type_aide: string
-  profil_eligible: string[]
-  situation_eligible: string[]
-  montant_max: number | null
-  url_officielle: string | null
-  description: string
-  region: string | null
-  handicap_only: boolean
-}
-
-const PROFILS = [
-  { value: 'salarie', label: 'Salarié(e)' },
-  { value: 'chomeur', label: 'Demandeur d\'emploi' },
-  { value: 'etudiant', label: 'Étudiant(e)' },
-  { value: 'retraite', label: 'Retraité(e)' },
-  { value: 'independant', label: 'Indépendant(e)' },
-]
-
-const SITUATIONS = [
-  { value: 'litige', label: 'Litige civil' },
-  { value: 'travail', label: 'Droit du travail' },
-  { value: 'logement', label: 'Logement' },
-  { value: 'famille', label: 'Famille / divorce' },
-  { value: 'consommation', label: 'Consommation' },
-  { value: 'penal', label: 'Pénal / victime' },
-  { value: 'administration', label: 'Administration' },
-  { value: 'discrimination', label: 'Discrimination' },
-  { value: 'surendettement', label: 'Surendettement' },
-  { value: 'numerique', label: 'Numérique / RGPD' },
-]
-
-const TYPE_LABELS: Record<string, { label: string; variant: 'justice' | 'green' | 'gold' | 'blue' | 'purple' }> = {
-  aide_etat: { label: 'Aide de l\'État', variant: 'justice' },
-  assurance: { label: 'Assurance', variant: 'blue' },
-  consultation: { label: 'Consultation gratuite', variant: 'green' },
-  mediation: { label: 'Médiation', variant: 'gold' },
-  association: { label: 'Association', variant: 'purple' },
-}
-
-type Step = 1 | 2 | 3 | 4
+import type { Aide, Step } from '@/types/financer'
+import { PROFILS, SITUATIONS, TYPE_LABELS, STEP_LABELS } from '@/lib/financer-constants'
 
 export default function FinancerPage() {
   const [step, setStep] = useState<Step>(1)
@@ -95,8 +53,6 @@ export default function FinancerPage() {
     .filter((a) => selectedAides.has(a.id))
     .reduce((sum, a) => sum + (a.montant_max ?? 0), 0)
 
-  const stepLabels = ['Ton profil', 'Aides disponibles', 'Ton dossier', 'Suivi']
-
   return (
     <div className="p-6 lg:p-10">
       <div className="mx-auto max-w-3xl space-y-8">
@@ -112,7 +68,7 @@ export default function FinancerPage() {
 
         {/* Stepper */}
         <div className="flex items-center gap-2">
-          {stepLabels.map((label, i) => {
+          {STEP_LABELS.map((label, i) => {
             const s = (i + 1) as Step
             const active = step === s
             const done = step > s
