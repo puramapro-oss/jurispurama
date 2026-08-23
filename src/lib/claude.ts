@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { smarana } from '@purama/smarana'
 
 // Lazy init — Vercel Turbopack evaluates modules at build time, before env vars
 // are injected. A module-level `new Anthropic()` crashes the build with
@@ -74,13 +75,38 @@ export interface ClaudeCallOptions {
   max_tokens?: number
   model?: string
   temperature?: number
+  userId?: string
 }
 
 /**
  * Non-streaming call. Returns the full text response.
  * Use for short / structured calls (e.g. title generation).
+ *
+ * MIGRATION SMARANA : Cas simple (1 message user sans images) → smarana.ask().
+ * Cas multimodal ou multi-turn → SDK direct.
  */
 export async function askClaude(opts: ClaudeCallOptions): Promise<string> {
+  // Detect simple case eligible for smarana
+  const isSingleUserMessage =
+    opts.messages.length === 1 &&
+    opts.messages[0].role === 'user' &&
+    (!opts.messages[0].images || opts.messages[0].images.length === 0)
+
+  if (isSingleUserMessage) {
+    // Use smarana for simple text-only single-message calls
+    const modelTier = opts.model === FAST_MODEL ? 'fast' : 'main'
+    const result = await smarana.ask({
+      appSlug: 'jurispurama',
+      userId: opts.userId,
+      system: opts.system,
+      message: opts.messages[0].content,
+      tier: modelTier,
+      maxTokens: opts.max_tokens ?? 2048,
+    })
+    return result.text
+  }
+
+  // Fallback to SDK for multimodal or multi-turn
   const client = getAnthropic()
   const res = await client.messages.create({
     model: opts.model ?? DEFAULT_MODEL,
@@ -102,6 +128,8 @@ export async function askClaude(opts: ClaudeCallOptions): Promise<string> {
  *   for await (const chunk of streamClaude({ messages, system })) {
  *     enqueue(chunk)
  *   }
+ *
+ * HORS PÉRIMÈTRE smarana (streaming non supporté) — SDK direct uniquement.
  */
 export async function* streamClaude(
   opts: ClaudeCallOptions

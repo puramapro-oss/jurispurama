@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
-import { getAnthropic, FAST_MODEL } from '@/lib/claude'
+import { askClaude } from '@/lib/claude'
 import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
@@ -49,16 +49,12 @@ export async function POST(req: NextRequest) {
   ]
 
   try {
-    const anthropic = getAnthropic()
-    const response = await anthropic.messages.create({
-      model: FAST_MODEL,
-      max_tokens: 1024,
+    const text = await askClaude({
       system: SYSTEM_PROMPT,
       messages,
+      max_tokens: 1024,
+      model: 'claude-haiku-4-5-20251001', // FAST_MODEL equivalent, tier 'fast'
     })
-
-    const text =
-      response.content[0]?.type === 'text' ? response.content[0].text : ''
 
     return NextResponse.json({ reply: text })
   } catch {

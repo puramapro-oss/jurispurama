@@ -35,7 +35,7 @@ Dev solo 15ans Google+Apple+Stripe. 0 question, 0 intervention. Plan→montrer�
 - **DESIGN=APP**:sidebar desktop+bottom tabs mobile+chat plein écran. Login=card glass max-w-md|Dashboard=sidebar 280px+grid cards|Chat=h-screen flex-col|Settings=glass cards.
 
 ## 4. DESIGN TOKENS GOD MODE V3
-**Background**:`#0A0A0F` base, `#14141C` soft. **Foreground**:`#F5F5FA`, muted `rgba(245,245,250,0.6)`. **Primary** défaut Purama:`#7C3AED` violet (override par app dans globals.css). **Secondary** défaut:`#06B6D4` cyan. **Super-admin gold**:`#FFD700`. **Glass**:`bg rgba(255,255,255,0.05); backdrop-filter blur(20px) saturate(150%); border 1px rgba(255,255,255,0.06); border-radius 1.5rem`. **Gradient**:`linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)`. **Radii**:sm 0.5|md 1|lg 1.5|xl 2|pill 9999rem. **Shadow glow**:`0 0 60px color-mix(in srgb, var(--primary) 30%, transparent)`. **Body ambiance**:radial 8% primary top + radial 6% secondary bottom-right.
+**Background**:`#0A0A0F` base, `#14141C` soft. **Foreground**:`#F5F5FA`muted `rgba(245,245,250,0.6)`. **Primary** défaut Purama:`#7C3AED` violet (override par app dans globals.css). **Secondary** défaut:`#06B6D4` cyan. **Super-admin gold**:`#FFD700`. **Glass**:`bg rgba(255,255,255,0.05); backdrop-filter blur(20px) saturate(150%); border 1px rgba(255,255,255,0.06); border-radius 1.5rem`. **Gradient**:`linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)`. **Radii**:sm 0.5|md 1|lg 1.5|xl 2|pill 9999rem. **Shadow glow**:`0 0 60px color-mix(in srgb, var(--primary) 30%, transparent)`. **Body ambiance**:radial 8% primary top + radial 6% secondary bottom-right.
 **Anti-AI-slop** (3 questions avant CHAQUE composant):1.Ressemble vraie app pro du domaine?(trading=Robinhood|wellness=Calm|juridique=Notion) 2.2 apps Purama auraient ce design?(oui=REFAIRE) 3.Designer senior dirait "AI slop"?(oui=REFAIRE).
 
 ## 5. ENV VARS COMMUNES
@@ -99,7 +99,7 @@ CRON_SECRET=
 **CLI rules**:INTERDIT `vercel login`/`gh auth login` interactif→`--token $VERCEL_TOKEN --scope puramapro-oss --yes`. VPS `sshpass -p '[.env.secrets→VPS_SSH_PASSWORD]' ssh root@72.62.191.111`. Team Vercel `team_dGuJ4PqnSU1uaAHa26kkmKKk`. n8n `n8n.srv1286148.hstgr.cloud` (57 workflows).
 
 ## 6. RÈGLES D'ARRÊT
-**task_plan.md**:phases P0→P8 cochables ✅/❌. Update APRÈS CHAQUE feature. **ERRORS.md+PATTERNS.md**:créés P0. ERRORS=`|DATE|BUG|CAUSE|FIX|`. Bug fixé→ligne IMMÉDIATE. **LEARNINGS.md** global `~/purama/`:`|DATE|APP|LEÇON|IMPACT|`.
+**task_plan.md**:phases P0→P8 cochables ✅/❌. Update APRÈS CHAQUE feature. **ERRORS.md+PATTERNS.md**:créés P0. ERRORS=`|DATE|BUG|CAUSE|FIX|`. Bug fixé→ligne IMMÉDIATE. **LEARNINGS.md** global `~/purama/``|DATE|APP|LEÇON|IMPACT|`.
 **Context monitoring**:>50%→`/compact` continue|>60%→finir feature→commit→deploy→handoff "Relance-moi"|3 échecs même bug→ERRORS.md→`/clear`. JAMAIS dépasser 60%.
 **Handoff OBLIGATOIRE avant arrêt**:1.Update task_plan ✅/❌ 2.progress.md état exact 3.ERRORS+PATTERNS 4.Commit+deploy ce qui marche 5."✅ P[X] terminé. Relance-moi P[X+1]." ou "✅ TERMINÉ" 6.Rapport `📋[APP]—[DATE] FAIT|RESTE|BUGS|DEPLOY|NEXT|LEARNINGS`.
 **Début session**:1.Lire task_plan+progress+ERRORS+PATTERNS 2.tsc+build vérifier 3.Re-lire CLAUDE.md 4.Charger SKILLS pertinents (§8) 5.Continuer feature suivante. JAMAIS recoder ce qui marche. JAMAIS casser existant.
@@ -211,3 +211,4 @@ Claude Code crée TOUT auto:projet+deps+.env.local(depuis §5)+DB SSH psql+Strip
 #17 SIMPLIFY AUTO
 Après CHAQUE modification de code, run /simplify avant de dire "fini".
 0 exception.
+

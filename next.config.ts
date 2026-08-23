@@ -1,6 +1,16 @@
 import type { NextConfig } from "next"
+import path from "node:path"
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@purama/smarana'],
+  experimental: { externalDir: true },
+  outputFileTracingRoot: path.join(__dirname, '..'),
+  turbopack: {
+    root: path.join(__dirname, '..'),
+    resolveAlias: {
+      '@purama/smarana': '../packages/smarana/src/index.ts',
+    },
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'image.pollinations.ai' },
