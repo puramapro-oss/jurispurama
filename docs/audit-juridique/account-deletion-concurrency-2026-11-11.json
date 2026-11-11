@@ -1,0 +1,225 @@
+{
+  "recorded_at": "2026-11-11T15:35:59.605572+00:00",
+  "base_commit": "1fafc538f871ee527a7449c5da441c510b674b2f",
+  "node": "v24.22.1",
+  "supabase_js": "2.103.0",
+  "zod": "4.3.6",
+  "commands": [
+    {
+      "label": "baseline-concurrency",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "--test",
+        "--test-reporter=tap",
+        "tests/account-deletion-concurrency.test.mjs"
+      ],
+      "cwd": "repository_root",
+      "environment": {
+        "JURIS_BASELINE_REF": "1fafc538f871ee527a7449c5da441c510b674b2f"
+      },
+      "exit_code": 1,
+      "tap_counts": {
+        "tests": 23,
+        "pass": 4,
+        "fail": 19,
+        "skipped": 0
+      },
+      "log_sha256": "3a02c7dcd1056cdec21285822fcc8ca19179aa47f14554c7d4eff53e3afd9200",
+      "expected_failure": true
+    },
+    {
+      "label": "baseline-scheduling",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "--test",
+        "--test-reporter=tap",
+        "tests/account-deletion-scheduling.test.mjs"
+      ],
+      "cwd": "repository_root",
+      "environment": {
+        "JURIS_BASELINE_REF": "1fafc538f871ee527a7449c5da441c510b674b2f",
+        "JURIS_TEST_DEPENDENCY_ROOT": "isolated SDK/Zod installation"
+      },
+      "exit_code": 1,
+      "tap_counts": {
+        "tests": 16,
+        "pass": 6,
+        "fail": 10,
+        "skipped": 0
+      },
+      "log_sha256": "891e68f5264caadd6882f19dac83100b24e4a8f46dd66def123f156ffdccae32",
+      "expected_failure": true
+    },
+    {
+      "label": "candidate-handlers-and-sdk",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "--test",
+        "--test-reporter=tap",
+        "tests/account-deletion-concurrency.test.mjs",
+        "tests/account-deletion-scheduling.test.mjs",
+        "tests/account-deletion-sdk.test.mjs"
+      ],
+      "cwd": "repository_root",
+      "environment": {
+        "JURIS_TEST_DEPENDENCY_ROOT": "isolated SDK/Zod installation"
+      },
+      "exit_code": 0,
+      "tap_counts": {
+        "tests": 50,
+        "pass": 50,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log_sha256": "7cfd7a29e6cfb0b93a65b25c6ef649bdb78298e5385cf8a5ad073a8c8eef67fe",
+      "expected_failure": false
+    },
+    {
+      "label": "historical-cron",
+      "command": [
+        "node",
+        "--experimental-vm-modules",
+        "docs/audit-juridique-2026-11-11/cron/verify_fix.mjs"
+      ],
+      "cwd": "repository_root",
+      "environment": {},
+      "exit_code": 0,
+      "tap_counts": {},
+      "log_sha256": "49f53110e4bc799db01afd0fb391af1de8797aa8834e2d8078112058011b3d0f",
+      "expected_failure": false
+    },
+    {
+      "label": "ar24",
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "tests/ar24-regression-control.test.mjs",
+        "tests/ar24-routes.test.mjs",
+        "tests/ar24-safety.test.mjs"
+      ],
+      "cwd": "repository_root",
+      "environment": {},
+      "exit_code": 0,
+      "tap_counts": {
+        "tests": 27,
+        "pass": 27,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log_sha256": "98f679db690cbcf1b79b98328b7ae91a5aecc3554edd1a6b1a1c9aeccb656a35",
+      "expected_failure": false
+    }
+  ],
+  "source_sha256": {
+    "src/app/api/cron/account-deletion/route.ts": "8cfd5cba7ad73206e86b922ab3ba2e4758a838aca739daf84462a0230ca5eed2",
+    "src/app/api/account/delete/route.ts": "d5353c3a772591fb9c4ae5810e48a05215455afb583aa2f86387aadd487f0d4c",
+    "tests/account-deletion-concurrency.test.mjs": "d4be0177c25f8a6bf6ae30fe74d2b1f84d58e345eafa38e295ae20801af2dafc",
+    "tests/account-deletion-scheduling.test.mjs": "2db52cdeb54ef74052b040f3512e1bf53ee450bb5a3c9f8248aed7e4b52c62cf",
+    "tests/account-deletion-sdk.test.mjs": "1f3b34b02eb9ee1c1e1ec261c953b3ee7979df7dda04a9a2d7c606bbd29711f4",
+    "tests/account-deletion-harness.mjs": "53cb856c93ebdd579c840e29cc5e0e1cb24dce45fa42a898a215278d395acf2a",
+    "docs/audit-juridique-2026-11-11/cron/harness.mjs": "2edf872fc574d2c625c793462154150023ba06446343b266ebe07f91d569677e"
+  },
+  "native_reconciliation": {
+    "read_only": true,
+    "head": "3f93395",
+    "cron_sha256": "0ddde276a6823548b4deb7597045007692f7fbf3a7f1515065f7c05cb315d063",
+    "account_delete_sha256": "3fd080d3849b8cbdd5891f41aa53db73da15fb3a3dd4366b5e285e6bf95ab477",
+    "preserved": "existing id/status claim concept; redacted POST/DELETE client errors; no native writes"
+  },
+  "limitations": [
+    "Actual handlers tested locally with fake database, framework, guards and rate limit.",
+    "Real SDK and Zod exercised locally with intercepted HTTP; no real endpoint.",
+    "No real PostgreSQL/PostgREST, RLS, cascades, global types/build, browser, scheduler or production verified.",
+    "No automatic retry of executing requests; direct database writes and cross-app deletion consent still need shared-socle qualification.",
+    "GitNexus graph analysis NON TESTÉ: native command returned exit code 1; no successful graph coverage claim."
+  ],
+  "review_configuration": {
+    "branch": "codex/juris-legal-review-20261111",
+    "vercel_automatic_git_deployment_enabled": false,
+    "scope": "Exact branch only; prior configuration otherwise unchanged",
+    "static_check": "PASS",
+    "platform_enforcement": "NON TESTÉ",
+    "sha256": "c9ede41550ebec96996c581af0863bdfe8e7c3333ccfd75b702c2ad7f4554fbd"
+  },
+  "ci_qualification": {
+    "recorded_at": "2026-11-11T15:41:24.977096+00:00",
+    "status": "PASS: all workflow run commands replayed locally",
+    "github_actions_execution": "NON TESTÉ",
+    "node": "v24.22.1",
+    "npm": "11.9.0",
+    "workflow_sha256": "46e784203a18fdfab3f95b529bb27d36a1462b6a26883573eb812670f76eb39a",
+    "lock_sha256": "f80d994480b2a183c88f3192b0f9073f478f707dd172afedf56d23a0f504cbf5",
+    "source": "Public lock copied from prior isolated npm install, with only root package metadata renamed; fresh npm ci succeeded.",
+    "public_package_count": 14,
+    "actions": [
+      {
+        "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "with": {
+          "persist-credentials": false
+        },
+        "verified_metadata_url": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/action.yml",
+        "runtime": "node24"
+      },
+      {
+        "uses": "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
+        "with": {
+          "node-version": "24.22.1",
+          "package-manager-cache": false
+        },
+        "verified_metadata_url": "https://raw.githubusercontent.com/actions/setup-node/820762786026740c76f36085b0efc47a31fe5020/action.yml",
+        "runtime": "node24"
+      }
+    ],
+    "actions_provenance": "Exact release tags resolved from the official actions/checkout and actions/setup-node Git repositories on 2026-11-11; action metadata reviewed.",
+    "commands": [
+      {
+        "name": "Install only locked public test dependencies",
+        "exit_code": 0,
+        "log_sha256": "3edc01dcf4acc7ea97359bb6332bd374d95dd59a5e5ce99e31871f64bcb02e1f",
+        "command": "mkdir -p \"$JURIS_TEST_DEPENDENCY_ROOT\"\ncp tests/account-deletion-deps/package*.json \"$JURIS_TEST_DEPENDENCY_ROOT/\"\nnpm ci --prefix \"$JURIS_TEST_DEPENDENCY_ROOT\" --ignore-scripts --no-audit --no-fund\n"
+      },
+      {
+        "name": "Check dependency versions against the application lockfile",
+        "exit_code": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "command": "node --input-type=module <<'NODE'\nimport assert from 'node:assert/strict'\nimport { readFileSync } from 'node:fs'\nimport { createRequire } from 'node:module'\nimport { resolve } from 'node:path'\nconst app = JSON.parse(readFileSync('package-lock.json', 'utf8'))\nconst tests = JSON.parse(readFileSync('tests/account-deletion-deps/package.json', 'utf8'))\nconst require = createRequire(resolve(process.env.JURIS_TEST_DEPENDENCY_ROOT, 'package.json'))\nfor (const [name, version] of Object.entries(tests.dependencies)) {\n  assert.equal(version, app.packages[`node_modules/${name}`].version, `${name}: application lockfile drift`)\n  assert.equal(require(`${name}/package.json`).version, version, `${name}: installed version mismatch`)\n}\nNODE\n"
+      },
+      {
+        "name": "Account deletion concurrency, scheduling and SDK contracts",
+        "exit_code": 0,
+        "log_sha256": "849d7ffc47336715d2fd05934e9d1521fc2b248833c0803e85d794e1ce53866f",
+        "command": "node --experimental-vm-modules --test tests/account-deletion-concurrency.test.mjs tests/account-deletion-scheduling.test.mjs tests/account-deletion-sdk.test.mjs",
+        "test_counts": {
+          "tests": 50,
+          "pass": 50,
+          "fail": 0,
+          "skipped": 0
+        }
+      },
+      {
+        "name": "Historical deletion error regressions",
+        "exit_code": 0,
+        "log_sha256": "4cbe755612867c46ac9cf9e53615b11aff382d0f9055c26bd99b53547b3df4d3",
+        "command": "node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs",
+        "historical_result": "PASS_CORRECTED_8_OF_8"
+      },
+      {
+        "name": "Existing AR24 regressions",
+        "exit_code": 0,
+        "log_sha256": "53c75c1c96814f6984e3b4e7fb6c14a2fc8b749a08517c4999c88b0c6c5b0822",
+        "command": "node --test tests/ar24-regression-control.test.mjs tests/ar24-routes.test.mjs tests/ar24-safety.test.mjs",
+        "test_counts": {
+          "tests": 27,
+          "pass": 27,
+          "fail": 0,
+          "skipped": 0
+        }
+      }
+    ],
+    "package_sha256": "b79ae4b9d93c425023ce6a2c81cdc65073fee503ea956321808c43280a615305"
+  }
+}

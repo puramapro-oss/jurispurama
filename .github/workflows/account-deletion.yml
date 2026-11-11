@@ -1,0 +1,60 @@
+name: Account deletion regressions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: account-deletion-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      JURIS_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-account-deletion-deps
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Install only locked public test dependencies
+        run: |
+          mkdir -p "$JURIS_TEST_DEPENDENCY_ROOT"
+          cp tests/account-deletion-deps/package*.json "$JURIS_TEST_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+
+      - name: Check dependency versions against the application lockfile
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { createRequire } from 'node:module'
+          import { resolve } from 'node:path'
+          const app = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          const tests = JSON.parse(readFileSync('tests/account-deletion-deps/package.json', 'utf8'))
+          const require = createRequire(resolve(process.env.JURIS_TEST_DEPENDENCY_ROOT, 'package.json'))
+          for (const [name, version] of Object.entries(tests.dependencies)) {
+            assert.equal(version, app.packages[`node_modules/${name}`].version, `${name}: application lockfile drift`)
+            assert.equal(require(`${name}/package.json`).version, version, `${name}: installed version mismatch`)
+          }
+          NODE
+
+      - name: Account deletion concurrency, scheduling and SDK contracts
+        run: node --experimental-vm-modules --test tests/account-deletion-concurrency.test.mjs tests/account-deletion-scheduling.test.mjs tests/account-deletion-sdk.test.mjs
+
+      - name: Historical deletion error regressions
+        run: node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs
+
+      - name: Existing AR24 regressions
+        run: node --test tests/ar24-regression-control.test.mjs tests/ar24-routes.test.mjs tests/ar24-safety.test.mjs

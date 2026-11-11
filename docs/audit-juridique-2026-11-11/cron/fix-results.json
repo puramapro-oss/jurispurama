@@ -1,12 +1,12 @@
 {
   "status": "PASS_CORRECTED_8_OF_8",
-  "recordedAt": "2026-11-11T05:58:57.472Z",
+  "recordedAt": "2026-11-11T15:41:24.681Z",
   "runtime": "v24.22.1",
   "command": "node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs",
   "sourceCommit": "70d123d40ebffc507271c8acf0c9b56c20c428a8",
   "sourcePath": "src/app/api/cron/account-deletion/route.ts",
   "beforeSha256": "89d6528f51adb655c109670133bf96df907ed6b7b3cdc587a44be526875e0477",
-  "afterSha256": "89a7db367a7f92017254657e748c6ca49d0691c062380594c830690dbf1b1cbc",
+  "afterSha256": "8cfd5cba7ad73206e86b922ab3ba2e4758a838aca739daf84462a0230ca5eed2",
   "baseline": {
     "label": "before",
     "checks": 8,
@@ -1058,6 +1058,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-claim"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-claim"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1157,6 +1177,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-completion"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-completion"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1280,6 +1320,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-authfail"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-authfail"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1396,6 +1456,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-mixed-ok"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-mixed-ok"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1436,6 +1516,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-mixed-fail"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-mixed-fail"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1550,6 +1650,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-healthy-1"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-healthy-1"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1590,6 +1710,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-healthy-2"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-healthy-2"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [
@@ -1789,6 +1929,26 @@
                 "kind": "eq",
                 "key": "id",
                 "value": "fake-request-manual-preserved"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-manual-preserved"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
               }
             ],
             "matchedIds": [

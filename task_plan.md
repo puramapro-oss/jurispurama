@@ -99,3 +99,15 @@ resend + stripe 22 + recharts + qrcode + react-markdown + remark-gfm + sonner + 
 - Font: Cormorant Garamond (serif) + Inter (sans)
 - IA: JurisIA (Claude sonnet-4)
 - Admin: matiss.frasne@gmail.com
+
+## Complément vérifié — 11 novembre 2026, concurrence de suppression
+
+- [x] Réconcilier la PR2 avec les deux sources Mac lues sans les modifier.
+- [x] Corriger les courses avant acquisition et le faux succès d’annulation.
+- [x] Vérifier 23 scénarios concurrence/annulation, 16 programmation, 11 contrats SDK, 8 scénarios historiques et 27 AR24.
+- [x] Ajouter la CI ciblée et son lockfile public ; rejouer localement toutes ses commandes depuis une installation neuve.
+- [ ] Observer l'exécution GitHub et qualifier les règles de contrôle obligatoires de fusion.
+- [ ] Qualifier PostgreSQL réel, transitions du socle après acquisition, reprise et périmètre de suppression inter-applications.
+- [ ] Intégrer et déployer selon le processus commun ; aucune production qualifiée par ces tests.
+
+Preuves : [rapport de concurrence](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).

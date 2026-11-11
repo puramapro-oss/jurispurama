@@ -42,11 +42,14 @@ function createBackend(initialRows, options = {}) {
       this.cap = Infinity;
       this.payload = null;
     }
-    select(fields) { this.operation = 'select'; this.fields = fields; return this; }
+    select(fields) { this.operation ??= 'select'; this.fields = fields; return this; }
     update(payload) { this.operation = 'update'; this.payload = structuredClone(payload); return this; }
+    insert(payload) { this.operation = 'insert'; this.payload = structuredClone(payload); return this; }
+    upsert(payload) { this.operation = 'upsert'; this.payload = structuredClone(payload); return this; }
     eq(key, value) { this.filters.push({ kind: 'eq', key, value }); return this; }
     lte(key, value) { this.filters.push({ kind: 'lte', key, value }); return this; }
     limit(cap) { this.cap = cap; return this; }
+    maybeSingle() { this.single = true; return this; }
     then(resolve, reject) { return Promise.resolve().then(() => this.execute()).then(resolve, reject); }
     execute() {
       const selected = rows.filter(row => this.filters.every(filter =>
@@ -58,13 +61,27 @@ function createBackend(initialRows, options = {}) {
         filters: structuredClone(this.filters),
         matchedIds: selected.map(row => row.id),
       };
+      const project = (items) => {
+        const fields = this.fields?.split(',').map(field => field.trim());
+        const data = fields ? items.map(row => Object.fromEntries(fields.map(field => [field, row[field]]))) : null;
+        if (this.single && data?.length > 1) return { data: null, error: { message: 'Multiple rows returned.' } };
+        return { data: this.single ? data?.[0] ?? null : data, error: null };
+      };
+      if (this.operation === 'insert' || this.operation === 'upsert') {
+        const existing = rows.find(row => row.user_id === this.payload.user_id);
+        if (existing && this.operation === 'insert') {
+          events.push({ ...event, injectedError: '23505' });
+          return { data: null, error: { code: '23505', message: 'Duplicate fake user request.' } };
+        }
+        const row = existing ?? { id: `fake-new-request-${rows.length + 1}`, status: 'scheduled' };
+        Object.assign(row, this.payload);
+        if (!existing) rows.push(row);
+        events.push({ ...event, payload: structuredClone(this.payload), matchedIds: [row.id] });
+        return project([row]);
+      }
       if (this.operation === 'select') {
         events.push(event);
-        const fields = this.fields.split(',').map(field => field.trim());
-        return {
-          data: selected.map(row => Object.fromEntries(fields.map(field => [field, row[field]]))),
-          error: null,
-        };
+        return project(selected);
       }
       assert.equal(this.operation, 'update');
       event.payload = structuredClone(this.payload);
@@ -80,6 +97,9 @@ function createBackend(initialRows, options = {}) {
       }
       selected.forEach(row => Object.assign(row, this.payload));
       events.push(event);
+      if (this.fields) {
+        return project(selected);
+      }
       return { data: null, error: null };
     }
   }

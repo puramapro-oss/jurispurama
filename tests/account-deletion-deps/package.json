@@ -1,0 +1,9 @@
+{
+  "name": "jurispurama-account-deletion-test-dependencies",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "2.103.0",
+    "zod": "4.3.6"
+  }
+}

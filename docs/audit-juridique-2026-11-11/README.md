@@ -5,7 +5,11 @@ Base examinée : `puramapro-oss/jurispurama`, commit `70d123d40ebffc507271c8acf0
 
 **Statut : correction candidate avec contrôles ciblés réussis.** Ce dossier atteste le contenu examiné et les essais isolés décrits ci-dessous ; le statut d'intégration et de déploiement doit être lu dans la PR, la CI et les preuves d'exploitation correspondantes. Il ne constitue pas une certification juridique générale de l'application.
 
-## Périmètre des trois fichiers applicatifs
+## Complément de concurrence du 11 novembre 2026
+
+Le dossier conserve les huit scénarios historiques, rejoués sur le candidat. Le complément [concurrence et annulation](../audit-juridique/account-deletion-concurrency-2026-11-11.md) ajoute une prise conditionnelle sur le statut, l’utilisateur et l’échéance, ainsi qu’un reçu d’annulation vérifié et une programmation POST conditionnelle. Les contrôles supplémentaires et limites sont décrits séparément.
+
+## Périmètre des trois fichiers applicatifs du lot initial
 
 ### Présentation commerciale — `src/lib/constants.ts`
 
@@ -67,10 +71,10 @@ Les réponses complètes, états, traces et différences avant/après figurent d
 SHA-256 du handler candidat testé :
 
 ```text
-89a7db367a7f92017254657e748c6ca49d0691c062380594c830690dbf1b1cbc
+8cfd5cba7ad73206e86b922ab3ba2e4758a838aca739daf84462a0230ca5eed2
 ```
 
-Le manifest `SHA256SUMS` contient les empreintes des trois fichiers applicatifs et des fichiers de preuve à la préparation. Il peut être vérifié depuis la racine du dépôt avec :
+Le manifest `SHA256SUMS` contient les empreintes des fichiers applicatifs du lot initial et du complément, de la configuration de branche et des fichiers de preuve à la préparation. Il peut être vérifié depuis la racine du dépôt avec :
 
 ```bash
 sha256sum -c docs/audit-juridique-2026-11-11/SHA256SUMS
@@ -84,4 +88,4 @@ Une nouvelle exécution réécrit le résultat horodaté ; son empreinte doit al
 
 Le test d'authentification vérifie le respect du refus fourni au handler, pas la validité de l'implémentation du garde. Le backend simulé conserve les demandes après suppression d'une identité fictive ; il ne représente pas les clés étrangères réelles. Les essais montrent le comportement du handler pour les résultats de dépendances injectés, pas un incident déjà observé en production.
 
-La prise en charge n'est pas devenue atomique ; les courses d'annulation ou de concurrence et la reprise des demandes `executing` restent à traiter séparément. Le passage à HTTP 500 en cas d'échec partiel doit être rapproché de la configuration réelle de supervision avant déploiement. Les anciens tarifs, l'identité déclarée de l'éditeur et les affirmations contractuelles ou techniques non couvertes ici restent à vérifier par leurs preuves propres.
+La prise en charge est désormais conditionnelle dans un seul UPDATE ; les cas de concurrence et d’annulation avant acquisition figurent dans le complément. La reprise des demandes `executing` et les écritures directes du socle restent à traiter séparément. Le POST a également été conditionné pour ne pas réécrire une demande acquise. Le passage à HTTP 500 en cas d'échec partiel doit être rapproché de la configuration réelle de supervision avant déploiement. Les anciens tarifs, l'identité déclarée de l'éditeur et les affirmations contractuelles ou techniques non couvertes ici restent à vérifier par leurs preuves propres.

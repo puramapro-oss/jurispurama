@@ -2,11 +2,13 @@
  * CRON — Suppression effective des comptes (RGPD art. 17). Quotidien, 03:00 UTC.
  *
  * Lit `account_deletion_requests` dont `scheduled_for` ≤ now() et `status='scheduled'`.
- * Pour chaque ligne : marque 'executing' → `auth.admin.deleteUser(user_id)` → marque
+ * Pour chaque ligne : acquiert conditionnellement 'executing' → `auth.admin.deleteUser(user_id)` → marque
  * 'completed'. L'effacement des lignes métier dépend des cascades effectivement définies
  * dans le schéma déployé. Cet exécuteur ne vérifie pas l'effacement des objets de stockage,
  * des sauvegardes ni des données conservées par les sous-traitants.
- * Une erreur de prise en charge empêche l'appel de suppression ; une demande encore
+ * La prise en charge vérifie dans le même UPDATE l'utilisateur, le statut et l'échéance
+ * lus au scan. Une annulation, un report ou une autre prise en charge intervenus avant
+ * cet UPDATE empêchent la suppression. Une erreur empêche aussi cet appel ; une demande encore
  * 'scheduled' reste éligible au passage suivant. Une demande laissée à 'executing'
  * nécessite une investigation manuelle, sans retry automatique (cf
  * PIEGES.md "RGPD suppression qui ne supprime rien", ne jamais renvoyer {success:true} sans
@@ -54,14 +56,28 @@ async function run(request: NextRequest) {
   }
 
   const results: Array<{ id: string; user_id: string; ok: boolean; error?: string }> = []
+  let skipped = 0
 
   for (const req of list) {
     try {
-      const { error: claimErr } = await service
+      const { data: claimed, error: claimErr } = await service
         .from('account_deletion_requests')
         .update({ status: 'executing' })
         .eq('id', req.id)
+        .eq('user_id', req.user_id)
+        .eq('status', 'scheduled')
+        .eq('scheduled_for', req.scheduled_for)
+        .lte('scheduled_for', now)
+        .select('id, user_id')
+        .maybeSingle()
       if (claimErr) throw claimErr
+      if (claimed === null) {
+        skipped += 1
+        continue
+      }
+      if (!claimed || claimed.id !== req.id || claimed.user_id !== req.user_id) {
+        throw new Error("La prise en charge n'a pas confirmé la demande attendue.")
+      }
 
       const { error: authErr } = await service.auth.admin.deleteUser(req.user_id)
       if (authErr) throw authErr
@@ -91,6 +107,7 @@ async function run(request: NextRequest) {
       processed: results.length,
       succeeded: results.filter((r) => r.ok).length,
       failed,
+      ...(skipped > 0 ? { skipped } : {}),
       results,
       runMs: Date.now() - startedAt,
     },

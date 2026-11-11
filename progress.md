@@ -860,3 +860,9 @@ Le formatter du Tooltip recharts attend `ValueType | undefined`, il faut
 - Pousser sur GitHub (main branche — repo puramapro-oss/jurispurama si créé)
 
 ### Learnings capturés dans ~/purama/LEARNINGS.md
+
+## 11 novembre 2026 — complément concurrence et annulation
+
+Candidat local réconcilié sur PR2 `1fafc538`, avec CAS renforcé et reçu d’annulation vérifié. 23/23 scénarios concurrence/annulation, 16/16 programmation, 11/11 contrats SDK, 8/8 scénarios historiques et 27/27 AR24 réussis. Les sources Mac n’ont pas été modifiées. Production, SQL distant, reprise automatique, écritures directes du socle et périmètre inter-applications non qualifiés. Voir [rapport et limites](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).
+
+Qualification CI dédiée ajoutée : Node 24.22.1, dépendances publiques de test verrouillées, installation temporaire sans scripts ni audit npm. Toutes ses commandes `run` ont réussi localement après installation neuve (50 + 8 + 27). L’exécution sur GitHub reste NON TESTÉE à ce stade.
