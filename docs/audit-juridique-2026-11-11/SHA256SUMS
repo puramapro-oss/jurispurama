@@ -1,0 +1,8 @@
+0fa5ad2946220158c929ee52351f08ceeaf2b95eca4b72f3b48e7333fa9e22e7  src/lib/constants.ts
+c7d24ee1a54b6525363d18437f73cb0eaf75d23e5301569e1a937c084daffd06  src/app/politique-confidentialite/page.tsx
+89a7db367a7f92017254657e748c6ca49d0691c062380594c830690dbf1b1cbc  src/app/api/cron/account-deletion/route.ts
+2977000bb1fc421f09b54e78fb104fe4222535f0e770a4f87d36134f8ea33b13  docs/audit-juridique-2026-11-11/README.md
+3fd5b8a1c862346ea904908da0d818888f89b60bb027fecd066b40f54b866ca6  docs/audit-juridique-2026-11-11/cron/harness.mjs
+fa8d6253977a0b994e1a650a6fdc5fe57c5724ec6593a054e3b327d9d8868b52  docs/audit-juridique-2026-11-11/cron/verify_fix.mjs
+89d6528f51adb655c109670133bf96df907ed6b7b3cdc587a44be526875e0477  docs/audit-juridique-2026-11-11/cron/route.original.ts
+030a83abe049c2a0be24be50c45e043c0c797fc1a5b1603105de265a909453f2  docs/audit-juridique-2026-11-11/cron/fix-results.json

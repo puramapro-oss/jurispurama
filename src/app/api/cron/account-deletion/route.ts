@@ -3,11 +3,12 @@
  *
  * Lit `account_deletion_requests` dont `scheduled_for` ≤ now() et `status='scheduled'`.
  * Pour chaque ligne : marque 'executing' → `auth.admin.deleteUser(user_id)` → marque
- * 'completed'. `auth.users` a `ON DELETE CASCADE` jusqu'à `jurispurama_users`, qui cascade
- * lui-même jusqu'à `jurispurama_legal_profiles`/`jurispurama_cases`/`jurispurama_payments`/
- * `jurispurama_referrals` (et `jurispurama_cases` jusqu'à `jurispurama_messages`/
- * `jurispurama_documents`) — vérifié dans schema.sql, la purge est donc complète en 1 seul
- * appel. Échec → reste 'executing', pas de retry automatique (investigation manuelle — cf
+ * 'completed'. L'effacement des lignes métier dépend des cascades effectivement définies
+ * dans le schéma déployé. Cet exécuteur ne vérifie pas l'effacement des objets de stockage,
+ * des sauvegardes ni des données conservées par les sous-traitants.
+ * Une erreur de prise en charge empêche l'appel de suppression ; une demande encore
+ * 'scheduled' reste éligible au passage suivant. Une demande laissée à 'executing'
+ * nécessite une investigation manuelle, sans retry automatique (cf
  * PIEGES.md "RGPD suppression qui ne supprime rien", ne jamais renvoyer {success:true} sans
  * DELETE réel).
  */
@@ -55,30 +56,44 @@ async function run(request: NextRequest) {
   const results: Array<{ id: string; user_id: string; ok: boolean; error?: string }> = []
 
   for (const req of list) {
-    await service.from('account_deletion_requests').update({ status: 'executing' }).eq('id', req.id)
-
     try {
+      const { error: claimErr } = await service
+        .from('account_deletion_requests')
+        .update({ status: 'executing' })
+        .eq('id', req.id)
+      if (claimErr) throw claimErr
+
       const { error: authErr } = await service.auth.admin.deleteUser(req.user_id)
       if (authErr) throw authErr
 
-      await service
+      const { error: completionErr } = await service
         .from('account_deletion_requests')
         .update({ status: 'completed', completed_at: new Date().toISOString() })
         .eq('id', req.id)
+      if (completionErr) throw completionErr
 
       results.push({ id: req.id, user_id: req.user_id, ok: true })
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err && typeof err.message === 'string'
+            ? err.message
+            : String(err)
       results.push({ id: req.id, user_id: req.user_id, ok: false, error: message })
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    processed: results.length,
-    succeeded: results.filter((r) => r.ok).length,
-    failed: results.filter((r) => !r.ok).length,
-    results,
-    runMs: Date.now() - startedAt,
-  })
+  const failed = results.filter((r) => !r.ok).length
+  return NextResponse.json(
+    {
+      ok: failed === 0,
+      processed: results.length,
+      succeeded: results.filter((r) => r.ok).length,
+      failed,
+      results,
+      runMs: Date.now() - startedAt,
+    },
+    { status: failed === 0 ? 200 : 500 }
+  )
 }
