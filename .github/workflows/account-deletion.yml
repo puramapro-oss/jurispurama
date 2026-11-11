@@ -17,8 +17,6 @@ jobs:
   isolated-tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      JURIS_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-account-deletion-deps
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,10 +27,13 @@ jobs:
           package-manager-cache: false
 
       - name: Install only locked public test dependencies
+        env:
+          JURIS_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-account-deletion-deps
         run: |
           mkdir -p "$JURIS_TEST_DEPENDENCY_ROOT"
           cp tests/account-deletion-deps/package*.json "$JURIS_TEST_DEPENDENCY_ROOT/"
           npm ci --prefix "$JURIS_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_TEST_DEPENDENCY_ROOT=%s\n' "$JURIS_TEST_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
 
       - name: Check dependency versions against the application lockfile
         run: |
