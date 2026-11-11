@@ -65,3 +65,30 @@ jobs:
 
       - name: Existing AR24 regressions
         run: node --test tests/ar24-regression-control.test.mjs tests/ar24-routes.test.mjs tests/ar24-safety.test.mjs
+
+  native-postgres-rls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify state guards in a private disposable PostgreSQL cluster
+        env:
+          JURIS_RLS_REPORT: ${{ runner.temp }}/juris-account-deletion-rls.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          pg_bin=/usr/lib/postgresql/16/bin
+          for pg_tool in initdb pg_ctl psql; do
+            if [[ ! -x "$pg_bin/$pg_tool" ]]; then
+              printf '::error::Preinstalled PostgreSQL binary is unavailable: %s\n' "$pg_bin/$pg_tool"
+              exit 1
+            fi
+          done
+          python3 tests/account-deletion-postgres.py \
+            --pg-bin "$pg_bin" \
+            --schema schema-legal.sql \
+            --migration migrations/20261111_account_deletion_rls_guards.sql \
+            --migration-sha256 9ac3b8a570baab2c5b08d81f4ae901e2ac2435552091c7dcb918265f9844565a \
+            --report "$JURIS_RLS_REPORT"
