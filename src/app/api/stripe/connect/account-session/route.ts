@@ -6,15 +6,11 @@
  * Phase 2 (après signature Treezor) : crée un AccountSession pour onboarding ambassadeur payouts.
  */
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-03-25.dahlia',
-});
 
 export async function POST(_req: Request) {
   // Phase gating — Phase 1 = désactivé
@@ -41,6 +37,7 @@ export async function POST(_req: Request) {
   }
 
   try {
+    const stripe = getStripe();
     const { data: profile } = await supabase
       .from('jurispurama_users')
       .select('stripe_connect_account_id')

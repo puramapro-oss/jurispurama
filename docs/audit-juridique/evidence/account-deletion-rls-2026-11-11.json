@@ -1,0 +1,369 @@
+{
+  "status": "PASS",
+  "schema_git_blob": "340ba7920659bac96d2dc619d6daf556266a2abb",
+  "schema_source_commit": "e5fb2a3d28b89f1c54ecc3c90325f4d2b4b1c7b5",
+  "migration_sha256": "9ac3b8a570baab2c5b08d81f4ae901e2ac2435552091c7dcb918265f9844565a",
+  "checks": [
+    {
+      "case": "cancellation_commits_before_claim",
+      "pass": true,
+      "lock_wait_observed": true
+    },
+    {
+      "case": "claim_commits_before_cancellation",
+      "pass": true,
+      "lock_wait_observed": true
+    },
+    {
+      "case": "two_concurrent_claims_only_one_row_returned",
+      "pass": true,
+      "lock_wait_observed": true
+    },
+    {
+      "case": "rescheduled_deadline_prevents_stale_claim",
+      "pass": true,
+      "lock_wait_observed": true
+    },
+    {
+      "case": "claim_blocks_stale_reschedule_and_unique_constraint_prevents_duplicate",
+      "pass": true,
+      "lock_wait_observed": true
+    },
+    {
+      "case": "absent_request_has_no_claim_receipt",
+      "pass": true
+    },
+    {
+      "case": "real_fk_cascade_removes_request_zero_completion_is_expected",
+      "pass": true
+    },
+    {
+      "case": "unique_user_id_rejects_second_insert_without_rewrite",
+      "pass": true
+    }
+  ],
+  "scope": "Versioned schema in disposable socket-only PostgreSQL. Eight SQL scenarios align with route predicates at e5fb2a3d; separate RLS scenarios use synthetic granted non-owner roles and the additive draft migration. Supabase/Next/PostgREST transport, production grants/exposure, deployed schema, GDPR timing and real users are not exercised.",
+  "server_version": "18.4 (Homebrew)",
+  "cluster_identity_verified": true,
+  "tcp_listening_disabled": true,
+  "rls": {
+    "status": "PASS",
+    "checks": [
+      {
+        "case": "synthetic_clients_are_not_owner_or_bypass_service_role_bypasses",
+        "pass": true
+      },
+      {
+        "case": "before_insert_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_insert_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_insert_executing",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_insert_completed",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_scheduled_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_scheduled_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_scheduled_to_executing",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_scheduled_to_completed",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_cancelled_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_cancelled_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_cancelled_to_executing",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_cancelled_to_completed",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_executing_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_executing_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_executing_to_executing",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_executing_to_completed",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_completed_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_completed_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_completed_to_executing",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "before_update_completed_to_completed",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "preflight_rejects_service_role_without_bypass",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "preflight_rejects_disabled_rls",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "preflight_rejects_missing_column",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "preflight_rejects_authenticated_truncate",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "preflight_rejects_altered_original_policy",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "collision_rejects_permissive_guard_without_replacement",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "collision_rolls_back_preceding_policy_creations",
+        "pass": true,
+        "result": "P0001; catalog unchanged"
+      },
+      {
+        "case": "migration_adds_three_guards_preserves_original_policies_roles_and_grants",
+        "pass": true
+      },
+      {
+        "case": "migration_is_idempotent_without_policy_replacement",
+        "pass": true
+      },
+      {
+        "case": "after_insert_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "after_insert_cancelled",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_insert_executing",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_insert_completed",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_update_scheduled_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "after_update_scheduled_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "after_update_scheduled_to_executing",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_update_scheduled_to_completed",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_update_cancelled_to_scheduled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "after_update_cancelled_to_cancelled",
+        "pass": true,
+        "result": "accepted"
+      },
+      {
+        "case": "after_update_cancelled_to_executing",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_update_cancelled_to_completed",
+        "pass": true,
+        "result": "42501"
+      },
+      {
+        "case": "after_update_executing_to_scheduled",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_executing_to_cancelled",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_executing_to_executing",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_executing_to_completed",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_completed_to_scheduled",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_completed_to_cancelled",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_completed_to_executing",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "after_update_completed_to_completed",
+        "pass": true,
+        "result": "zero_rows"
+      },
+      {
+        "case": "ownership_and_missing_identity_are_enforced",
+        "pass": true
+      },
+      {
+        "case": "current_ssr_schedule_cancel_lookup_and_conditional_reschedule_work",
+        "pass": true
+      },
+      {
+        "case": "service_claim_blocks_stale_ssr_mutations_and_service_completion_works",
+        "pass": true
+      },
+      {
+        "case": "rls_rechecked_after_real_lock_wait_to_scheduled",
+        "pass": true,
+        "lock_wait_observed": true
+      },
+      {
+        "case": "rls_rechecked_after_real_lock_wait_to_cancelled",
+        "pass": true,
+        "lock_wait_observed": true
+      },
+      {
+        "case": "on_conflict_update_cannot_reset_protected_states",
+        "pass": true
+      },
+      {
+        "case": "real_auth_user_cascade_and_zero_row_completion_remain_compatible",
+        "pass": true
+      },
+      {
+        "case": "all_four_states_resist_delete_under_extra_permissive_policy_and_second_role",
+        "pass": true
+      },
+      {
+        "case": "restrictive_state_and_ownership_guards_hold_under_permissive_or",
+        "pass": true
+      }
+    ],
+    "production_exposure_tested": false,
+    "roles": [
+      {
+        "name": "authenticated",
+        "login": false,
+        "super": false,
+        "bypass": false,
+        "create_role": false
+      },
+      {
+        "name": "rls_probe",
+        "login": false,
+        "super": false,
+        "bypass": false,
+        "create_role": false
+      },
+      {
+        "name": "service_role",
+        "login": false,
+        "super": false,
+        "bypass": true,
+        "create_role": false
+      }
+    ],
+    "baseline": "Synthetic granted non-owner can enter/leave all four states under versioned own-only policies.",
+    "guard_catalog_sha256": "69b8a252326bb42d83d5bb9db92799610893d9f694590939e6b5dd7f7f4a606d",
+    "checks_passed": 59
+  },
+  "stop_exit_code": 0,
+  "cluster_stopped": true,
+  "owned_cluster_removed": true
+}

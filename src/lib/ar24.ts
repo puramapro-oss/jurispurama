@@ -1,5 +1,3 @@
-import crypto from 'node:crypto'
-
 export interface AR24Recipient {
   name: string
   email?: string | null
@@ -23,141 +21,135 @@ export interface AR24SendInput {
 }
 
 export interface AR24SendResult {
-  mode: 'live' | 'simulated'
+  mode: 'live'
   tracking_number: string
   cost: number
-  estimated_delivery: string // ISO
+  estimated_delivery: string | null
   raw: unknown
 }
 
-const AR24_BASE =
-  process.env.AR24_API_URL ?? 'https://app.ar24.fr/api'
-const AR24_KEY = process.env.AR24_API_KEY ?? ''
+export class AR24Error extends Error {
+  readonly code: 'ar24_unavailable' | 'ar24_unconfirmed'
+  readonly status: 503 | 502
 
-/**
- * Send a registered letter via AR24 if credentials exist, else fall back to
- * an internal simulation that the rest of the stack treats exactly like a
- * real send (tracking number, AR polling, ar_received_at update).
- */
-export async function sendRecommande(
-  input: AR24SendInput
-): Promise<AR24SendResult> {
-  if (AR24_KEY) {
-    return sendLive(input)
+  constructor(code: 'ar24_unavailable' | 'ar24_unconfirmed') {
+    super(code === 'ar24_unavailable'
+      ? 'Le service de recommandé est indisponible. Aucun dépôt n’a été effectué par cette demande.'
+      : 'Le résultat du fournisseur n’a pas pu être confirmé. Vérifie le dépôt auprès du support avant toute nouvelle tentative.')
+    this.name = 'AR24Error'
+    this.code = code
+    this.status = code === 'ar24_unavailable' ? 503 : 502
   }
-  return sendSimulated(input)
 }
 
-async function sendLive(input: AR24SendInput): Promise<AR24SendResult> {
+function getConfig() {
+  const key = process.env.AR24_API_KEY?.trim()
+  if (process.env.AR24_ENABLED !== 'true' || !key) throw new AR24Error('ar24_unavailable')
+  let url: URL
+  try {
+    url = new URL(process.env.AR24_API_URL ?? 'https://app.ar24.fr/api')
+  } catch {
+    throw new AR24Error('ar24_unavailable')
+  }
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+    throw new AR24Error('ar24_unavailable')
+  }
+  return { key, base: url.toString().replace(/\/$/, '') }
+}
+
+export function assertAR24Configured(): void {
+  getConfig()
+}
+
+function providerReference(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const reference = value.trim()
+  if (!reference || reference.length > 200 || /[\u0000-\u001f\u007f]/.test(reference)) return null
+  if (/^SIM-AR-/i.test(reference)) return null
+  return reference
+}
+
+function timestamp(value: unknown): string | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null
+  const time = Date.parse(value)
+  return Number.isFinite(time) ? new Date(time).toISOString() : null
+}
+
+async function providerRequest(path: string, init: RequestInit): Promise<Record<string, unknown>> {
+  const { key, base } = getConfig()
+  try {
+    const response = await fetch(`${base}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${key}` },
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!response.ok) throw new AR24Error('ar24_unconfirmed')
+    const json: unknown = await response.json()
+    if (!json || typeof json !== 'object' || Array.isArray(json)) {
+      throw new AR24Error('ar24_unconfirmed')
+    }
+    return json as Record<string, unknown>
+  } catch {
+    // Never expose response bodies, recipient data, URLs or provider credentials.
+    // A transport failure is an unknown outcome, not proof that nothing was sent.
+    throw new AR24Error('ar24_unconfirmed')
+  }
+}
+
+/** Only the configured provider can establish a deposit. There is no simulation fallback. */
+export async function sendRecommande(input: AR24SendInput): Promise<AR24SendResult> {
+  assertAR24Configured()
   const form = new FormData()
   form.append('recipient_name', input.recipient.name)
   form.append('recipient_street', input.recipient.street)
   form.append('recipient_zip', input.recipient.zip)
   form.append('recipient_city', input.recipient.city)
   form.append('recipient_country', input.recipient.country || 'FR')
-  if (input.recipient.email) {
-    form.append('recipient_email', input.recipient.email)
-  }
+  if (input.recipient.email) form.append('recipient_email', input.recipient.email)
   form.append('type', 'AR')
   form.append('subject', input.subject)
-  form.append(
-    'document',
-    new Blob([new Uint8Array(input.documentPdfBuffer)], { type: 'application/pdf' }),
-    input.filename
-  )
+  form.append('document', new Blob([new Uint8Array(input.documentPdfBuffer)], {
+    type: 'application/pdf',
+  }), input.filename)
 
-  const res = await fetch(`${AR24_BASE}/envois`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${AR24_KEY}` },
-    body: form,
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(
-      `AR24 a refusé l'envoi (HTTP ${res.status}) ${text.slice(0, 200)}`
-    )
+  const json = await providerRequest('/envois', { method: 'POST', body: form })
+  const tracking = providerReference(json.tracking_number) ?? providerReference(json.id)
+  if (!tracking || typeof json.cost !== 'number' || !Number.isFinite(json.cost) || json.cost < 0) {
+    throw new AR24Error('ar24_unconfirmed')
   }
+  const estimated = json.estimated_delivery == null ? null : timestamp(json.estimated_delivery)
+  if (json.estimated_delivery != null && !estimated) throw new AR24Error('ar24_unconfirmed')
 
-  const json = (await res.json().catch(() => null)) as {
-    tracking_number?: string
-    id?: string
-    cost?: number
-    estimated_delivery?: string
-  } | null
-
-  const tracking = json?.tracking_number ?? json?.id ?? `AR24-${Date.now()}`
   return {
     mode: 'live',
     tracking_number: tracking,
-    cost: json?.cost ?? 5.99,
-    estimated_delivery:
-      json?.estimated_delivery ??
-      new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
+    cost: json.cost,
+    estimated_delivery: estimated,
     raw: json,
   }
 }
 
-async function sendSimulated(
-  input: AR24SendInput
-): Promise<AR24SendResult> {
-  const random = crypto.randomBytes(6).toString('hex').toUpperCase()
-  const tracking = `SIM-AR-${random}`
-  // In simulation we consider the delivery happens ~2h later (cron bumps it).
-  const estimated = new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString()
-
-  return {
-    mode: 'simulated',
-    tracking_number: tracking,
-    cost: 5.99,
-    estimated_delivery: estimated,
-    raw: {
-      note: 'Mode simulation (AR24_API_KEY non configurée).',
-      recipient: input.recipient,
-      documentId: input.metadata.documentId,
-    },
-  }
-}
-
-/**
- * Poll the status of a tracking. Returns `received` when AR is complete.
- * In simulation mode, any tracking older than 2h is marked as received.
- */
+/** A provider status is not an archived legal receipt. No date is synthesized. */
 export async function pollStatus(
   trackingNumber: string,
   sentAtISO: string
 ): Promise<{ received: boolean; received_at: string | null }> {
-  if (trackingNumber.startsWith('SIM-AR-') || !AR24_KEY) {
-    const sent = new Date(sentAtISO).getTime()
-    const now = Date.now()
-    if (now - sent >= 1000 * 60 * 60 * 2) {
-      return { received: true, received_at: new Date().toISOString() }
-    }
-    return { received: false, received_at: null }
+  const reference = providerReference(trackingNumber)
+  // Historical simulations must never acquire a real receipt by waiting.
+  if (!reference) return { received: false, received_at: null }
+  const sentAt = timestamp(sentAtISO)
+  if (!sentAt) throw new AR24Error('ar24_unconfirmed')
+  const json = await providerRequest(`/envois/${encodeURIComponent(reference)}`, { method: 'GET' })
+  const matches = [providerReference(json.tracking_number), providerReference(json.id)].includes(reference)
+  if (!matches) throw new AR24Error('ar24_unconfirmed')
+  if (json.status !== 'received') return { received: false, received_at: null }
+  const receivedAt = timestamp(json.received_at)
+  if (!receivedAt || Date.parse(receivedAt) < Date.parse(sentAt) || Date.parse(receivedAt) > Date.now()) {
+    throw new AR24Error('ar24_unconfirmed')
   }
-
-  try {
-    const res = await fetch(
-      `${AR24_BASE}/envois/${encodeURIComponent(trackingNumber)}`,
-      {
-        headers: { Authorization: `Bearer ${AR24_KEY}` },
-      }
-    )
-    if (!res.ok) return { received: false, received_at: null }
-    const json = (await res.json().catch(() => null)) as {
-      status?: string
-      received_at?: string
-    } | null
-    if (json?.status === 'received' || json?.received_at) {
-      return {
-        received: true,
-        received_at: json.received_at ?? new Date().toISOString(),
-      }
-    }
-    return { received: false, received_at: null }
-  } catch {
-    return { received: false, received_at: null }
-  }
+  return { received: true, received_at: receivedAt }
 }
 
-export const AR24_MODE: 'live' | 'simulated' = AR24_KEY ? 'live' : 'simulated'
+export const AR24_MODE: 'live' | 'unavailable' =
+  process.env.AR24_ENABLED === 'true' && process.env.AR24_API_KEY?.trim() ? 'live' : 'unavailable'

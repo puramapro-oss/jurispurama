@@ -1,10 +1,28 @@
 # JurisPurama
 
-L'assistant juridique IA français : pose ton problème, reçois un plan d'action et des documents prêts à signer en 3 minutes.
+Projet d'assistant d'information juridique et de préparation documentaire.
 
-## Live
+## Adresse déclarée
 
 https://jurispurama.purama.dev
+
+Le déploiement et la conformité globale ne sont pas attestés par les tests locaux ci-dessous.
+
+## Correctif AR24 — 11 novembre 2026
+
+Les envois et le suivi AR24 sont **désactivés par défaut**. Une clé API seule ne les active pas. Le code exige aussi `AR24_ENABLED=true`, une URL HTTPS valide et une configuration complète. **Ne pas activer cette variable dans l'état actuel de l'adaptateur.**
+
+L'adaptateur hérité utilise `/envois`, un jeton Bearer et des réponses non chiffrées. La [documentation officielle AR24](https://developers.ar24.fr/doc/) décrit `/api/mail`, une signature des requêtes, des réponses chiffrées et des statuts différents. L'adaptateur doit être qualifié et corrigé avant activation, avec les prérequis d'identité, de facturation et de consentement applicables. Les tests locaux ne valident pas ce contrat fournisseur.
+
+Le correctif supprime les dépôts simulés, les reçus créés après un délai, les références inventées et les affirmations d'archivage d'une preuve non stockée. Un résultat de transport incertain impose une vérification avant toute nouvelle tentative. Le paiement des recommandés hors forfait est indisponible : quota épuisé, aucun dépôt n'est commencé.
+
+Tests ciblés hors réseau, sous Node 24 :
+
+```sh
+node --test tests/ar24-*.test.mjs
+```
+
+Résultat local : **27 tests réussis**. Les deux contrôles de régression échouent sur le module original et passent après correction. Next, Zod, Supabase et les emails sont doublés dans les tests de routes ; la compilation complète, le navigateur, le fournisseur réel et les données existantes restent non testés. Voir [le rapport et les blocages d'activation](docs/audit-juridique/ar24-2026-11-11.md).
 
 ## Stack
 
@@ -12,8 +30,8 @@ https://jurispurama.purama.dev
 - **Styling** : Tailwind v4 · palette dark (#1E3A5F justice / #C9A84C gold) · Cormorant Garamond
 - **Base de données** : Supabase self-hosted (PostgreSQL) via `auth.purama.dev`
 - **Auth** : `@supabase/ssr` (cookies httpOnly) + OAuth Google + middleware
-- **IA** : Anthropic Claude (`@anthropic-ai/sdk`) en SSE streaming — persona `JurisIA` (avocat FR 30 ans d'expérience)
-- **Paiements** : Stripe 22 (live) — 4 abonnements (Free / Essentiel / Pro / Avocat) + 3 achats unitaires
+- **IA** : Anthropic Claude (`@anthropic-ai/sdk`) en SSE streaming — `JurisIA`, information juridique générale, sans qualité d'avocat
+- **Paiements** : intégration Stripe 22 — tarifs et configuration à vérifier avant ouverture commerciale
 - **PDF** : `@react-pdf/renderer` (génération) + `pdf-lib` (signature canvas → PDF signé)
 - **Email** : Resend + `@react-email/components` (templates marketing + transactionnels)
 - **OCR** : Claude Vision (scanner PV, contrats, baux)
@@ -26,10 +44,10 @@ https://jurispurama.purama.dev
 - **P1** — Scaffold Next.js + Auth Supabase email/OAuth + schéma DB `jurispurama` (11 tables RLS) + landing minimaliste
 - **P2** — Chat JurisIA SSE streaming + dossiers + messages + actions (générer doc, poser question, citer articles)
 - **P3** — Profil juridique chiffré AES-256 + scanner OCR Claude Vision + génération PDF contestations
-- **P4** — Signature canvas (Art. 1366 Code civil) + envoi email / recommandé (mode sim AR24) + timeline dossier + crons deadline-alerts
+- **P4** — Signature canvas + envoi email + adaptateur recommandé désactivé avant qualification AR24 + timeline dossier + crons deadline-alerts
 - **P5** — Stripe 4 plans + webhooks + parrainage (QR, tiers Bronze→Légende, withdrawals wallet) + programme influenceurs + admin (stats, users, payments, influenceurs)
 - **P6** — Landing cinématique dark (Hero, Demo, Domains, HowItWorks, Testimonials, Compare, Pricing, FAQ, CTA, Footer) + pages statiques (pricing, how-it-works, ecosystem, aide, contact, changelog, status, blog, offline, légales) + SEO complet + PWA + i18n fr/en/es + dark mode + email marketing séquences
-- **P7** — Playwright E2E (111 tests · 3 viewports) + 21 SIM utilisateur + Lighthouse audit (100/96/100/100 desktop)
+- **P7 — historique déclaré, non réexécuté le 11 novembre 2026** : Playwright E2E (111 tests · 3 viewports), 21 SIM utilisateur, Lighthouse (100/96/100/100 desktop)
 
 ## Architecture
 

@@ -1,0 +1,94 @@
+name: Account deletion regressions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: account-deletion-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Install only locked public test dependencies
+        env:
+          JURIS_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-account-deletion-deps
+        run: |
+          mkdir -p "$JURIS_TEST_DEPENDENCY_ROOT"
+          cp tests/account-deletion-deps/package*.json "$JURIS_TEST_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_TEST_DEPENDENCY_ROOT=%s\n' "$JURIS_TEST_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+
+      - name: Check dependency versions against the application lockfile
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const app = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          const tests = JSON.parse(readFileSync('tests/account-deletion-deps/package.json', 'utf8'))
+          for (const [name, version] of Object.entries(tests.dependencies)) {
+            assert.equal(version, app.packages[`node_modules/${name}`].version, `${name}: application lockfile drift`)
+            // Stripe does not export package.json; read its installed public metadata directly.
+            const installed = JSON.parse(readFileSync(resolve(process.env.JURIS_TEST_DEPENDENCY_ROOT, 'node_modules', name, 'package.json'), 'utf8'))
+            assert.equal(installed.version, version, `${name}: installed version mismatch`)
+          }
+          NODE
+
+      - name: Account deletion concurrency, scheduling and SDK contracts
+        run: node --experimental-vm-modules --test tests/account-deletion-concurrency.test.mjs tests/account-deletion-scheduling.test.mjs tests/account-deletion-sdk.test.mjs
+
+      - name: Historical deletion error regressions
+        run: node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs
+
+      - name: Stripe Connect phase and configuration regressions
+        run: node --experimental-vm-modules --test tests/stripe-connect-gating.test.mjs
+
+      - name: AR24 checkout availability regressions
+        run: node --experimental-vm-modules --test tests/checkout-unit-ar24.test.mjs
+
+      - name: Existing AR24 regressions
+        run: node --test tests/ar24-regression-control.test.mjs tests/ar24-routes.test.mjs tests/ar24-safety.test.mjs
+
+  native-postgres-rls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify state guards in a private disposable PostgreSQL cluster
+        env:
+          JURIS_RLS_REPORT: ${{ runner.temp }}/juris-account-deletion-rls.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          pg_bin=/usr/lib/postgresql/16/bin
+          for pg_tool in initdb pg_ctl psql; do
+            if [[ ! -x "$pg_bin/$pg_tool" ]]; then
+              printf '::error::Preinstalled PostgreSQL binary is unavailable: %s\n' "$pg_bin/$pg_tool"
+              exit 1
+            fi
+          done
+          python3 tests/account-deletion-postgres.py \
+            --pg-bin "$pg_bin" \
+            --schema schema-legal.sql \
+            --migration migrations/20261111_account_deletion_rls_guards.sql \
+            --migration-sha256 9ac3b8a570baab2c5b08d81f4ae901e2ac2435552091c7dcb918265f9844565a \
+            --report "$JURIS_RLS_REPORT"

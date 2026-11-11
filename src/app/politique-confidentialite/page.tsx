@@ -22,7 +22,7 @@ export default function ConfidentialitePage() {
             Politique de confidentialité
           </h1>
           <p className="text-sm text-[var(--text-muted)] mb-8">
-            Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
+            Dernière mise à jour : 11 novembre 2026
           </p>
 
           <div className="space-y-6">
@@ -67,8 +67,10 @@ export default function ConfidentialitePage() {
                   JurisIA, documents générés, justificatifs uploadés
                 </li>
                 <li>
-                  <strong>Données de paiement :</strong> traitées uniquement
-                  par Stripe — nous ne stockons aucune donnée bancaire
+                  <strong>Données de paiement :</strong> traitées
+                  par Stripe. Cette gestion des paiements est distincte de
+                  l&apos;IBAN que tu renseignes dans ton profil juridique
+                  pour préparer tes documents.
                 </li>
                 <li>
                   <strong>Données techniques :</strong> journaux
