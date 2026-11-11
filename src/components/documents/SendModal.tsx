@@ -123,12 +123,10 @@ export default function SendModal({
       }
       const data = (await res.json()) as {
         tracking_number: string
-        mode: 'live' | 'simulated'
+        mode: 'live'
       }
       toast.success(
-        `📮 Recommandé déposé — suivi ${data.tracking_number}${
-          data.mode === 'simulated' ? ' (démo)' : ''
-        }`
+        `Dépôt confirmé par le fournisseur — suivi ${data.tracking_number}`
       )
       onSent()
       onClose()

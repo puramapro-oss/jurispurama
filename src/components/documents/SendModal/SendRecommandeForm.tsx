@@ -94,10 +94,10 @@ export default function SendRecommandeForm({
           ✉ Recommandé électronique AR — 5,99 €
         </p>
         <p className="mt-1">
-          Valeur juridique équivalente à une lettre recommandée AR
-          papier. Preuve d&apos;envoi horodatée et accusé de réception
-          stockés dans ton dossier. Inclus dans les forfaits Pro
-          (3/mois) et Premium (illimité).
+          Le dépôt et la remise sont confirmés uniquement à partir du suivi
+          fournisseur. Ce service ne confirme pas l&apos;archivage d&apos;une
+          preuve d&apos;accusé de réception. Inclus dans les forfaits Pro
+          (3/mois) et Premium (illimité). Le paiement hors forfait est indisponible.
         </p>
       </div>
       <div className="flex justify-end gap-2 pt-2">

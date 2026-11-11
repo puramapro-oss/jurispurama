@@ -46,7 +46,7 @@ export function DocumentSentConfirmation({
           </Section>
           <Section style={body}>
             <Heading as="h2" style={h1}>
-              ✓ Envoi confirmé
+              {channel === 'recommande' ? 'Dépôt confirmé par le fournisseur' : 'Envoi confirmé'}
             </Heading>
             <Text style={p}>
               Bonjour {userName}, ton document{' '}
@@ -76,13 +76,14 @@ export function DocumentSentConfirmation({
               </Link>
             </Text>
             <Text style={{ ...p, color: MUTED, fontSize: '13px' }}>
-              Tu recevras une nouvelle notification dès que le destinataire
-              aura accusé réception (pour les recommandés).
+              Pour un recommandé, une notification de suivi pourra être envoyée
+              si le fournisseur confirme sa remise. Le statut de dépôt ne prouve
+              pas la réception par le destinataire.
             </Text>
           </Section>
           <Section style={footer}>
             <Text style={{ margin: 0 }}>
-              JurisPurama — SASU PURAMA, 8 rue de la Chapelle, 25560 Frasne.
+              JurisPurama — suivi documentaire.
             </Text>
           </Section>
         </Container>

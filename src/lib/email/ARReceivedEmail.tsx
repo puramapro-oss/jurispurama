@@ -31,7 +31,7 @@ export function ARReceivedEmail({
   return (
     <Html lang="fr">
       <Head />
-      <Preview>Accusé de réception reçu — {documentTitle}</Preview>
+      <Preview>Remise signalée par le fournisseur — {documentTitle}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={headerBar}>
@@ -42,12 +42,12 @@ export function ARReceivedEmail({
           </Section>
           <Section style={body}>
             <Heading as="h2" style={h1}>
-              📬 Accusé de réception
+              📬 Suivi du recommandé
             </Heading>
             <Text style={p}>Bonjour {userName},</Text>
             <Text style={p}>
-              Bonne nouvelle : ton recommandé{' '}
-              <strong>{documentTitle}</strong> a été remis à{' '}
+              Le fournisseur signale la remise de ton recommandé{' '}
+              <strong>{documentTitle}</strong> à{' '}
               <strong>{recipient}</strong> le{' '}
               {new Date(receivedAtISO).toLocaleDateString('fr-FR', {
                 day: 'numeric',
@@ -57,7 +57,9 @@ export function ARReceivedEmail({
               .
             </Text>
             <Text style={p}>
-              La preuve d&apos;AR est horodatée et archivée dans ton dossier.
+              Ce message présente un statut de suivi. Il ne confirme pas
+              l&apos;archivage d&apos;une preuve d&apos;accusé de réception.
+              Conserve les justificatifs délivrés par le fournisseur.
               <Link
                 href={docUrl}
                 style={{
@@ -77,7 +79,7 @@ export function ARReceivedEmail({
           </Section>
           <Section style={footer}>
             <Text style={{ margin: 0 }}>
-              JurisPurama — SASU PURAMA, Frasne.
+              JurisPurama — suivi documentaire.
             </Text>
           </Section>
         </Container>
