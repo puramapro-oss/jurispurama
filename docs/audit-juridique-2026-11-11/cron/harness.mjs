@@ -16,8 +16,6 @@ const blob = crypto.createHash('sha1')
 assert.equal(blob, expectedBlob, 'The handler bytes must match the GitHub source blob.');
 const sourceSha256 = crypto.createHash('sha256').update(sourceBytes).digest('hex');
 
-// Node removes types only. No body or import text of the handler is patched.
-const javascript = stripTypeScriptTypes(sourceBytes.toString('utf8'), { mode: 'strip' });
 const fakeNow = '2026-11-11T12:00:00.000Z';
 class FixedDate extends Date {
   constructor(...args) { super(...(args.length ? args : [fakeNow])); }
@@ -128,6 +126,7 @@ function createBackend(initialRows, options = {}) {
 }
 
 async function instantiateHandler(backend, handlerSource, authorized = true) {
+  // Node removes types only. No body or import text of the handler is patched.
   const javascript = stripTypeScriptTypes(handlerSource, { mode: 'strip' });
   // The VM receives no network, filesystem, process or require capability.
   const context = vm.createContext({ Date: FixedDate, Error }, {
@@ -136,10 +135,10 @@ async function instantiateHandler(backend, handlerSource, authorized = true) {
   });
   const modules = new Map();
   function synthetic(specifier, exports) {
-    const module = new vm.SyntheticModule(Object.keys(exports), function () {
+    const dependencyModule = new vm.SyntheticModule(Object.keys(exports), function () {
       Object.entries(exports).forEach(([key, value]) => this.setExport(key, value));
     }, { context, identifier: `stub:${specifier}` });
-    modules.set(specifier, module);
+    modules.set(specifier, dependencyModule);
   }
   synthetic('next/server', {
     NextResponse: { json(body, init = {}) { return { status: init.status ?? 200, body: structuredClone(body) }; } },
