@@ -1,6 +1,8 @@
 import { registerHooks } from 'node:module'
 
-// Routes and AR24 module are real; framework, database and email dependencies are doubled.
+// Routes and tracking transport are real; framework, database and emails are doubled.
+// Sending uses an explicit candidate double only for persistence/quota regressions.
+// A separate route test uses the real closed send gate; no fixture qualifies live sending.
 // The Zod double accepts fixtures. Request validation is outside this test's scope.
 const sources = {
   'next/server': 'export const NextResponse = { json: (body, init) => Response.json(body, init) }',
@@ -13,11 +15,22 @@ const sources = {
     export const sendEmail = async (value) => { globalThis.__ar24TestState.emails.push(value) }`,
   '@/lib/email/templates': `export const ARReceivedEmail = (props) => props;
     export const DocumentSentConfirmation = (props) => props;`,
+  '@/lib/ar24': `import * as real from '${new URL('../src/lib/ar24.ts', import.meta.url).href}';
+    import { ar24Config } from '${new URL('../src/lib/ar24-protocol.ts', import.meta.url).href}';
+    export { pollStatus, assertAR24TrackingConfigured, AR24Error } from '${new URL('../src/lib/ar24.ts', import.meta.url).href}';
+    export const assertAR24Configured = () => {
+      if (!globalThis.__ar24TestState.allowSenderFixture) return real.assertAR24Configured();
+      ar24Config();
+    };
+    export const sendRecommande = async input => {
+      if (!globalThis.__ar24TestState.allowSenderFixture) return real.sendRecommande(input);
+      globalThis.__ar24TestState.adapterSends++;
+      return globalThis.__ar24TestState.sendResult(input);
+    };`,
 }
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier in sources) return { url: `ar24-test:${specifier}`, shortCircuit: true }
-    if (specifier === '@/lib/ar24') return { url: new URL('../src/lib/ar24.ts', import.meta.url).href, shortCircuit: true }
     return nextResolve(specifier, context)
   },
   load(url, context, nextLoad) {
@@ -33,7 +46,9 @@ export function fixture() {
     caseRow: { id: 'case-test', user_id: 'user-test' }, cases: [{ id: 'case-test' }],
     count: 0, countError: null, casesError: null, updateError: null, missingUpdate: false,
     pending: [], writes: [], emails: [], requests: [], downloads: 0, queries: [],
-    provider: () => new Response(JSON.stringify({ tracking_number: 'provider-123', cost: 5.99 })),
+    allowSenderFixture: false, adapterSends: 0,
+    sendResult: () => ({ mode: 'live', tracking_number: '123', cost: 5.99, estimated_delivery: null }),
+    provider: () => { throw new Error('Network forbidden; configure an encrypted fixture explicitly') },
   }
   class Query {
     constructor(table) { this.table = table; this.op = 'select'; this.filters = [] }

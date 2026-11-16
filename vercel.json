@@ -2,7 +2,8 @@
   "framework": "nextjs",
   "git": {
     "deploymentEnabled": {
-      "codex/juris-legal-review-20261111": false
+      "codex/juris-legal-review-20261111": false,
+      "codex/juris-ar24-contract-20261116": false
     }
   },
   "regions": [

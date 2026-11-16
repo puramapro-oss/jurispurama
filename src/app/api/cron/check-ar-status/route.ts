@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
-import { pollStatus, assertAR24Configured, AR24Error } from '@/lib/ar24'
+import { pollStatus, assertAR24TrackingConfigured, AR24Error } from '@/lib/ar24'
 import { sendEmail, FROM_NOTIFS } from '@/lib/email/send'
 import { ARReceivedEmail } from '@/lib/email/templates'
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    assertAR24Configured()
+    assertAR24TrackingConfigured()
   } catch {
     return NextResponse.json({ error: 'Le suivi des recommandés est indisponible.', code: 'ar24_unavailable' }, { status: 503 })
   }

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire, stripTypeScriptTypes } from 'node:module';
+import { createCipheriv, createDecipheriv, createHash } from 'node:crypto';
 
 const require = createRequire(process.env.JURIS_TEST_DEPENDENCY_ROOT
   ? path.resolve(process.env.JURIS_TEST_DEPENDENCY_ROOT, 'package.json')
@@ -45,6 +46,12 @@ async function loadRoute(env) {
     }, { context }));
   }
   modules.set('@/lib/ar24', new vm.SourceTextModule(stripTypeScriptTypes(ar24Source), { context }));
+  modules.set('./ar24-error.ts', new vm.SourceTextModule(stripTypeScriptTypes(source('src/lib/ar24-error.ts')), { context }));
+  modules.set('./ar24-protocol.ts', new vm.SourceTextModule(stripTypeScriptTypes(source('src/lib/ar24-protocol.ts')), { context }));
+  const crypto = { createCipheriv, createDecipheriv, createHash };
+  modules.set('node:crypto', new vm.SyntheticModule(Object.keys(crypto), function () {
+    Object.entries(crypto).forEach(([key, value]) => this.setExport(key, value));
+  }, { context }));
   const handler = new vm.SourceTextModule(stripTypeScriptTypes(routeSource), { context });
   await handler.link(specifier => {
     assert(modules.has(specifier), `Unexpected dependency ${specifier}`);
@@ -70,10 +77,10 @@ for (const [label, env] of [
   });
 }
 
-test('configured AR24 still requires authentication before any checkout', async () => {
-  const { handler, calls } = await loadRoute({ AR24_ENABLED: 'true', AR24_API_KEY: 'fake-key-no-provider' });
-  assert.equal((await handler.POST(request('recommande_ar'))).status, 401);
-  assert.deepEqual(calls, { auth: 1, database: 0, stripe: 0, price: 0, provider: 0 });
+test('even complete transport credentials cannot enable unqualified AR24 checkout', async () => {
+  const { handler, calls } = await loadRoute({ AR24_ENABLED: 'true', AR24_API_KEY: 'fake-key-no-provider', AR24_PRIVATE_KEY: 'fake-private-key' });
+  assert.equal((await handler.POST(request('recommande_ar'))).status, 503);
+  assert.deepEqual(calls, { auth: 0, database: 0, stripe: 0, price: 0, provider: 0 });
 });
 
 test('another unit type retains its authentication check when AR24 is unavailable', async () => {

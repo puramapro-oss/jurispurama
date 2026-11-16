@@ -1,22 +1,17 @@
 import { test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { sendRecommande, pollStatus } from '../src/lib/ar24.ts'
+import { sendRecommande, pollStatus, assertAR24Configured, AR24_MODE } from '../src/lib/ar24.ts'
+import { ar24Date, ar24Timestamp, ar24Signature, decryptAR24Payload } from '../src/lib/ar24-protocol.ts'
+import { configured, encryptedResponse } from './ar24-fixtures.mjs'
 
-const previous = { AR24_ENABLED: process.env.AR24_ENABLED, AR24_API_KEY: process.env.AR24_API_KEY, AR24_API_URL: process.env.AR24_API_URL }
+const previous = Object.fromEntries(Object.keys(configured).map(key => [key, process.env[key]]))
 const originalFetch = globalThis.fetch
-const input = {
-  recipient: { name: 'Destinataire test', street: '1 rue Test', zip: '75001', city: 'Paris', country: 'FR' },
-  documentPdfBuffer: Buffer.from('%PDF-test'), filename: 'test.pdf', subject: 'Test hors réseau',
-  metadata: { documentId: 'doc-test', caseId: 'case-test', userId: 'user-test', senderName: 'Test' },
-}
-const sentAt = new Date(Date.now() - 10800000).toISOString()
-const receivedAt = new Date(Date.now() - 3600000).toISOString()
+const sentAt = '2026-01-15T10:00:00.000Z'
+const receivedAt = '2026-01-15T12:00:00.000Z'
+const receipt = () => ({ id: 123, type: 'lre', status: 'ar', send_fail: false, view_date: '2026-01-15 13:00:00' })
 let requests
-
 beforeEach(() => {
-  process.env.AR24_ENABLED = 'true'
-  process.env.AR24_API_KEY = 'test-key-never-real'
-  process.env.AR24_API_URL = 'https://ar24-provider.invalid/api'
+  Object.assign(process.env, configured)
   requests = []
   globalThis.fetch = async (...args) => { requests.push(args); throw new Error('Network disabled in tests') }
 })
@@ -27,92 +22,105 @@ afterEach(() => {
   }
   globalThis.fetch = originalFetch
 })
-function provider(body, status = 200) {
-  globalThis.fetch = async (...args) => {
-    requests.push(args)
-    return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
-  }
+function provider(result, status = 'SUCCESS') {
+  globalThis.fetch = async (...args) => { requests.push(args); return encryptedResponse(result, ...args, status) }
 }
-const unconfirmed = (error) => error.code === 'ar24_unconfirmed' && error.status === 502
+const unconfirmed = error => error.code === 'ar24_unconfirmed' && error.status === 502
+const unavailable = error => error.code === 'ar24_unavailable' && error.status === 503
 
-test('a key alone cannot activate the unqualified integration', async () => {
-  for (const flag of [undefined, 'false', 'TRUE', '1']) {
-    if (flag === undefined) delete process.env.AR24_ENABLED
-    else process.env.AR24_ENABLED = flag
-    await assert.rejects(sendRecommande(input), (error) => error.code === 'ar24_unavailable')
+test('official public PHP encryption vectors agree byte for byte', () => {
+  const date = '2021-05-26 14:00:00', key = '7X9gx9E3Qx4EiUdB63nc'
+  assert.equal(ar24Signature(date, key), 'bDop0cbjKpkySlpvnNGvBMg7PuYFFgPPqTTS2RAHoY0=')
+  // The documentation vector is JavaScript-like text, not valid JSON; transport still requires JSON.
+  assert.equal(decryptAR24Payload('WwBOU6s8DaMWmYdctBJwfuoujFgVygBUjhsbdf8eWqQ=', date, key), '{status: "SUCCESS"}')
+})
+test('French dates follow summer/winter time and reject ambiguous or impossible dates', () => {
+  assert.equal(ar24Date(new Date('2026-01-15T12:00:00Z')), '2026-01-15 13:00:00')
+  assert.equal(ar24Date(new Date('2026-07-15T12:00:00Z')), '2026-07-15 14:00:00')
+  assert.equal(ar24Timestamp('2026-07-15 14:00:00'), '2026-07-15T12:00:00.000Z')
+  for (const value of ['2026-03-29 02:30:00', '2026-10-25 02:30:00', '2026-02-30 12:00:00', '2026-01-15 25:00:00', 'tomorrow']) assert.equal(ar24Timestamp(value), null)
+})
+test('credentials and activation cannot open unqualified sending or checkout', async () => {
+  assert.equal(AR24_MODE, 'unavailable')
+  assert.throws(() => assertAR24Configured(), unavailable)
+  await assert.rejects(sendRecommande({}), unavailable)
+  assert.equal(requests.length, 0)
+})
+test('tracking requires explicit activation plus both distinct credentials', async () => {
+  for (const key of ['AR24_ENABLED', 'AR24_API_KEY', 'AR24_PRIVATE_KEY']) {
+    delete process.env[key]
+    await assert.rejects(pollStatus('123', sentAt), unavailable)
+    Object.assign(process.env, configured)
   }
   assert.equal(requests.length, 0)
 })
-test('missing configuration never produces a simulated deposit', async () => {
-  delete process.env.AR24_API_KEY
-  await assert.rejects(sendRecommande(input), (error) => error.code === 'ar24_unavailable' && error.status === 503)
-  assert.equal(requests.length, 0)
-})
-test('unsafe or malformed provider configuration is rejected before transport', async () => {
-  for (const url of ['http://provider.invalid', 'https://user:secret@provider.invalid', 'https://provider.invalid?key=secret', 'not a URL']) {
+test('untrusted origins, credentials, ports, paths, fragments and queries fail before transport', async () => {
+  for (const url of ['http://app.ar24.fr/api', 'https://app.ar24.fr.attacker.invalid/api', 'https://user:secret@app.ar24.fr/api',
+    'https://app.ar24.fr:444/api', 'https://app.ar24.fr/api/mail', 'https://app.ar24.fr/api?token=x', 'https://app.ar24.fr/api#x', 'invalid']) {
     process.env.AR24_API_URL = url
-    await assert.rejects(sendRecommande(input), (error) => error.code === 'ar24_unavailable')
+    await assert.rejects(pollStatus('123', sentAt), unavailable)
   }
   assert.equal(requests.length, 0)
 })
-test('accepted adapter response preserves reference and cost without fabricating an ETA', async () => {
-  provider({ tracking_number: 'provider-123', cost: 0 })
-  const result = await sendRecommande(input)
-  assert.deepEqual({ mode: result.mode, tracking: result.tracking_number, cost: result.cost, eta: result.estimated_delivery },
-    { mode: 'live', tracking: 'provider-123', cost: 0, eta: null })
-  assert.equal(requests.length, 1)
-  assert.equal(requests[0][1].redirect, 'error')
-})
-test('missing, blank and simulated references cannot establish a deposit', async () => {
-  for (const tracking_number of [undefined, '', ' ', 'SIM-AR-old', 'sim-ar-old', 'ref\ninvalid']) {
-    provider({ tracking_number, cost: 5.99 })
-    await assert.rejects(sendRecommande(input), unconfirmed)
-  }
-})
-test('unknown costs, invalid dates and malformed objects are not replaced with defaults', async () => {
-  for (const body of [{ tracking_number: 'provider-123' }, { tracking_number: 'provider-123', cost: -1 },
-    { tracking_number: 'provider-123', cost: '5.99' }, { tracking_number: 'provider-123', cost: 5.99, estimated_delivery: 'tomorrow' }, null, []]) {
-    provider(body)
-    await assert.rejects(sendRecommande(input), unconfirmed)
-  }
-})
-test('provider error bodies and credentials stay out of errors and are not retried', async () => {
-  provider({ detail: 'private recipient, test-key-never-real' }, 403)
-  await assert.rejects(sendRecommande(input), (error) => unconfirmed(error) && !/private|test-key/.test(error.message))
-  assert.equal(requests.length, 1)
-})
-test('transport uncertainty and invalid JSON produce an unconfirmed outcome', async () => {
-  await assert.rejects(sendRecommande(input), unconfirmed)
-  assert.equal(requests.length, 1)
-  globalThis.fetch = async () => new Response('private non-JSON body')
-  await assert.rejects(sendRecommande(input), (error) => unconfirmed(error) && !/private/.test(error.message))
-})
-test('historical simulation never becomes received after elapsed time', async () => {
+test('simulations never become received and non-provider IDs never reach the network', async () => {
   assert.deepEqual(await pollStatus('SIM-AR-historical', sentAt), { received: false, received_at: null })
+  for (const value of ['provider-123', '', '0', '-1', '1.5', '../mail', '123\n']) await assert.rejects(pollStatus(value, sentAt), unconfirmed)
   assert.equal(requests.length, 0)
 })
-test('missing configuration never converts real tracking into simulated receipt', async () => {
-  delete process.env.AR24_API_KEY
-  await assert.rejects(pollStatus('provider-123', sentAt), (error) => error.code === 'ar24_unavailable')
+test('a missing or timezone-free local send time cannot establish a receipt', async () => {
+  for (const value of ['', 'invalid', '2026-01-15 10:00:00']) await assert.rejects(pollStatus('123', value), unconfirmed)
   assert.equal(requests.length, 0)
 })
-test('pending provider status remains pending even when a timestamp is present', async () => {
-  provider({ tracking_number: 'provider-123', status: 'pending', received_at: receivedAt })
-  assert.deepEqual(await pollStatus('provider-123', sentAt), { received: false, received_at: null })
-})
-test('receipt must match the reference and include a plausible provider timestamp', async () => {
-  for (const body of [
-    { tracking_number: 'other', status: 'received', received_at: receivedAt },
-    { tracking_number: 'provider-123', status: 'received' },
-    { tracking_number: 'provider-123', status: 'received', received_at: 'invalid' },
-    { tracking_number: 'provider-123', status: 'received', received_at: new Date(Date.now() + 3600000).toISOString() },
-    { tracking_number: 'provider-123', status: 'received', received_at: new Date(Date.parse(sentAt) - 1000).toISOString() },
-  ]) {
-    provider(body)
-    await assert.rejects(pollStatus('provider-123', sentAt), unconfirmed)
+test('known pending/failure/draft statuses never become received even with a view date', async () => {
+  for (const status of ['waiting', 'to_valid', 'sent', 'ev', 'refused', 'negligence', 'bounced', 'fail']) {
+    provider({ ...receipt(), status })
+    assert.deepEqual(await pollStatus('123', sentAt), { received: false, received_at: null })
   }
 })
-test('matching received response uses only the adapter timestamp', async () => {
-  provider({ tracking_number: 'provider-123', status: 'received', received_at: receivedAt })
-  assert.deepEqual(await pollStatus('provider-123', sentAt), { received: true, received_at: receivedAt })
+test('receipt requires matching numeric ID, LRE type, successful sending and plausible view date', async () => {
+  for (const patch of [{ id: 124 }, { type: 'paper' }, { send_fail: true }, { send_fail: undefined },
+    { status: null }, { view_date: undefined }, { view_date: 'invalid' }, { view_date: '2026-01-15 10:00:00' },
+    { view_date: '2099-01-15 13:00:00' }, { view_date: '2026-10-25 02:30:00' }]) {
+    provider({ ...receipt(), ...patch })
+    await assert.rejects(pollStatus('123', sentAt), unconfirmed)
+  }
+})
+test('confirmed receipt preserves provider time, accepting documented ar/AR spellings', async () => {
+  for (const status of ['ar', 'AR']) {
+    provider({ ...receipt(), status })
+    assert.deepEqual(await pollStatus('123', sentAt), { received: true, received_at: receivedAt })
+  }
+})
+test('request uses signed official GET and disables redirects and caching', async () => {
+  provider(receipt())
+  await pollStatus('123', sentAt)
+  const [url, init] = requests[0]
+  assert.equal(new URL(url).pathname, '/api/mail')
+  assert.equal(init.redirect, 'error'); assert.equal(init.cache, 'no-store')
+  assert.equal(init.headers.Authorization, undefined); assert.ok(init.headers.signature)
+  assert.equal(init.body, undefined); assert.equal(requests.length, 1)
+})
+test('plaintext errors, plaintext success, malformed/encrypted invalid envelopes stay unconfirmed', async () => {
+  for (const result of [null, [], 'wrong', 123]) {
+    provider(result)
+    await assert.rejects(pollStatus('123', sentAt), unconfirmed)
+  }
+  provider(receipt(), 'ERROR')
+  await assert.rejects(pollStatus('123', sentAt), unconfirmed)
+  for (const body of ['{"status":"maintenance"}', JSON.stringify({ status: 'SUCCESS', result: receipt() }), 'private html', 'A'.repeat(64)]) {
+    globalThis.fetch = async () => new Response(body)
+    await assert.rejects(pollStatus('123', sentAt), error => unconfirmed(error) && !/private|maintenance/.test(error.message))
+  }
+})
+test('transport failures are redacted and not retried', async () => {
+  await assert.rejects(pollStatus('123', sentAt), unconfirmed)
+  assert.equal(requests.length, 1)
+  requests = []
+  globalThis.fetch = async (...args) => { requests.push(args); return new Response('private token and recipient', { status: 403 }) }
+  await assert.rejects(pollStatus('123', sentAt), error => unconfirmed(error) && !/private|token|recipient/.test(error.message))
+  assert.equal(requests.length, 1)
+})
+test('oversized provider responses stop before decryption', async () => {
+  globalThis.fetch = async () => new Response('A'.repeat(1_048_577))
+  await assert.rejects(pollStatus('123', sentAt), unconfirmed)
 })
