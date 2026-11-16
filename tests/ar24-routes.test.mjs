@@ -6,12 +6,13 @@ import { AR24Error } from '../src/lib/ar24-error.ts'
 import { fixture, request, context, cronRequest } from './ar24-route-harness.mjs'
 const { POST } = await import('../src/app/api/documents/[id]/send-recommande/route.ts')
 const { GET } = await import('../src/app/api/cron/check-ar-status/route.ts')
-const previous = Object.fromEntries([...Object.keys(configured), 'CRON_SECRET'].map(key => [key, process.env[key]]))
+const previous = Object.fromEntries([...Object.keys(configured), 'CRON_SECRET', 'RESEND_API_KEY'].map(key => [key, process.env[key]]))
 const originalFetch = globalThis.fetch
 let state
 beforeEach(() => {
   Object.assign(process.env, configured)
   process.env.CRON_SECRET = 'cron-test-not-real'
+  process.env.RESEND_API_KEY = 're-test-not-real'
   state = fixture()
 })
 afterEach(() => {
@@ -100,7 +101,7 @@ test('cron without activation does not query or mutate a receipt', async () => {
 const sentAt = new Date(Date.now() - 10800000).toISOString()
 const receivedAt = new Date(Math.floor((Date.now() - 3600000) / 1000) * 1000).toISOString()
 const receipt = () => ({ id: 123, type: 'lre', status: 'ar', send_fail: false, view_date: ar24Date(new Date(receivedAt)) })
-const pending = (tracking = '123') => ({ id: 'doc-test', case_id: 'case-test', title: 'Test', tracking_number: tracking, sent_at: sentAt, sent_to: 'Test' })
+const pending = (tracking = '123') => ({ id: `doc-${tracking}`, case_id: 'case-test', title: 'Test', tracking_number: tracking, sent_at: sentAt, sent_to: 'Test' })
 test('cron never upgrades a historical simulated deposit to received', async () => {
   state.pending = [pending('SIM-AR-historical')]
   const response = await GET(cronRequest())
@@ -139,7 +140,7 @@ test('cron sends no receipt notification when its conditional update finds no ro
   assert.equal(body.ok, false)
   assert.equal(body.failed, 1)
   assert.equal(body.results[0].persisted, false)
-  assert.equal(body.results[0].error, 'receipt_update_not_applied')
+  assert.equal(body.results[0].error, 'receipt_update_unconfirmed')
   assert.equal(body.updated, 0)
   assert.equal(state.writes.length, 1)
   assert.deepEqual(state.emails, [])
@@ -167,7 +168,7 @@ test('cron reports a failed receipt save without exposing database errors or not
   assert.equal(body.ok, false)
   assert.equal(body.failed, 1)
   assert.equal(body.updated, 0)
-  assert.deepEqual(body.results, [{ id: 'doc-test', received: true, persisted: false, error: 'receipt_update_failed' }])
+  assert.deepEqual(body.results, [{ id: 'doc-123', received: true, persisted: false, error: 'receipt_update_unconfirmed' }])
   assert.doesNotMatch(JSON.stringify(body), /private/)
   assert.equal(state.writes.length, 1)
   assert.deepEqual(state.emails, [])

@@ -6,6 +6,7 @@ import { registerHooks } from 'node:module'
 // The Zod double accepts fixtures. Request validation is outside this test's scope.
 const sources = {
   'next/server': 'export const NextResponse = { json: (body, init) => Response.json(body, init) }',
+  '@react-email/components': 'export const render = async value => JSON.stringify(value)',
   zod: `class ZodError extends Error {}
     const schema = new Proxy({ parse: (value) => value }, { get: (target, key) => key in target ? target[key] : () => schema });
     export const z = { string: () => schema, object: () => schema, literal: () => schema, ZodError };`,
@@ -34,7 +35,7 @@ const sources = {
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier in sources) return { url: `ar24-test:${specifier}`, shortCircuit: true }
-    if (specifier === '@/lib/ar24-budget') return { url: new URL('../src/lib/ar24-budget.ts', import.meta.url).href, shortCircuit: true }
+    if (specifier === '@/lib/ar24-budget' || specifier === '@/lib/ar24-email') return { url: new URL(`../src/lib/${specifier.slice(6)}.ts`, import.meta.url).href, shortCircuit: true }
     return nextResolve(specifier, context)
   },
   load(url, context, nextLoad) {
@@ -50,9 +51,67 @@ export function fixture() {
     caseRow: { id: 'case-test', user_id: 'user-test' }, cases: [{ id: 'case-test' }],
     count: 0, countError: null, casesError: null, updateError: null, missingUpdate: false,
     pending: [], writes: [], emails: [], requests: [], downloads: 0, queries: [],
+    control: new Map(), outbox: [], emailRequests: [], now: Date.now(), beforeRpc: null, afterRpc: null,
     allowSenderFixture: false, adapterSends: 0, beforeQuery: null, emailResult: null,
     sendResult: () => ({ mode: 'live', tracking_number: '123', cost: 5.99, estimated_delivery: null }),
     provider: () => { throw new Error('Network forbidden; configure an encrypted fixture explicitly') },
+  }
+  // Routing double only. Real SQL fairness, transactions, leases/RLS are tested
+  // in ar24-postgres.py, not inferred from this simplified in-memory queue.
+  let serial = 0
+  class Rpc {
+    constructor(name, args) { this.name = name; this.args = args }
+    abortSignal(signal) { this.signal = signal; return this }
+    then(resolve, reject) {
+      return Promise.resolve().then(async () => {
+        await state.beforeRpc?.(this); this.signal?.throwIfAborted()
+        state.queries.push({ rpc: this.name, args: this.args })
+        const a = this.args
+        let data = null
+        if (this.name === 'ar24_sync_tracking') {
+          for (const doc of state.pending) if (!state.control.has(doc.id)) state.control.set(doc.id, { doc, due: state.now, leaseUntil: 0 })
+          data = 0
+        } else if (this.name === 'ar24_claim_tracking') {
+          const q = [...state.control.values()].filter(q => q.due <= state.now && q.leaseUntil <= state.now).sort((a, b) => a.due - b.due)[0]
+          if (q) { q.token = `lease-${++serial}`; q.leaseUntil = state.now + 120_000; q.due = state.now;
+            data = { document_id: q.doc.id, lease_token: q.token, tracking_number: q.doc.tracking_number, sent_at: q.doc.sent_at } }
+        } else if (this.name === 'ar24_complete_tracking') {
+          const q = state.control.get(a.p_document_id)
+          if (q?.token === a.p_lease_token) {
+            if (a.p_received_at) {
+              state.writes.push({ table: 'jurispurama_documents', payload: { ar_received_at: a.p_received_at }, filters: [['is', 'ar_received_at', null]] })
+              if (state.updateError) return { data: null, error: state.updateError }
+              if (!state.missingUpdate) {
+                state.pending = state.pending.filter(doc => doc.id !== q.doc.id); state.control.delete(q.doc.id)
+                state.outbox.push({ id: `00000000-0000-4000-8000-${String(++serial).padStart(12, '0')}`, due: state.now, leaseUntil: 0,
+                  payload: null, state: 'pending', email: state.user.email, user_name: state.user.full_name,
+                  facts: { document_id: q.doc.id, document_title: q.doc.title, recipient: q.doc.sent_to ?? 'destinataire', received_at: a.p_received_at } })
+                data = { persisted: true }
+              }
+            } else { q.due = state.now + (a.p_error ? 900_000 : 21_600_000); q.leaseUntil = 0; data = { rescheduled: true, persisted: false } }
+          }
+        } else if (this.name === 'ar24_claim_notification') {
+          const event = state.outbox.find(e => e.state === 'pending' && e.due <= state.now && e.leaseUntil <= state.now)
+          if (event) { event.lease_token = `lease-${++serial}`; event.leaseUntil = state.now + 120_000; data = { ...event } }
+        } else if (this.name === 'ar24_begin_notification') {
+          const event = state.outbox.find(e => e.id === a.p_id && e.lease_token === a.p_lease_token)
+          if (event) {
+            event.payload ??= a.p_payload; event.firstAttempt ??= state.now
+            data = { payload: event.payload, idempotency_key: `juris-ar24-receipt/${event.id}`, retry_until: new Date(event.firstAttempt + 82_800_000).toISOString() }
+          }
+        } else if (this.name === 'ar24_finish_notification') {
+          const event = state.outbox.find(e => e.id === a.p_id && e.lease_token === a.p_lease_token)
+          data = Boolean(event)
+          if (event) { event.state = a.p_provider_id ? 'sent' : a.p_reconcile ? 'reconcile' : 'pending'; event.leaseUntil = 0; event.due = state.now + 900_000 }
+        } else if (this.name === 'ar24_queue_status') data = {
+          tracking_due: [...state.control.values()].filter(q => q.due <= state.now).length,
+          email_due: state.outbox.filter(e => e.state === 'pending' && e.due <= state.now).length,
+          reconciliation: state.outbox.filter(e => e.state === 'reconcile').length,
+        }
+        await state.afterRpc?.(this, data)
+        return { data, error: null }
+      }).then(resolve, reject)
+    }
   }
   class Query {
     constructor(table) { this.table = table; this.op = 'select'; this.filters = [] }
@@ -93,10 +152,18 @@ export function fixture() {
   state.client = {
     auth: { getUser: async () => ({ data: { user: { id: 'auth-test' } } }) },
     from: (table) => new Query(table),
+    rpc: (name, args) => new Rpc(name, args),
     storage: { from: () => ({ download: async () => { state.downloads++; return { data: new Blob(['%PDF-test']) } } }) },
   }
   globalThis.__ar24TestState = state
-  globalThis.fetch = async (...args) => { state.requests.push(args); return state.provider(...args) }
+  globalThis.fetch = async (...args) => {
+    if (args[0] === 'https://api.resend.com/emails') {
+      state.emailRequests.push(args); state.emails.push(JSON.parse(args[1].body))
+      const result = await state.emailResult?.(...args) ?? { ok: true }
+      return result instanceof Response ? result : Response.json(result.ok ? { id: result.id ?? 'provider-test-id' } : { name: 'provider_failure', message: result.error }, { status: result.ok ? 200 : 500 })
+    }
+    state.requests.push(args); return state.provider(...args)
+  }
   return state
 }
 export function request() {

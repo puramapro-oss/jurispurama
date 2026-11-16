@@ -125,4 +125,21 @@ Détails : [contrat AR24 candidat](docs/audit-juridique/ar24-contract-2026-11-16
 
 - [x] Contre-revue AR24 : reproduire et fermer les incohérences status/destinataire/pièces; refuser un ID expéditeur non textuel avant effets.
 - [x] Borner le cron à90s, tester annulation, réponse tardive, persistance incertaine et reprise du reste; 55 tests ciblés PASS.
-- [ ] Ajouter l'état durable requis pour l'équité de toute la file et le rattrapage fiable des notifications avant activation.
+- [x] Ajouter le code de contrôle durable et d’outbox ; qualification concurrente du complément ci-dessous avant intégration.
+
+## État durable AR24 — complément du16 novembre2026
+
+- [x] Implémenter contrôle dédié, réservation atomique, vérification du dépôt et transaction reçu/outbox sans dates métier artificielles.
+- [x] Persister payload/clé/premier essai avant POST ; reprendre uniquement dans la fenêtre23h ; réconcilier après incertitude expirée.
+- [x] Conserver gardes envoi/checkout fermées et exclusion Vercel de la branche dès son premier commit.
+- [x] 125 vérifications applicatives et typage complet réussis, dépendances exactes du verrou.
+- [x] CI43813198970 :18 scénarios PostgreSQL AR24 et67 historiques PASS ; contre-revue indépendante PASS ; build Next complet avec configuration publique synthétique PASS. Intégration limitée à la branche de qualification autorisée après contrôle des déclencheurs.
+- [ ] Qualifier déploiement de migration, fournisseur et parcours réel séparément ; aucune activation automatique.
+
+## Dépendances — complément du 16 novembre 2026
+
+- [x] Auditer graphe production/complet et conserver build antérieur.
+- [x] Corriger les alertes critiques/hautes avec versions compatibles ; documenter les alertes restantes.
+- [x] Préserver .ots et SHA256 UTF-8, refuser une preuve sans attestation, tester les primitives officielles hors réseau.
+- [x] Requalifier 145 vérifications, types et build complets avec configuration publique synthétique, sans clés fournisseur.
+- [ ] Contrôler CI et contre-revue du nouvel arbre avant intégration dans la branche de qualification uniquement.

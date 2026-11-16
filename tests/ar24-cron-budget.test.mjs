@@ -4,10 +4,10 @@ import { fixture, cronRequest } from './ar24-route-harness.mjs'
 import { configured, encryptedResponse } from './ar24-fixtures.mjs'
 const { GET } = await import('../src/app/api/cron/check-ar-status/route.ts')
 const originalFetch = globalThis.fetch
-const previous = Object.fromEntries([...Object.keys(configured), 'CRON_SECRET'].map(key => [key, process.env[key]]))
+const previous = Object.fromEntries([...Object.keys(configured), 'CRON_SECRET', 'RESEND_API_KEY'].map(key => [key, process.env[key]]))
 let state
 beforeEach(() => {
-  Object.assign(process.env, configured, { CRON_SECRET: 'cron-test-not-real' })
+  Object.assign(process.env, configured, { CRON_SECRET: 'cron-test-not-real', RESEND_API_KEY: 're-test-not-real' })
   state = fixture()
 })
 afterEach(() => {
@@ -51,7 +51,7 @@ test('slow provider stops at 90 seconds, aborts GETs and preserves all unconfirm
   const result = await response
   const body = await result.json()
   assert.equal(result.status, 503)
-  assert.equal(body.updated, 0); assert.equal(body.failed, 6); assert.equal(body.deferred, 194)
+  assert.equal(body.updated, 0); assert.equal(body.failed, 6); assert.equal(body.deferred, null)
   assert.equal(body.budget_exhausted, true)
   assert.equal(body.results.every(row => !row.received && row.error === 'status_time_budget_exhausted'), true)
   assert.equal(signals.length, 6); assert.equal(signals.every(signal => signal.aborted), true)
@@ -76,11 +76,12 @@ test('last GET is capped to remaining 500ms and a later cron resumes only unconf
   assert.equal(lastSignal.aborted, false)
   await time.tick(1)
   const firstBody = await (await first).json()
-  assert.equal(firstBody.updated, 1); assert.equal(firstBody.failed, 1); assert.equal(firstBody.deferred, 1)
+  assert.equal(firstBody.updated, 1); assert.equal(firstBody.failed, 1); assert.equal(firstBody.deferred, null)
   assert.equal(lastSignal.aborted, true)
   assert.deepEqual(state.pending.map(doc => doc.id), ['doc-124', 'doc-125'])
   assert.equal(state.emails.length, 1)
   state.provider = receipt
+  state.now += 120_001 // The unknown claim becomes available after its durable lease.
   state.emailResult = null
   const resumed = await GET(cronRequest())
   const body = await resumed.json()
@@ -94,7 +95,7 @@ test('last GET is capped to remaining 500ms and a later cron resumes only unconf
 test('a stalled initial DB read is bounded before any provider call', async t => {
   const time = clock(t)
   let signal
-  state.beforeQuery = query => { signal = query.signal; return new Promise(() => {}) }
+  state.beforeRpc = query => { signal = query.signal; return new Promise(() => {}) }
   const response = GET(cronRequest())
   await flush(); await time.tick(10_000)
   assert.equal((await response).status, 503)
@@ -108,8 +109,8 @@ test('a timed-out receipt write is unconfirmed, not counted or notified as persi
   state.provider = receipt
   let signal
   let releaseWrite
-  state.beforeQuery = query => {
-    if (query.table === 'jurispurama_documents' && query.op === 'update') {
+  state.beforeRpc = query => {
+    if (query.name === 'ar24_complete_tracking') {
       signal = query.signal; return new Promise(resolve => { releaseWrite = resolve })
     }
   }
@@ -149,7 +150,8 @@ test('a stalled email is bounded and reported uncertain without repeating a conf
   await flush(); await time.tick(10_000)
   const result = await response, body = await result.json()
   assert.equal(result.status, 503); assert.equal(body.updated, 1)
-  assert.deepEqual(body.results, [{ id: 'doc-123', received: true, persisted: true, error: 'receipt_notification_unconfirmed' }])
+  assert.deepEqual(body.results, [{ id: 'doc-123', received: true, persisted: true }])
+  assert.equal(body.notification_results[0].error, 'receipt_notification_unconfirmed')
   assert.deepEqual(state.pending, [])
   assert.equal((await GET(cronRequest())).status, 200)
   assert.equal(state.emails.length, 1); assert.equal(state.requests.length, 1)
@@ -162,7 +164,7 @@ test('an explicit email failure remains partial and redacted after confirmed rec
   const result = await GET(cronRequest()), body = await result.json()
   assert.equal(result.status, 503); assert.equal(body.updated, 1)
   assert.equal(body.results[0].persisted, true)
-  assert.equal(body.results[0].error, 'receipt_notification_unconfirmed')
+  assert.equal(body.notification_results[0].error, 'receipt_notification_unconfirmed')
   assert.doesNotMatch(JSON.stringify(body), /private/)
   assert.equal((await GET(cronRequest())).status, 200)
   assert.equal(state.emails.length, 1)
