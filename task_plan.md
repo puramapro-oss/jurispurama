@@ -133,5 +133,5 @@ Détails : [contrat AR24 candidat](docs/audit-juridique/ar24-contract-2026-11-16
 - [x] Persister payload/clé/premier essai avant POST ; reprendre uniquement dans la fenêtre23h ; réconcilier après incertitude expirée.
 - [x] Conserver gardes envoi/checkout fermées et exclusion Vercel de la branche dès son premier commit.
 - [x] 125 vérifications applicatives et typage complet réussis, dépendances exactes du verrou.
-- [ ] Terminer CI PostgreSQL concurrente et contre-revue avant intégration vers la seule branche de qualification.
+- [x] CI43813198970 :18 scénarios PostgreSQL AR24 et67 historiques PASS ; contre-revue indépendante PASS ; build Next complet avec configuration publique synthétique PASS. Intégration limitée à la branche de qualification autorisée après contrôle des déclencheurs.
 - [ ] Qualifier déploiement de migration, fournisseur et parcours réel séparément ; aucune activation automatique.
