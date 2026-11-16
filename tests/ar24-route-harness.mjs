@@ -12,7 +12,10 @@ const sources = {
   '@/lib/supabase-server': 'export const createServerSupabaseClient = async () => globalThis.__ar24TestState.client',
   '@/lib/supabase': 'export const createServiceClient = () => globalThis.__ar24TestState.client',
   '@/lib/email/send': `export const FROM_NOTIFS = 'test@example.invalid';
-    export const sendEmail = async (value) => { globalThis.__ar24TestState.emails.push(value) }`,
+    export const sendEmail = async (value) => {
+      const state = globalThis.__ar24TestState; state.emails.push(value);
+      return state.emailResult ? state.emailResult(value) : { ok: true };
+    }`,
   '@/lib/email/templates': `export const ARReceivedEmail = (props) => props;
     export const DocumentSentConfirmation = (props) => props;`,
   '@/lib/ar24': `import * as real from '${new URL('../src/lib/ar24.ts', import.meta.url).href}';
@@ -31,6 +34,7 @@ const sources = {
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier in sources) return { url: `ar24-test:${specifier}`, shortCircuit: true }
+    if (specifier === '@/lib/ar24-budget') return { url: new URL('../src/lib/ar24-budget.ts', import.meta.url).href, shortCircuit: true }
     return nextResolve(specifier, context)
   },
   load(url, context, nextLoad) {
@@ -46,7 +50,7 @@ export function fixture() {
     caseRow: { id: 'case-test', user_id: 'user-test' }, cases: [{ id: 'case-test' }],
     count: 0, countError: null, casesError: null, updateError: null, missingUpdate: false,
     pending: [], writes: [], emails: [], requests: [], downloads: 0, queries: [],
-    allowSenderFixture: false, adapterSends: 0,
+    allowSenderFixture: false, adapterSends: 0, beforeQuery: null, emailResult: null,
     sendResult: () => ({ mode: 'live', tracking_number: '123', cost: 5.99, estimated_delivery: null }),
     provider: () => { throw new Error('Network forbidden; configure an encrypted fixture explicitly') },
   }
@@ -62,8 +66,11 @@ export function fixture() {
     update(payload) { this.op = 'update'; this.payload = payload; return this }
     insert(payload) { this.op = 'insert'; this.payload = payload; return this }
     maybeSingle() { this.single = true; return this }
+    abortSignal(signal) { this.signal = signal; return this }
     then(resolve, reject) {
-      try {
+      return Promise.resolve().then(async () => {
+        await state.beforeQuery?.(this)
+        this.signal?.throwIfAborted()
         state.queries.push({ table: this.table, op: this.op })
         let result
         if (this.op !== 'select') {
@@ -71,12 +78,16 @@ export function fixture() {
           result = this.table === 'jurispurama_documents'
             ? { data: state.missingUpdate ? null : { id: 'doc-test' }, error: state.updateError }
             : { data: { id: 'test-write' }, error: null }
+          if (this.table === 'jurispurama_documents' && this.payload.ar_received_at && !state.missingUpdate && !state.updateError) {
+            const id = this.filters.find(filter => filter[0] === 'eq' && filter[1] === 'id')?.[2]
+            state.pending = state.pending.filter(doc => doc.id !== id)
+          }
         } else if (this.table === 'jurispurama_users') result = { data: state.user }
         else if (this.table === 'jurispurama_cases') result = { data: this.single ? state.caseRow : state.cases, error: state.casesError }
         else if (this.counted) result = { count: state.count, error: state.countError }
         else result = { data: this.single ? state.doc : state.pending }
-        return Promise.resolve(result).then(resolve, reject)
-      } catch (error) { return Promise.reject(error).then(resolve, reject) }
+        return result
+      }).then(resolve, reject)
     }
   }
   state.client = {

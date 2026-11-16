@@ -20,5 +20,5 @@ export const qualifiedInput = () => ({
   reference: { documentId: 'document-synthetic', caseId: 'case-synthetic' },
 })
 export const acceptedDeposit = () => ({ id: 123, type: 'lre', status: 'sent', is_eidas: true,
-  send_fail: false, id_sender: 901, to_email: 'recipient@example.invalid',
+  send_fail: false, id_sender: 901, to_email: 'recipient@example.invalid', dest_statut: 'particulier',
   ref_dossier: 'case-synthetic', ref_client: 'document-synthetic', attachments: [5490], price_ht: 0 })

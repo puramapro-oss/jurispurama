@@ -14,7 +14,7 @@ Le protocole signé/chiffré remplace l'ancien `/envois` Bearer. Le suivi utilis
 
 Le suivi reste désactivé par défaut. Il nécessite `AR24_ENABLED=true`, `AR24_API_KEY` et `AR24_PRIVATE_KEY`, avec une origine officielle. Aucune variable n'a été activée. Une réponse incertaine impose une réconciliation; aucune simulation, date, référence ou preuve archivée n'est fabriquée.
 
-Tests hors réseau : `node --test tests/ar24-*.test.mjs` (**36 PASS**), plus 6 tests checkout et 61 autres régressions (**103 PASS** au total). TypeScript strict ciblé réussit. Les routes utilisent des doubles DB/email et les scénarios d'envoi un double expéditeur explicite; la vraie garde fermée est testée séparément. Build complet, navigateur et fournisseur réel restent NON TESTÉS.
+Tests hors réseau : `node --test tests/ar24-*.test.mjs` (**49 PASS**), plus 6 tests checkout et 61 autres régressions (**116 PASS** au total). TypeScript strict ciblé réussit. Les routes utilisent des doubles DB/email et les scénarios d'envoi un double expéditeur explicite; la vraie garde fermée est testée séparément. Build complet, navigateur et fournisseur réel restent NON TESTÉS.
 
 Voir [les preuves, le contrat et les conditions d'activation](docs/audit-juridique/ar24-contract-2026-11-16.md). Le [rapport du 11 novembre](docs/audit-juridique/ar24-2026-11-11.md) documente les protections historiques.
 

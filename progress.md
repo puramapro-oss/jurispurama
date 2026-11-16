@@ -870,3 +870,7 @@ Qualification CI dédiée ajoutée : Node 24.22.1, dépendances publiques de tes
 ## 16 novembre 2026 — AR24 candidat, garde d'envoi fermée
 
 L'ancien contrat /envois Bearer échoue sur un contrôle officiel signé/chiffré. Le candidat remplace le transport et le suivi et ajoute la construction d'envoi explicite (PDF, compte fournisseur, OTP/hash, destinataire structuré). Les anciennes mentions de simulation dans cet historique sont obsolètes : aucune simulation n'existe dans le candidat. Envoi application et checkout refusent toujours, même avec clés, avant tout effet externe. 36 AR24 + 6 checkout + 53 suppression/Connect + 8 historiques PASS; compilation TypeScript ciblée PASS. Aucun appel fournisseur, paiement, migration, merge ou déploiement. Le sandbox réel, le build complet et les parcours UI restent NON TESTÉS. Voir [contrat et limites](docs/audit-juridique/ar24-contract-2026-11-16.md).
+
+## 16 novembre 2026 — contre-revue AR24
+
+Trois incohérences de réponse reproduites puis corrigées : type status, statut destinataire et ensemble exact des pièces. ID expéditeur numérique refusé avant upload. Cron désormais borné à90s globales (15s GET/10s autres IO, plafonds réduits au reste) et erreurs/reste différé explicites. 55 tests ciblés PASS, TypeScript5modules et route+SDK isolé PASS. Équité de toute la file et rattrapage des notifications exigent un état durable absent du schéma; limitations précises consignées dans le rapport AR24. Toujours aucun appel API fournisseur, activation, fusion ou déploiement.

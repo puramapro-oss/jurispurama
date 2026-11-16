@@ -61,10 +61,10 @@ export function ar24Config() {
   return { token, privateKey, base: base.toString().replace(/\/$/, '') }
 }
 
-export type AR24Request = (path: '/mail' | '/attachment', method: 'GET' | 'POST', fields: FormData) => Promise<Record<string, unknown>>
+export type AR24Request = (path: '/mail' | '/attachment', method: 'GET' | 'POST', fields: FormData, signal?: AbortSignal) => Promise<Record<string, unknown>>
 
 /** Official form-data protocol. No retries: a failed POST may still have taken effect. */
-export const requestAR24: AR24Request = async (path, method, fields) => {
+export const requestAR24: AR24Request = async (path, method, fields, callerSignal) => {
   const config = ar24Config()
   // Provider requires a date between receipt and +10 minutes. Allow network/clock drift.
   const date = ar24Date(new Date(Date.now() + 60_000))
@@ -80,10 +80,13 @@ export const requestAR24: AR24Request = async (path, method, fields) => {
     }
   }
   try {
+    const timeout = AbortSignal.timeout(60_000)
+    const signal = callerSignal ? AbortSignal.any([timeout, callerSignal]) : timeout
+    signal.throwIfAborted()
     const response = await fetch(url.toString(), {
       method, body: method === 'POST' ? form : undefined,
       headers: { signature: ar24Signature(date, config.privateKey) },
-      redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(60_000),
+      redirect: 'error', cache: 'no-store', signal,
     })
     if (response.status !== 200) throw new Error()
     // Cap while reading as well as after decryption; never expose provider bodies or URLs.

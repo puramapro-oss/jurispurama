@@ -49,7 +49,8 @@ export async function sendRecommande(_input: AR24SendInput): Promise<AR24SendRes
 /** A provider status is not an archived legal receipt. No date is synthesized. */
 export async function pollStatus(
   trackingNumber: string,
-  sentAtISO: string
+  sentAtISO: string,
+  signal?: AbortSignal
 ): Promise<{ received: boolean; received_at: string | null }> {
   if (typeof trackingNumber === 'string' && /^SIM-AR-/i.test(trackingNumber.trim())) {
     return { received: false, received_at: null }
@@ -60,7 +61,7 @@ export async function pollStatus(
   if (!reference || !Number.isFinite(sentAt)) throw new AR24Error('ar24_unconfirmed')
   const fields = new FormData()
   fields.set('id', reference)
-  const result = await requestAR24('/mail', 'GET', fields)
+  const result = await requestAR24('/mail', 'GET', fields, signal)
   if (ar24Id(result.id) !== reference || result.type !== 'lre' || typeof result.status !== 'string') {
     throw new AR24Error('ar24_unconfirmed')
   }

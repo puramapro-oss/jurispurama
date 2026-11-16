@@ -120,6 +120,12 @@ test('transport failures are redacted and not retried', async () => {
   await assert.rejects(pollStatus('123', sentAt), error => unconfirmed(error) && !/private|token|recipient/.test(error.message))
   assert.equal(requests.length, 1)
 })
+test('an already-aborted caller cannot start a provider status request', async () => {
+  const controller = new AbortController()
+  controller.abort()
+  await assert.rejects(pollStatus('123', sentAt, controller.signal), unconfirmed)
+  assert.deepEqual(requests, [])
+})
 test('oversized provider responses stop before decryption', async () => {
   globalThis.fetch = async () => new Response('A'.repeat(1_048_577))
   await assert.rejects(pollStatus('123', sentAt), unconfirmed)

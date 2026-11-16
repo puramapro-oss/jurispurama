@@ -18,7 +18,7 @@ const validText = (value: unknown, max: number) => typeof value === 'string'
   && value.length > 0 && value.length <= max && value.trim() === value && !/[\u0000-\u001f\u007f]/.test(value)
 
 export function prepareAR24Send(input: AR24QualifiedSendInput) {
-  if (!input || !ar24Id(input.sender?.id) || !input.sender.authentication
+  if (!input || typeof input.sender?.id !== 'string' || !ar24Id(input.sender.id) || !input.sender.authentication
     || !input.recipient || !validText(input.recipient.email, 254)
     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.recipient.email)
     || !Buffer.isBuffer(input.documentPdfBuffer) || !input.documentPdfBuffer.length
@@ -74,14 +74,17 @@ export async function submitAR24Qualified(input: AR24QualifiedSendInput, request
   const id = ar24Id(result.id)
   // A SUCCESS envelope can still contain a draft, failure, or non-eIDAS mail.
   if (!id || result.type !== 'lre' || result.is_eidas !== true || result.send_fail !== false
-    || !['sent', 'ev', 'ar', 'AR'].includes(String(result.status))
+    || typeof result.status !== 'string' || !['sent', 'ev', 'ar', 'AR'].includes(result.status)
     || ar24Id(result.id_sender) !== input.sender.id
     || result.to_email !== input.recipient.email
+    || result.dest_statut !== input.recipient.status
     || result.ref_dossier !== input.reference.caseId || result.ref_client !== input.reference.documentId
-    || !Array.isArray(result.attachments) || !result.attachments.some(value => ar24Id(value) === attachmentId)
+    || !Array.isArray(result.attachments) || result.attachments.length !== 1
+    || ar24Id(result.attachments[0]) !== attachmentId
     || typeof result.price_ht !== 'number' || !Number.isFinite(result.price_ht) || result.price_ht < 0) {
     throw new AR24Error('ar24_unconfirmed')
   }
   // price_ht is provider cost excluding tax, never the app's retail price or an ETA.
-  return { tracking_number: id, cost_excluding_tax: result.price_ht, status: String(result.status) }
+  // AR24 may replace first/last names with the identity verified for this email.
+  return { tracking_number: id, cost_excluding_tax: result.price_ht, status: result.status }
 }
