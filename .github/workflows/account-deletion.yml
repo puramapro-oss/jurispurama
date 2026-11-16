@@ -92,3 +92,9 @@ jobs:
             --migration migrations/20261111_account_deletion_rls_guards.sql \
             --migration-sha256 9ac3b8a570baab2c5b08d81f4ae901e2ac2435552091c7dcb918265f9844565a \
             --report "$JURIS_RLS_REPORT"
+
+      - name: AR24 durable queue, concurrent claims, outbox and service-only privileges
+        run: |
+          python3 tests/ar24-postgres.py \
+            --pg-bin /usr/lib/postgresql/16/bin \
+            --report "$RUNNER_TEMP/juris-ar24-queue-postgres.json"

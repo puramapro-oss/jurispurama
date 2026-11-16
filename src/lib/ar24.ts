@@ -34,7 +34,9 @@ export interface AR24SendResult {
 
 // No sender binding, recipient consent or durable send reservation is qualified yet.
 // Keep the application API compatible, but do not let credentials alone enable sending.
-export function assertAR24Configured(): never {
+// The public guard keeps a void API so TypeScript still checks the retained
+// downstream route, including nullable DB results, instead of treating it as dead code.
+export function assertAR24Configured(): void {
   throw new AR24Error('ar24_unavailable')
 }
 
@@ -43,7 +45,7 @@ export function assertAR24TrackingConfigured(): void {
 }
 
 export async function sendRecommande(_input: AR24SendInput): Promise<AR24SendResult> {
-  return assertAR24Configured()
+  throw new AR24Error('ar24_unavailable')
 }
 
 /** A provider status is not an archived legal receipt. No date is synthesized. */

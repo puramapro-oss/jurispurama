@@ -874,3 +874,7 @@ L'ancien contrat /envois Bearer échoue sur un contrôle officiel signé/chiffr�
 ## 16 novembre 2026 — contre-revue AR24
 
 Trois incohérences de réponse reproduites puis corrigées : type status, statut destinataire et ensemble exact des pièces. ID expéditeur numérique refusé avant upload. Cron désormais borné à90s globales (15s GET/10s autres IO, plafonds réduits au reste) et erreurs/reste différé explicites. 55 tests ciblés PASS, TypeScript5modules et route+SDK isolé PASS. Équité de toute la file et rattrapage des notifications exigent un état durable absent du schéma; limitations précises consignées dans le rapport AR24. Toujours aucun appel API fournisseur, activation, fusion ou déploiement.
+
+## 16 novembre 2026 — reprise durable AR24 (candidat)
+
+Depuis le merge de qualification 28214d2 : état de contrôle dédié avec échéances et réservations atomiques, transaction reçu/message/notification/outbox, contenu email figé et clé stable, reprises Resend limitées à23h puis réconciliation. Les fichiers SQL ne sont pas appliqués à un serveur. 58 tests AR24 +59 connexes +8 historiques PASS et TypeScript application complet PASS avec dépendances exactes matérialisées dans une copie isolée. Validation PostgreSQL concurrente en CI et build Next à terminer ; le mode PostgreSQL autonome local vérifie les RPC mais ne remplace pas les courses réelles. Voir [état durable et limites](docs/audit-juridique/ar24-queue-2026-11-16.md). Aucune activation AR24/checkout, fusion main ou publication.
