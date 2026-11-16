@@ -19,7 +19,7 @@ const docTypeSchema = z.enum(['mentions', 'cgu', 'cgv', 'confidentialite'])
 // ou plusieurs `docTypes` d'un coup (signup : les 4 documents acceptés en 1 requête).
 const bodySchema = z.union([
   z.object({ docType: docTypeSchema }),
-  z.object({ docTypes: z.array(docTypeSchema).min(1) }),
+  z.object({ docTypes: z.array(docTypeSchema).min(1).max(4) }),
 ])
 
 export async function POST(req: NextRequest) {

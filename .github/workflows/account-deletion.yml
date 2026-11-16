@@ -51,6 +51,9 @@ jobs:
           }
           NODE
 
+      - name: OpenTimestamps official primitives, transport and collection bounds
+        run: node --experimental-vm-modules --test tests/opentimestamps.test.mjs tests/collection-limits.test.mjs
+
       - name: Account deletion concurrency, scheduling and SDK contracts
         run: node --experimental-vm-modules --test tests/account-deletion-concurrency.test.mjs tests/account-deletion-scheduling.test.mjs tests/account-deletion-sdk.test.mjs
 
