@@ -111,3 +111,18 @@ resend + stripe 22 + recharts + qrcode + react-markdown + remark-gfm + sonner + 
 - [ ] Intégrer et déployer selon le processus commun ; aucune production qualifiée par ces tests.
 
 Preuves : [rapport de concurrence](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).
+
+## Contrat AR24 — 16 novembre 2026
+
+- [x] Reproduire l'incompatibilité de transport sur a4102c2 et vérifier les vecteurs officiels.
+- [x] Implémenter protocole signé/chiffré, suivi et construction d'envoi complète sur fixtures.
+- [x] Maintenir envoi et checkout fermés; aucun compte ou secret réel utilisé.
+- [x] 103 vérifications hors réseau et TypeScript strict ciblé PASS; CI étendue.
+- [ ] Qualifier le lien expéditeur, identité/consentements, idempotence, facturation et preuves.
+- [ ] Tester fournisseur sandbox autorisé puis parcours navigateur; aucune activation avant qualification.
+
+Détails : [contrat AR24 candidat](docs/audit-juridique/ar24-contract-2026-11-16.md).
+
+- [x] Contre-revue AR24 : reproduire et fermer les incohérences status/destinataire/pièces; refuser un ID expéditeur non textuel avant effets.
+- [x] Borner le cron à90s, tester annulation, réponse tardive, persistance incertaine et reprise du reste; 55 tests ciblés PASS.
+- [ ] Ajouter l'état durable requis pour l'équité de toute la file et le rattrapage fiable des notifications avant activation.

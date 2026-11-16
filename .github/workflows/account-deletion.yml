@@ -63,8 +63,8 @@ jobs:
       - name: AR24 checkout availability regressions
         run: node --experimental-vm-modules --test tests/checkout-unit-ar24.test.mjs
 
-      - name: Existing AR24 regressions
-        run: node --test tests/ar24-regression-control.test.mjs tests/ar24-routes.test.mjs tests/ar24-safety.test.mjs
+      - name: AR24 protocol, safety and route regressions
+        run: node --test tests/ar24-*.test.mjs
 
   native-postgres-rls:
     runs-on: ubuntu-24.04

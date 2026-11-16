@@ -8,21 +8,15 @@ https://jurispurama.purama.dev
 
 Le déploiement et la conformité globale ne sont pas attestés par les tests locaux ci-dessous.
 
-## Correctif AR24 — 11 novembre 2026
+## Contrat AR24 candidat — 16 novembre 2026
 
-Les envois et le suivi AR24 sont **désactivés par défaut**. Une clé API seule ne les active pas. Le code exige aussi `AR24_ENABLED=true`, une URL HTTPS valide et une configuration complète. **Ne pas activer cette variable dans l'état actuel de l'adaptateur.**
+Le protocole signé/chiffré remplace l'ancien `/envois` Bearer. Le suivi utilise `/api/mail`; un module séparé prépare l'upload et l'envoi officiel avec expéditeur, authentification et destinataire explicites. **L'envoi application et son checkout restent fermés, même avec des clés complètes.** Ils attendent un lien expéditeur vérifié, les données et consentements destinataire, une réservation durable contre les doublons et une qualification fournisseur.
 
-L'adaptateur hérité utilise `/envois`, un jeton Bearer et des réponses non chiffrées. La [documentation officielle AR24](https://developers.ar24.fr/doc/) décrit `/api/mail`, une signature des requêtes, des réponses chiffrées et des statuts différents. L'adaptateur doit être qualifié et corrigé avant activation, avec les prérequis d'identité, de facturation et de consentement applicables. Les tests locaux ne valident pas ce contrat fournisseur.
+Le suivi reste désactivé par défaut. Il nécessite `AR24_ENABLED=true`, `AR24_API_KEY` et `AR24_PRIVATE_KEY`, avec une origine officielle. Aucune variable n'a été activée. Une réponse incertaine impose une réconciliation; aucune simulation, date, référence ou preuve archivée n'est fabriquée.
 
-Le correctif supprime les dépôts simulés, les reçus créés après un délai, les références inventées et les affirmations d'archivage d'une preuve non stockée. Un résultat de transport incertain impose une vérification avant toute nouvelle tentative. Le paiement des recommandés hors forfait est indisponible : quota épuisé, aucun dépôt n'est commencé.
+Tests hors réseau : `node --test tests/ar24-*.test.mjs` (**49 PASS**), plus 6 tests checkout et 61 autres régressions (**116 PASS** au total). TypeScript strict ciblé réussit. Les routes utilisent des doubles DB/email et les scénarios d'envoi un double expéditeur explicite; la vraie garde fermée est testée séparément. Build complet, navigateur et fournisseur réel restent NON TESTÉS.
 
-Tests ciblés hors réseau, sous Node 24 :
-
-```sh
-node --test tests/ar24-*.test.mjs
-```
-
-Résultat local : **27 tests réussis**. Les deux contrôles de régression échouent sur le module original et passent après correction. Next, Zod, Supabase et les emails sont doublés dans les tests de routes ; la compilation complète, le navigateur, le fournisseur réel et les données existantes restent non testés. Voir [le rapport et les blocages d'activation](docs/audit-juridique/ar24-2026-11-11.md).
+Voir [les preuves, le contrat et les conditions d'activation](docs/audit-juridique/ar24-contract-2026-11-16.md). Le [rapport du 11 novembre](docs/audit-juridique/ar24-2026-11-11.md) documente les protections historiques.
 
 ## Stack
 
