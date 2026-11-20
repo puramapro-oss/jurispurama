@@ -40,7 +40,7 @@ export async function GET() {
 }
 
 const patchSchema = z.object({
-  ids: z.array(z.string().uuid()).optional(),
+  ids: z.array(z.string().uuid()).max(100).optional(),
   allRead: z.boolean().optional(),
 })
 

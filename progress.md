@@ -860,3 +860,25 @@ Le formatter du Tooltip recharts attend `ValueType | undefined`, il faut
 - Pousser sur GitHub (main branche — repo puramapro-oss/jurispurama si créé)
 
 ### Learnings capturés dans ~/purama/LEARNINGS.md
+
+## 11 novembre 2026 — complément concurrence et annulation
+
+Candidat local réconcilié sur PR2 `1fafc538`, avec CAS renforcé et reçu d’annulation vérifié. 23/23 scénarios concurrence/annulation, 16/16 programmation, 11/11 contrats SDK, 8/8 scénarios historiques et 27/27 AR24 réussis. Les sources Mac n’ont pas été modifiées. Production, SQL distant, reprise automatique, écritures directes du socle et périmètre inter-applications non qualifiés. Voir [rapport et limites](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).
+
+Qualification CI dédiée ajoutée : Node 24.22.1, dépendances publiques de test verrouillées, installation temporaire sans scripts ni audit npm. Toutes ses commandes `run` ont réussi localement après installation neuve (50 + 8 + 27). L’exécution sur GitHub reste NON TESTÉE à ce stade.
+
+## 16 novembre 2026 — AR24 candidat, garde d'envoi fermée
+
+L'ancien contrat /envois Bearer échoue sur un contrôle officiel signé/chiffré. Le candidat remplace le transport et le suivi et ajoute la construction d'envoi explicite (PDF, compte fournisseur, OTP/hash, destinataire structuré). Les anciennes mentions de simulation dans cet historique sont obsolètes : aucune simulation n'existe dans le candidat. Envoi application et checkout refusent toujours, même avec clés, avant tout effet externe. 36 AR24 + 6 checkout + 53 suppression/Connect + 8 historiques PASS; compilation TypeScript ciblée PASS. Aucun appel fournisseur, paiement, migration, merge ou déploiement. Le sandbox réel, le build complet et les parcours UI restent NON TESTÉS. Voir [contrat et limites](docs/audit-juridique/ar24-contract-2026-11-16.md).
+
+## 16 novembre 2026 — contre-revue AR24
+
+Trois incohérences de réponse reproduites puis corrigées : type status, statut destinataire et ensemble exact des pièces. ID expéditeur numérique refusé avant upload. Cron désormais borné à90s globales (15s GET/10s autres IO, plafonds réduits au reste) et erreurs/reste différé explicites. 55 tests ciblés PASS, TypeScript5modules et route+SDK isolé PASS. Équité de toute la file et rattrapage des notifications exigent un état durable absent du schéma; limitations précises consignées dans le rapport AR24. Toujours aucun appel API fournisseur, activation, fusion ou déploiement.
+
+## 16 novembre 2026 — reprise durable AR24 (candidat)
+
+Depuis le merge de qualification 28214d2 : état de contrôle dédié avec échéances et réservations atomiques, transaction reçu/message/notification/outbox, contenu email figé et clé stable, reprises Resend limitées à23h puis réconciliation. Les fichiers SQL ne sont pas appliqués à un serveur. 58 tests AR24 +59 connexes +8 historiques PASS et TypeScript application complet PASS avec dépendances exactes matérialisées dans une copie isolée. CI43813198970 PASS :18 nouveaux scénarios PostgreSQL16.15 et67 anciens, clusters arrêtés/supprimés. Contre-revue indépendante PASS au SHAa9df140f. Build Next16.2.11 complet PASS dans la copie aux sources identiques, sans secret, avec uniquement configuration publique Supabase synthétique et téléchargements Google Fonts autorisés ; aucune connexion métier. Le build standard du runner exige encore l’accès SMARANA privé et le package frère canonique. Voir [état durable et limites](docs/audit-juridique/ar24-queue-2026-11-16.md). Aucune activation AR24/checkout, fusion main ou publication.
+
+## 16 novembre 2026 — dépendances corrigées et requalification
+
+Next 16.4.6 / sharp 0.35.5, Zod 4.6.6 et OpenTimestamps officiel 0.4.9 suppriment toutes les alertes critiques/hautes observées : production 12 groupes résiduels (6 modérés, 6 faibles), complet 21 (14 modérés, 7 faibles). Transport OTS borné et refus des pseudo-preuves sans quorum ; contrat UTF-8 conservé. 145 vérifications locales PASS, typage complet et build Next corrigé PASS dans copie isolée sans secrets ni fournisseurs, 338 sources identiques. Le build antérieur et ses alertes restent conservés comme référence. Voir [versions, preuves et résiduels](docs/audit-juridique/dependencies-2026-11-16.md). CI/revue du nouvel arbre requises avant fusion vers qualification ; aucun main ni déploiement.

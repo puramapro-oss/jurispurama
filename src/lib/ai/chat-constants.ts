@@ -16,6 +16,7 @@ export const bodySchema = z.object({
         name: z.string().optional(),
       })
     )
+    .max(10)
     .optional(),
 })
 

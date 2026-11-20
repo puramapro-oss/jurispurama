@@ -7,6 +7,7 @@ import {
 } from '@/lib/stripe'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { APP_DOMAIN } from '@/lib/constants'
+import { assertAR24Configured } from '@/lib/ar24'
 
 export const runtime = 'nodejs'
 
@@ -45,6 +46,17 @@ export async function POST(req: NextRequest) {
     type: UnitSlug
     metadata: { doc_id?: string; case_id?: string }
     idempotencyKey: string
+  }
+
+  if (type === 'recommande_ar') {
+    try {
+      assertAR24Configured()
+    } catch {
+      return NextResponse.json(
+        { error: 'Le service de recommandé est indisponible. Aucun paiement n’a été initié par cette demande.', code: 'ar24_unavailable' },
+        { status: 503 }
+      )
+    }
   }
 
   const supabase = await createServerSupabaseClient()

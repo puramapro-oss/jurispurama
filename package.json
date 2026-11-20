@@ -26,9 +26,8 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.38.0",
     "geist": "^1.7.0",
-    "javascript-opentimestamps": "^0.4.5",
     "lucide-react": "^1.7.0",
-    "next": "^16.2.2",
+    "next": "16.4.6",
     "next-themes": "^0.4.6",
     "pdf-lib": "^1.17.1",
     "pg": "^8.22.0",
@@ -42,7 +41,8 @@
     "sonner": "^2.0.7",
     "stripe": "^22.0.0",
     "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
+    "zod": "4.6.6",
+    "opentimestamps": "0.4.9"
   },
   "overrides": {
     "crypto-js": "^4.2.0",
@@ -52,6 +52,15 @@
     "uuid": "^11.1.1",
     "request": {
       "uuid": "3.4.0"
+    },
+    "bitcore-lib": {
+      "bn.js": "^4.12.5"
+    },
+    "opentimestamps": {
+      "minimatch": {
+        ".": "^3.1.5",
+        "brace-expansion": "^1.1.21"
+      }
     }
   },
   "devDependencies": {
@@ -62,8 +71,9 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "0.27.7",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

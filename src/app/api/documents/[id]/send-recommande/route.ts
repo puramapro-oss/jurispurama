@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
-import { sendRecommande, AR24_MODE } from '@/lib/ar24'
+import { sendRecommande, assertAR24Configured, AR24Error } from '@/lib/ar24'
 import { sendEmail, FROM_NOTIFS } from '@/lib/email/send'
 import { DocumentSentConfirmation } from '@/lib/email/templates'
 
@@ -30,9 +30,7 @@ function monthlyIncludedRecommandes(plan: string): number | 'unlimited' {
 }
 
 function appUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://jurispurama.purama.dev'
-  ).replace(/\/$/, '')
+  return (process.env.NEXT_PUBLIC_APP_URL ?? 'https://jurispurama.purama.dev').replace(/\/$/, '')
 }
 
 export async function POST(
@@ -47,10 +45,7 @@ export async function POST(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json(
-      { error: 'Connecte-toi pour envoyer un recommandé.' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Connecte-toi pour envoyer un recommandé.' }, { status: 401 })
   }
 
   const { data: juriUser } = await supabase
@@ -60,10 +55,7 @@ export async function POST(
     .maybeSingle()
 
   if (!juriUser) {
-    return NextResponse.json(
-      { error: 'Profil introuvable.' },
-      { status: 404 }
-    )
+    return NextResponse.json({ error: 'Profil introuvable.' }, { status: 404 })
   }
 
   let body: z.infer<typeof bodySchema>
@@ -80,23 +72,18 @@ export async function POST(
 
   const admin = createServiceClient()
   const isAdmin = juriUser.role === 'super_admin'
-  const included = monthlyIncludedRecommandes(
-    juriUser.subscription_plan ?? 'free'
-  )
+  const included = monthlyIncludedRecommandes(juriUser.subscription_plan ?? 'free')
 
   const { data: doc } = await admin
     .from('jurispurama_documents')
     .select(
-      'id, case_id, title, storage_path, signed_pdf_url, signature_status, deleted_at'
+      'id, case_id, title, storage_path, signed_pdf_url, signature_status, deleted_at, sent_status, tracking_number'
     )
     .eq('id', id)
     .maybeSingle()
 
   if (!doc || doc.deleted_at) {
-    return NextResponse.json(
-      { error: 'Document introuvable.' },
-      { status: 404 }
-    )
+    return NextResponse.json({ error: 'Document introuvable.' }, { status: 404 })
   }
 
   const { data: caseRow } = await admin
@@ -106,10 +93,7 @@ export async function POST(
     .maybeSingle()
 
   if (!caseRow || caseRow.user_id !== juriUser.id) {
-    return NextResponse.json(
-      { error: 'Tu ne peux pas envoyer ce document.' },
-      { status: 403 }
-    )
+    return NextResponse.json({ error: 'Tu ne peux pas envoyer ce document.' }, { status: 403 })
   }
 
   if (doc.signature_status !== 'signed') {
@@ -122,6 +106,22 @@ export async function POST(
     )
   }
 
+  if (doc.sent_status === 'sent_recommande' || doc.tracking_number) {
+    return NextResponse.json({
+      error: 'Un dépôt ou un ancien suivi existe déjà pour ce document. Vérifie cet historique auprès du support avant un nouvel envoi.',
+      code: 'reconciliation_required',
+    }, { status: 409 })
+  }
+
+  try {
+    assertAR24Configured()
+  } catch {
+    return NextResponse.json({
+      error: 'Le service de recommandé est indisponible. Aucun dépôt n’a été effectué par cette demande.',
+      code: 'ar24_unavailable',
+    }, { status: 503 })
+  }
+
   if (included === 0 && !isAdmin) {
     return NextResponse.json(
       {
@@ -132,46 +132,48 @@ export async function POST(
     )
   }
 
-  // Check included count this month
-  let outOfPlan = false
   if (typeof included === 'number' && !isAdmin) {
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
 
-    const { data: userCases } = await admin
+    const { data: userCases, error: casesError } = await admin
       .from('jurispurama_cases')
       .select('id')
       .eq('user_id', juriUser.id)
+    if (casesError || !userCases) {
+      return NextResponse.json({ error: 'Impossible de vérifier les recommandés inclus.' }, { status: 503 })
+    }
     const caseIds = (userCases ?? []).map((c) => c.id)
 
     let used = 0
     if (caseIds.length > 0) {
-      const { count } = await admin
+      const { count, error: countError } = await admin
         .from('jurispurama_documents')
         .select('id', { count: 'exact', head: true })
         .in('case_id', caseIds)
         .eq('sent_status', 'sent_recommande')
         .gte('sent_at', startOfMonth.toISOString())
-      used = count ?? 0
+      if (countError || count === null) {
+        return NextResponse.json({ error: 'Impossible de vérifier les recommandés inclus.' }, { status: 503 })
+      }
+      used = count
     }
 
     if (used >= included) {
-      // Still allow — P5 will bill 5.99€; for now flag as out of plan
-      outOfPlan = true
+      return NextResponse.json({
+        error: 'Le nombre de recommandés inclus est atteint. Le paiement hors forfait n’est pas disponible ; aucun dépôt n’a été effectué par cette demande.',
+        code: 'included_quota_exhausted',
+      }, { status: 402 })
     }
   }
 
-  // Download signed PDF
   const signedPath = doc.storage_path
     ? doc.storage_path.replace(/\.pdf$/, '-signed.pdf')
     : null
   const pathToDownload = signedPath ?? doc.storage_path
   if (!pathToDownload) {
-    return NextResponse.json(
-      { error: 'Fichier PDF introuvable.' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Fichier PDF introuvable.' }, { status: 500 })
   }
 
   const { data: fileData, error: dlErr } = await admin.storage
@@ -179,15 +181,12 @@ export async function POST(
     .download(pathToDownload)
 
   if (dlErr || !fileData) {
-    return NextResponse.json(
-      { error: 'Impossible de charger le PDF pour l\'envoi.' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Impossible de charger le PDF pour l\'envoi.' }, { status: 500 })
   }
 
   const pdfBuffer = Buffer.from(await fileData.arrayBuffer())
 
-  // Send via AR24 (or simulation fallback)
+  // A valid provider response is required before any success state is written.
   let result
   try {
     result = await sendRecommande({
@@ -210,20 +209,19 @@ export async function POST(
       },
     })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erreur inconnue.'
     return NextResponse.json(
       {
-        error: `Le recommandé n'a pas pu être déposé : ${msg}`,
+        error: err instanceof AR24Error ? err.message : 'Le dépôt n’a pas pu être confirmé. Vérifie son état auprès du support avant toute nouvelle tentative.',
+        code: err instanceof AR24Error ? err.code : 'ar24_unconfirmed',
       },
-      { status: 502 }
+      { status: err instanceof AR24Error ? err.status : 502 }
     )
   }
 
   const sentAtISO = new Date().toISOString()
   const recipientLabel = `${body.recipientName} — ${body.recipientAddress.street}, ${body.recipientAddress.zip} ${body.recipientAddress.city}`
 
-  // Update document row
-  await admin
+  const { data: savedDocument, error: documentUpdateError } = await admin
     .from('jurispurama_documents')
     .update({
       sent_status: 'sent_recommande',
@@ -233,8 +231,17 @@ export async function POST(
       cost: result.cost,
     })
     .eq('id', doc.id)
+    .select('id')
+    .maybeSingle()
 
-  // Case status → envoye
+  if (documentUpdateError || !savedDocument) {
+    return NextResponse.json({
+      error: 'Le fournisseur a confirmé le dépôt, mais son enregistrement local a échoué. Ne renvoie pas le document ; contacte le support avec la référence indiquée.',
+      code: 'reconciliation_required',
+      tracking_number: result.tracking_number,
+    }, { status: 503 })
+  }
+
   await admin
     .from('jurispurama_cases')
     .update({
@@ -243,47 +250,29 @@ export async function POST(
     })
     .eq('id', caseRow.id)
 
-  // Payment row (informational; P5 will bill for real when outOfPlan)
-  if (outOfPlan) {
-    await admin.from('jurispurama_payments').insert({
-      user_id: juriUser.id,
-      stripe_payment_id: null,
-      amount: result.cost,
-      type: 'recommande',
-      status: 'simulated',
-    })
-  }
-
-  // Assistant message
-  const modeNote =
-    result.mode === 'simulated'
-      ? ' (mode démo — prêt pour AR24 réel dès configuration)'
-      : ''
   await admin.from('jurispurama_messages').insert({
     case_id: caseRow.id,
     role: 'assistant',
-    content: `📮 **Recommandé AR envoyé**${modeNote}
+    content: `📮 **Dépôt du recommandé confirmé par le fournisseur**
 
 "${doc.title}" est en route vers ${body.recipientName}.
 Numéro de suivi : \`${result.tracking_number}\`
-Coût : ${result.cost.toFixed(2)} €${outOfPlan ? ' (hors forfait)' : ' (inclus dans ton forfait)'}
+Coût fournisseur communiqué : ${result.cost.toFixed(2)} € (inclus dans ton forfait)
 
-Tu recevras une notification dès que l'accusé de réception sera signé.
+Une notification pourra être envoyée si le fournisseur confirme la remise. Le dépôt ne prouve pas la réception.
 
 [Voir le document](/documents/${doc.id})`,
     attachments: null,
   })
 
-  // Notification
   await admin.from('jurispurama_notifications').insert({
     user_id: juriUser.id,
     type: 'recommande_sent',
-    title: 'Recommandé AR envoyé',
-    message: `Tracking ${result.tracking_number} — en attente de l'accusé de réception.`,
+    title: 'Dépôt du recommandé confirmé',
+    message: `Suivi ${result.tracking_number} — en attente de confirmation de remise.`,
     link: `/documents/${doc.id}`,
   })
 
-  // Sender confirmation email
   await sendEmail({
     from: FROM_NOTIFS,
     to: juriUser.email ?? '',
@@ -303,8 +292,8 @@ Tu recevras une notification dès que l'accusé de réception sera signé.
     tracking_number: result.tracking_number,
     cost: result.cost,
     mode: result.mode,
-    out_of_plan: outOfPlan,
-    ar24_mode: AR24_MODE,
+    out_of_plan: false,
+    ar24_mode: result.mode,
     sent_at: sentAtISO,
   })
 }

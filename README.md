@@ -1,10 +1,22 @@
 # JurisPurama
 
-L'assistant juridique IA français : pose ton problème, reçois un plan d'action et des documents prêts à signer en 3 minutes.
+Projet d'assistant d'information juridique et de préparation documentaire.
 
-## Live
+## Adresse déclarée
 
 https://jurispurama.purama.dev
+
+Le déploiement et la conformité globale ne sont pas attestés par les tests locaux ci-dessous.
+
+## Contrat AR24 candidat — 16 novembre 2026
+
+Le protocole signé/chiffré remplace l'ancien `/envois` Bearer. Le suivi utilise `/api/mail`; un module séparé prépare l'upload et l'envoi officiel avec expéditeur, authentification et destinataire explicites. **L'envoi application et son checkout restent fermés, même avec des clés complètes.** Ils attendent un lien expéditeur vérifié, les données et consentements destinataire, une réservation durable contre les doublons et une qualification fournisseur.
+
+Le suivi reste désactivé par défaut. Il nécessite `AR24_ENABLED=true`, `AR24_API_KEY` et `AR24_PRIVATE_KEY`, avec une origine officielle. Aucune variable n'a été activée. Une réponse incertaine impose une réconciliation; aucune simulation, date, référence ou preuve archivée n'est fabriquée.
+
+Tests hors réseau : `node --test tests/ar24-*.test.mjs` (**49 PASS**), plus 6 tests checkout et 61 autres régressions (**116 PASS** au total). TypeScript strict ciblé réussit. Les routes utilisent des doubles DB/email et les scénarios d'envoi un double expéditeur explicite; la vraie garde fermée est testée séparément. Build complet, navigateur et fournisseur réel restent NON TESTÉS.
+
+Voir [les preuves, le contrat et les conditions d'activation](docs/audit-juridique/ar24-contract-2026-11-16.md). Le [rapport du 11 novembre](docs/audit-juridique/ar24-2026-11-11.md) documente les protections historiques.
 
 ## Stack
 
@@ -12,8 +24,8 @@ https://jurispurama.purama.dev
 - **Styling** : Tailwind v4 · palette dark (#1E3A5F justice / #C9A84C gold) · Cormorant Garamond
 - **Base de données** : Supabase self-hosted (PostgreSQL) via `auth.purama.dev`
 - **Auth** : `@supabase/ssr` (cookies httpOnly) + OAuth Google + middleware
-- **IA** : Anthropic Claude (`@anthropic-ai/sdk`) en SSE streaming — persona `JurisIA` (avocat FR 30 ans d'expérience)
-- **Paiements** : Stripe 22 (live) — 4 abonnements (Free / Essentiel / Pro / Avocat) + 3 achats unitaires
+- **IA** : Anthropic Claude (`@anthropic-ai/sdk`) en SSE streaming — `JurisIA`, information juridique générale, sans qualité d'avocat
+- **Paiements** : intégration Stripe 22 — tarifs et configuration à vérifier avant ouverture commerciale
 - **PDF** : `@react-pdf/renderer` (génération) + `pdf-lib` (signature canvas → PDF signé)
 - **Email** : Resend + `@react-email/components` (templates marketing + transactionnels)
 - **OCR** : Claude Vision (scanner PV, contrats, baux)
@@ -26,10 +38,10 @@ https://jurispurama.purama.dev
 - **P1** — Scaffold Next.js + Auth Supabase email/OAuth + schéma DB `jurispurama` (11 tables RLS) + landing minimaliste
 - **P2** — Chat JurisIA SSE streaming + dossiers + messages + actions (générer doc, poser question, citer articles)
 - **P3** — Profil juridique chiffré AES-256 + scanner OCR Claude Vision + génération PDF contestations
-- **P4** — Signature canvas (Art. 1366 Code civil) + envoi email / recommandé (mode sim AR24) + timeline dossier + crons deadline-alerts
+- **P4** — Signature canvas + envoi email + adaptateur recommandé désactivé avant qualification AR24 + timeline dossier + crons deadline-alerts
 - **P5** — Stripe 4 plans + webhooks + parrainage (QR, tiers Bronze→Légende, withdrawals wallet) + programme influenceurs + admin (stats, users, payments, influenceurs)
 - **P6** — Landing cinématique dark (Hero, Demo, Domains, HowItWorks, Testimonials, Compare, Pricing, FAQ, CTA, Footer) + pages statiques (pricing, how-it-works, ecosystem, aide, contact, changelog, status, blog, offline, légales) + SEO complet + PWA + i18n fr/en/es + dark mode + email marketing séquences
-- **P7** — Playwright E2E (111 tests · 3 viewports) + 21 SIM utilisateur + Lighthouse audit (100/96/100/100 desktop)
+- **P7 — historique déclaré, non réexécuté le 11 novembre 2026** : Playwright E2E (111 tests · 3 viewports), 21 SIM utilisateur, Lighthouse (100/96/100/100 desktop)
 
 ## Architecture
 

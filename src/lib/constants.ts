@@ -9,7 +9,7 @@ export const APP_COLOR_ACCENT = '#C9A84C'
 export const APP_TAGLINE =
   "L'assistant juridique IA qui décrypte le droit français pour toi"
 export const APP_PITCH =
-  'Raconte ton problème. En 3 minutes, tu as un plan d\'action + dossier complet. JurisIA rédige, signe et envoie à ta place.'
+  'Comprends les informations juridiques et prépare ton dossier. Vérifie et valide les documents avant toute signature ou tout envoi.'
 
 export const COMPANY_INFO = {
   name: 'SASU PURAMA',

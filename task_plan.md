@@ -99,3 +99,47 @@ resend + stripe 22 + recharts + qrcode + react-markdown + remark-gfm + sonner + 
 - Font: Cormorant Garamond (serif) + Inter (sans)
 - IA: JurisIA (Claude sonnet-4)
 - Admin: matiss.frasne@gmail.com
+
+## Complément vérifié — 11 novembre 2026, concurrence de suppression
+
+- [x] Réconcilier la PR2 avec les deux sources Mac lues sans les modifier.
+- [x] Corriger les courses avant acquisition et le faux succès d’annulation.
+- [x] Vérifier 23 scénarios concurrence/annulation, 16 programmation, 11 contrats SDK, 8 scénarios historiques et 27 AR24.
+- [x] Ajouter la CI ciblée et son lockfile public ; rejouer localement toutes ses commandes depuis une installation neuve.
+- [ ] Observer l'exécution GitHub et qualifier les règles de contrôle obligatoires de fusion.
+- [ ] Qualifier PostgreSQL réel, transitions du socle après acquisition, reprise et périmètre de suppression inter-applications.
+- [ ] Intégrer et déployer selon le processus commun ; aucune production qualifiée par ces tests.
+
+Preuves : [rapport de concurrence](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).
+
+## Contrat AR24 — 16 novembre 2026
+
+- [x] Reproduire l'incompatibilité de transport sur a4102c2 et vérifier les vecteurs officiels.
+- [x] Implémenter protocole signé/chiffré, suivi et construction d'envoi complète sur fixtures.
+- [x] Maintenir envoi et checkout fermés; aucun compte ou secret réel utilisé.
+- [x] 103 vérifications hors réseau et TypeScript strict ciblé PASS; CI étendue.
+- [ ] Qualifier le lien expéditeur, identité/consentements, idempotence, facturation et preuves.
+- [ ] Tester fournisseur sandbox autorisé puis parcours navigateur; aucune activation avant qualification.
+
+Détails : [contrat AR24 candidat](docs/audit-juridique/ar24-contract-2026-11-16.md).
+
+- [x] Contre-revue AR24 : reproduire et fermer les incohérences status/destinataire/pièces; refuser un ID expéditeur non textuel avant effets.
+- [x] Borner le cron à90s, tester annulation, réponse tardive, persistance incertaine et reprise du reste; 55 tests ciblés PASS.
+- [x] Ajouter le code de contrôle durable et d’outbox ; qualification concurrente du complément ci-dessous avant intégration.
+
+## État durable AR24 — complément du16 novembre2026
+
+- [x] Implémenter contrôle dédié, réservation atomique, vérification du dépôt et transaction reçu/outbox sans dates métier artificielles.
+- [x] Persister payload/clé/premier essai avant POST ; reprendre uniquement dans la fenêtre23h ; réconcilier après incertitude expirée.
+- [x] Conserver gardes envoi/checkout fermées et exclusion Vercel de la branche dès son premier commit.
+- [x] 125 vérifications applicatives et typage complet réussis, dépendances exactes du verrou.
+- [x] CI43813198970 :18 scénarios PostgreSQL AR24 et67 historiques PASS ; contre-revue indépendante PASS ; build Next complet avec configuration publique synthétique PASS. Intégration limitée à la branche de qualification autorisée après contrôle des déclencheurs.
+- [ ] Qualifier déploiement de migration, fournisseur et parcours réel séparément ; aucune activation automatique.
+
+## Dépendances — complément du 16 novembre 2026
+
+- [x] Auditer graphe production/complet et conserver build antérieur.
+- [x] Corriger les alertes critiques/hautes avec versions compatibles ; documenter les alertes restantes.
+- [x] Préserver .ots et SHA256 UTF-8, refuser une preuve sans attestation, tester les primitives officielles hors réseau.
+- [x] Requalifier 145 vérifications, types et build complets avec configuration publique synthétique, sans clés fournisseur.
+- [ ] Contrôler CI et contre-revue du nouvel arbre avant intégration dans la branche de qualification uniquement.
