@@ -13,30 +13,27 @@ interface SignModalProps {
   onSigned: (signedUrl: string | null, signedAt: string) => void
 }
 
-export default function SignModal({
+export default function SignModal({ open, ...props }: SignModalProps) {
+  return open ? <SignDialog key={props.documentId} {...props} /> : null
+}
+
+function SignDialog({
   documentId,
   documentTitle,
-  open,
   onClose,
   onSigned,
-}: SignModalProps) {
+}: Omit<SignModalProps, 'open'>) {
   const [consent, setConsent] = useState(false)
   const [dataUrl, setDataUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!open) return
-    setConsent(false)
-    setDataUrl(null)
-    setLoading(false)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  if (!open) return null
+  }, [onClose])
 
   const handleSign = async () => {
     if (!dataUrl) {
