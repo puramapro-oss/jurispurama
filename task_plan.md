@@ -1,5 +1,9 @@
 # JurisPurama — Task Plan
 
+## Audit du 22 novembre 2026 — PARTIEL
+
+Le linter se charge dans un clone autonome après correction de sa dépendance locale ; règles et versions conservées. Vérification avant/après PASS, 137 tests métier PASS. Le lint global révèle encore 16 erreurs React ; installation privée complète, build et navigateur locaux non qualifiés dans ce nouvel audit. Détails et limites : [preuve de portabilité](docs/audit-juridique/eslint-portability-2026-11-22.md). Les résultats historiques ci-dessous ne valent pas validation globale du candidat actuel.
+
 ## Phases
 - [x] P1 — Scaffold + Auth Supabase + DB schema + Landing + Deploy ✅ 2026-04-11
 - [x] P2 — Chat JurisIA SSE + dossiers/messages + actions ✅ 2026-04-11
