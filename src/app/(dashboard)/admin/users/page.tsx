@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -34,17 +34,26 @@ export default function AdminUsersPage() {
   const [planFilter, setPlanFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const requestRef = useRef<AbortController | null>(null)
+  const loadRef = useRef<(() => Promise<void>) | null>(null)
 
   const load = useCallback(async () => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (q) params.set('q', q)
       if (planFilter) params.set('plan', planFilter)
       params.set('page', String(page))
-      const res = await fetch(`/api/admin/users?${params.toString()}`)
+      const res = await fetch(`/api/admin/users?${params.toString()}`, {
+        signal: controller.signal,
+      })
+      if (controller.signal.aborted) return
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
+        if (controller.signal.aborted) return
         toast.error(data.error ?? 'Erreur de chargement')
         return
       }
@@ -52,15 +61,25 @@ export default function AdminUsersPage() {
         users: AdminUser[]
         total: number
       }
+      if (controller.signal.aborted) return
       setUsers(data.users)
       setTotal(data.total)
+    } catch {
+      if (!controller.signal.aborted) {
+        toast.error('Impossible de charger les utilisateurs. Réessaie.')
+      }
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }, [q, planFilter, page])
 
   useEffect(() => {
+    loadRef.current = load
     void load()
+    return () => {
+      loadRef.current = null
+      requestRef.current?.abort()
+    }
   }, [load])
 
   async function updatePlan(userId: string, plan: AdminUser['subscription_plan']) {
@@ -77,7 +96,7 @@ export default function AdminUsersPage() {
         return
       }
       toast.success('Plan mis à jour')
-      await load()
+      await loadRef.current?.()
     } finally {
       setUpdatingId(null)
     }

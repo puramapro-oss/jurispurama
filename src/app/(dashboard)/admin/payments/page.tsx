@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -24,27 +24,42 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true)
   const [type, setType] = useState('')
   const [status, setStatus] = useState('')
+  const requestRef = useRef<AbortController | null>(null)
 
   const load = useCallback(async () => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (type) params.set('type', type)
       if (status) params.set('status', status)
-      const res = await fetch(`/api/admin/payments?${params.toString()}`)
+      const res = await fetch(`/api/admin/payments?${params.toString()}`, {
+        signal: controller.signal,
+      })
+      if (controller.signal.aborted) return
       if (!res.ok) {
         toast.error('Erreur de chargement')
         return
       }
       const data = (await res.json()) as { payments: Payment[] }
+      if (controller.signal.aborted) return
       setPayments(data.payments)
+    } catch {
+      if (!controller.signal.aborted) {
+        toast.error('Impossible de charger les paiements. Réessaie.')
+      }
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }, [type, status])
 
   useEffect(() => {
     void load()
+    return () => {
+      requestRef.current?.abort()
+    }
   }, [load])
 
   const total = payments

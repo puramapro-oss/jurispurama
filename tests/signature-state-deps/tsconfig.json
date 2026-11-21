@@ -9,7 +9,10 @@
   },
   "include": [
     "../sign-modal-state.spec.ts",
+    "../admin-read-state.spec.ts",
     "../fixtures/signature-dialog.tsx",
+    "../../src/app/(dashboard)/admin/payments/page.tsx",
+    "../../src/app/(dashboard)/admin/users/page.tsx",
     "../../playwright.config.ts"
   ],
   "exclude": [
