@@ -1,0 +1,21 @@
+{
+  "name": "jurispurama-signature-state-test-dependencies",
+  "version": "1.0.0",
+  "private": true,
+  "overrides": {
+    "csstype": "3.2.3"
+  },
+  "dependencies": {
+    "@playwright/test": "1.59.1",
+    "@types/node": "20.19.39",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "clsx": "2.1.1",
+    "esbuild": "0.27.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sonner": "2.0.7",
+    "tailwind-merge": "3.5.0",
+    "typescript": "5.9.3"
+  }
+}
