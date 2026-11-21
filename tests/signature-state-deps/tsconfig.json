@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "plugins": [],
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../sign-modal-state.spec.ts",
+    "../fixtures/signature-dialog.tsx",
+    "../../playwright.config.ts"
+  ],
+  "exclude": [
+    "../../node_modules"
+  ]
+}

@@ -101,3 +101,71 @@ jobs:
           python3 tests/ar24-postgres.py \
             --pg-bin /usr/lib/postgresql/16/bin \
             --report "$RUNNER_TEMP/juris-ar24-queue-postgres.json"
+
+  signature-state:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Install the signature test's exact public dependency subset
+        env:
+          JURIS_SIGNATURE_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-signature-deps
+        run: |
+          mkdir -p "$JURIS_SIGNATURE_DEPENDENCY_ROOT"
+          cp tests/signature-state-deps/package*.json "$JURIS_SIGNATURE_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_SIGNATURE_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_SIGNATURE_DEPENDENCY_ROOT=%s\n' "$JURIS_SIGNATURE_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+          test ! -e node_modules && test ! -L node_modules
+          ln -s "$JURIS_SIGNATURE_DEPENDENCY_ROOT/node_modules" node_modules
+
+      - name: Verify every test dependency against the application lock
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const app = JSON.parse(readFileSync('package-lock.json', 'utf8')).packages
+          const subset = JSON.parse(readFileSync('tests/signature-state-deps/package-lock.json', 'utf8')).packages
+          for (const [path, entry] of Object.entries(subset)) {
+            if (!path) continue
+            assert.ok(app[path], `Missing application lock entry: ${path}`)
+            for (const field of ['version', 'resolved', 'integrity']) {
+              assert.equal(entry[field], app[path][field], `${path}: ${field} drift`)
+            }
+          }
+          for (const [name, version] of Object.entries(subset[''].dependencies)) {
+            const installed = JSON.parse(readFileSync(resolve(process.env.JURIS_SIGNATURE_DEPENDENCY_ROOT, 'node_modules', name, 'package.json'), 'utf8'))
+            assert.equal(installed.version, version, `${name}: installed version mismatch`)
+          }
+          console.log('SIGNATURE_DEPENDENCY_LOCK_PASS')
+          NODE
+
+      - name: Typecheck the actual signature component and existing browser test
+        run: node_modules/.bin/tsc --project tests/signature-state-deps/tsconfig.json --noEmit
+
+      - name: Install the locked Chromium browser
+        run: node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Exercise draft retention, close and document change at all existing widths
+        env:
+          PW_BASE_URL: http://127.0.0.1:9
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/juris-signature-browser.json
+        run: node_modules/.bin/playwright test tests/sign-modal-state.spec.ts --retries=0 --workers=1 --reporter=line,json
+
+      - name: Preserve signature browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: juris-signature-browser
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/juris-signature-browser.json
+            test-results/
