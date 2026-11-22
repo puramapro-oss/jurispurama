@@ -8,6 +8,8 @@ declare global {
 }
 
 test('l’âge de l’abonnement suit le temps et le retour sur la page sans nouvelle requête', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', error => pageErrors.push(error.message))
   const start = Date.UTC(2026, 10, 22)
   await page.clock.install({ time: start })
   const { outputFiles } = await build({
@@ -20,7 +22,16 @@ test('l’âge de l’abonnement suit le temps et le retour sur la page sans nou
       resolveDir: process.cwd(), loader: 'tsx',
     },
     bundle: true, write: false, jsx: 'automatic',
-    define: { 'process.env.NODE_ENV': '"production"' },
+    // esbuild does not run Next's define-env transform. Preserve this app's default Link configuration.
+    define: {
+      'process.env.NODE_ENV': '"production"',
+      'process.env.__NEXT_ROUTER_BASEPATH': '""',
+      'process.env.__NEXT_TRAILING_SLASH': 'false',
+      'process.env.__NEXT_MANUAL_CLIENT_BASE_PATH': 'false',
+      'process.env.__NEXT_MANUAL_TRAILING_SLASH': 'false',
+      'process.env.__NEXT_I18N_SUPPORT': 'false',
+      'process.env.__NEXT_LINK_NO_TOUCH_START': 'false',
+    },
     // Authentication is outside this clock regression; the real settings page and children are bundled.
     plugins: [{ name: 'auth-fixture', setup(build) {
       build.onResolve({ filter: /\/hooks\/useAuth$/ }, () => ({ path: 'auth-fixture', namespace: 'fixture' }))
@@ -56,4 +67,5 @@ test('l’âge de l’abonnement suit le temps et le retour sur la page sans nou
   await expect(page.getByText('Fermé', { exact: true })).toBeVisible()
   expect(await page.evaluate(() => window.subscriptionRead.signal?.aborted)).toBe(true)
   expect(external).toEqual([])
+  expect(pageErrors).toEqual([])
 })

@@ -2,6 +2,8 @@
 
 This directory qualifies the real signature, generation and sending dialogs, admin reads, aid navigation, scanner hook, chat loading and subscription clock. Components and their UI dependencies are bundled from application sources. Only the subscription clock test replaces `useAuth` with an explicit fixture; authentication is outside that test's scope.
 
+The subscription fixture retains the real `next/link`. Its esbuild bundle supplies the six Link build constants that Next normally injects, matching this application's unchanged defaults (empty base path, no trailing slash, manual path handling, i18n or touch suppression). CI run `44970785005` passed 84/87 browser cases; its three clock traces showed `process is not defined` in Next's `has-base-path.js` before the fixture rendered. The fixture now supplies those constants and checks browser errors. The 29 → 30 → 32 day assertions, cancellation check, blocked external requests and all three widths remain required.
+
 The public test dependency subset is pinned to the application lock. Every package version, registry URL and integrity must match that lock before the browser starts. The `csstype` override retains the already-qualified application version; it does not override an incompatible range.
 
 The workflow installs only this subset in the runner's temporary directory and links it into the fresh checkout. It copies the canonical `tooling/eslint-config-purama` package into that directory, then runs the repository's full ESLint configuration. It requires no SMARANA repository access, sibling repository, application build, provider credentials or deployed endpoint. The application dependency graph and production configuration are unchanged.
