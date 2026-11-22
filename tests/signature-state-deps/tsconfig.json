@@ -8,6 +8,8 @@
     ]
   },
   "include": [
+    "../auth-session-state.spec.ts",
+    "../fixtures/auth-session.tsx",
     "../sign-modal-state.spec.ts",
     "../admin-read-state.spec.ts",
     "../financer-read-state.spec.ts",
