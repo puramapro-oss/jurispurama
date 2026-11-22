@@ -1,5 +1,9 @@
 # JurisPurama — Task Plan
 
+## Chat, complément du 22 novembre 2026 — en qualification CI
+
+Annulation et isolation des flux, lecteur SSE libéré, conservation du brouillon pendant le chargement et en StrictMode, terminal de réponse explicite : corrections préparées après reproduction et revue indépendante. Treize tests natifs, six scénarios React indépendants et les 33 régressions admin/Financer conservées passent localement. Les 36 cas navigateur supplémentaires attendent la CI du commit publié. [Périmètre, preuves et limites](docs/audit-juridique/chat-stream-lifecycle-2026-11-22.md). Aucune fusion vers main ni mise en production.
+
 ## Audit du 22 novembre 2026 — PARTIEL
 
 Recherche d’aides : nettoyage et annulation des lectures après sortie corrigés, 17 tests de callbacks, types et bundle PASS. Les tests navigateur sont ajoutés à la CI ; [portée de la reproduction et limites](docs/audit-juridique/financer-read-cleanup-2026-11-22.md).

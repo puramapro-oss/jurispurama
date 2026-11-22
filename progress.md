@@ -1,5 +1,9 @@
 # JurisPurama — Progress
 
+## Chat, complément du 22 novembre 2026 — en qualification CI
+
+Base PR 2 `71b14b14`, copie isolée ; les lots administrateur et Financer sont conservés. Le flux quitté ne doit plus réécrire l'URL, notifier la page suivante ni remplacer un autre fil. Les cas d'historique en cours, EOF incomplet et brouillon mal formé ont été reproduits et corrigés pendant la revue. Contrôles locaux ciblés PASS ; navigateur en attente de CI. [Rapport du lot](docs/audit-juridique/chat-stream-lifecycle-2026-11-22.md).
+
 ## Audit du 22 novembre 2026 — PARTIEL
 
 Recherche d’aides : nettoyage et annulation des lectures après sortie corrigés, 17 tests de callbacks, types et bundle PASS. Les tests navigateur sont ajoutés à la CI ; [portée de la reproduction et limites](docs/audit-juridique/financer-read-cleanup-2026-11-22.md).
