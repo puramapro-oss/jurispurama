@@ -920,3 +920,9 @@ Le lecteur SSE, le blocage d’envoi pendant loading, l’admission d’un seul 
 Horodatage : le parser amont 0.4.9 acceptait des longueurs internes tronquées ou non minimales malgré assertEof. Le timestamp et le reçu sauvegardé doivent désormais se resérialiser à l’identique après les contrôles de taille/arbre ; le contrôle des reçus est exécuté avant tout HTTP. Suite OTS complète : 17/27 avant, 27/27 après, cinq fixtures officielles conservées. Aucun ancrage Bitcoin n’est déduit du seul parsing, aucun calendrier ou fournisseur réel n’a été appelé.
 
 La copie réconciliée permet également un lint global complet : commande canonique sur tout le dépôt, sortie 0, aucune erreur et deux avertissements de navigation conservés. Ce résultat remplace le statut local incomplet des quatre tentatives interrompues de la copie précédente.
+
+## 22 novembre 2026 — proposition de qualification web complète
+
+Le lot React/OTS est publié dans PR2 à `320711b5` ; CI `44971255694` PASS, 110 Node frontend, 27 OTS, 87 Chromium et trois jobs réussis. L’arbre du checkout CI est identique à celui publié. L’échec initial 84/87 concernait les constantes Next manquantes dans la seule fixture d’horloge ; il est corrigé sans changement produit.
+
+Une proposition isolée ajoute un workflow d’installation privée/typegen/types/build. Les 21 empreintes SMARANA sont reprises du commit verrouillé, sans SDK dans le dépôt ; le miroir Git vérifié ne conserve aucune authentification et npm garde les manifestes applicatifs inchangés. 40 tests synthétiques et lint global 403 fichiers PASS (0 erreur / 2 avertissements conservés). La contre-revue a reproduit l’acceptation d’un historique rendu atteignable en supprimant shallow ; la garde impose désormais un seul commit atteignable, égal au pin. Publication, présence de clés JURIS et qualification applicative complète restent en attente de revue et de preuve CI. Voir `docs/audit-juridique/full-web-qualification-2026-11-22.md`.
