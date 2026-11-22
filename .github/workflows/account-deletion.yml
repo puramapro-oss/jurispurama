@@ -114,7 +114,7 @@ jobs:
           node-version: '24.22.1'
           package-manager-cache: false
 
-      - name: Install the signature test's exact public dependency subset
+      - name: Install the UI tests' exact public dependency subset
         env:
           JURIS_SIGNATURE_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-signature-deps
         run: |
@@ -147,20 +147,23 @@ jobs:
           console.log('SIGNATURE_DEPENDENCY_LOCK_PASS')
           NODE
 
-      - name: Typecheck signature and admin read components with their existing tests
+      - name: Typecheck signature, admin and aid read components with their tests
         run: node_modules/.bin/tsc --project tests/signature-state-deps/tsconfig.json --noEmit
 
       - name: Admin reads reject stale results and report network failures
         run: node --test tests/admin-read-races.test.mjs
 
+      - name: Aid reads cancel stale work without changing profile navigation
+        run: node --test tests/financer-read-races.test.mjs
+
       - name: Install the locked Chromium browser
         run: node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Exercise signature state and admin reads at all existing widths
+      - name: Exercise signature, admin and aid reads at all existing widths
         env:
           PW_BASE_URL: http://127.0.0.1:9
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/juris-signature-browser.json
-        run: node_modules/.bin/playwright test tests/sign-modal-state.spec.ts tests/admin-read-state.spec.ts --retries=0 --workers=1 --reporter=line,json
+        run: node_modules/.bin/playwright test tests/sign-modal-state.spec.ts tests/admin-read-state.spec.ts tests/financer-read-state.spec.ts --retries=0 --workers=1 --reporter=line,json
 
       - name: Preserve signature browser evidence
         if: always()

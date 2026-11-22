@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { Aide, Step } from '@/types/financer'
 import FinancerStepper from '@/components/financer/FinancerStepper'
@@ -16,27 +16,36 @@ export default function FinancerPage() {
   const [aides, setAides] = useState<Aide[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedAides, setSelectedAides] = useState<Set<string>>(new Set())
+  const requestRef = useRef<AbortController | null>(null)
 
   const fetchAides = useCallback(async () => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (profil) params.set('profil', profil)
       if (situation) params.set('situation', situation)
-      const res = await fetch(`/api/financer?${params}`)
+      const res = await fetch(`/api/financer?${params}`, { signal: controller.signal })
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error()
       const json = await res.json()
+      if (controller.signal.aborted) return
       setAides(json.aides ?? [])
     } catch {
-      toast.error('Impossible de charger les aides.')
+      if (!controller.signal.aborted) toast.error('Impossible de charger les aides.')
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }, [profil, situation])
 
   useEffect(() => {
     if (step === 2 && (profil || situation)) {
-      fetchAides()
+      void fetchAides()
+      return () => {
+        requestRef.current?.abort()
+      }
     }
   }, [step, profil, situation, fetchAides])
 

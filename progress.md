@@ -2,6 +2,8 @@
 
 ## Audit du 22 novembre 2026 — PARTIEL
 
+Recherche d’aides : nettoyage et annulation des lectures après sortie corrigés, 17 tests de callbacks, types et bundle PASS. Les tests navigateur sont ajoutés à la CI ; [portée de la reproduction et limites](docs/audit-juridique/financer-read-cleanup-2026-11-22.md).
+
 Lectures administrateur : courses de réponses et erreurs réseau corrigées sur Paiements et Utilisateurs, 16 régressions et types ciblés PASS. Les contrôles navigateur sont intégrés à la CI existante. [Preuves et limites du lot](docs/audit-juridique/admin-read-races-2026-11-22.md).
 
 Le linter se charge dans un clone autonome après correction de sa dépendance locale ; règles et versions conservées. Vérification avant/après PASS, 137 tests métier PASS. Le lint global révèle encore 16 erreurs React ; installation privée complète, build et navigateur locaux non qualifiés dans ce nouvel audit. Détails et limites : [preuve de portabilité](docs/audit-juridique/eslint-portability-2026-11-22.md). Les résultats historiques ci-dessous ne valent pas validation globale du candidat actuel.
