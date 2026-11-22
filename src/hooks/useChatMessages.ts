@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { readChatStream } from '@/lib/chat-stream'
 import type { JurisCase, JurisMessage } from '@/types'
 
 interface JurisDocumentLite {
@@ -23,6 +24,7 @@ export function useChatMessages(
   initialCaseId: string,
   scrollToBottom: (smooth: boolean) => void
 ) {
+  const [sourceId, setSourceId] = useState(initialCaseId)
   const [caseId, setCaseId] = useState<string | null>(
     initialCaseId === 'new' ? null : initialCaseId
   )
@@ -33,17 +35,40 @@ export function useChatMessages(
   const [streaming, setStreaming] = useState(false)
   const [errored, setErrored] = useState<string | null>(null)
 
-  const autoScrollRef = useRef(true)
+  const scopeRef = useRef<AbortController | null>(null)
+  const streamRef = useRef<AbortController | null>(null)
+  const messageSequence = useRef(0)
+
+  if (sourceId !== initialCaseId) {
+    setSourceId(initialCaseId)
+    setCaseId(initialCaseId === 'new' ? null : initialCaseId)
+    setCaseRow(null)
+    setDocuments([])
+    setMessages([])
+    setLoading(initialCaseId !== 'new')
+    setStreaming(false)
+    setErrored(null)
+  }
+
+  useEffect(() => {
+    const scope = new AbortController()
+    scopeRef.current = scope
+    return () => {
+      scope.abort()
+      if (scopeRef.current === scope) scopeRef.current = null
+    }
+  }, [initialCaseId])
 
   // Load case on mount
   useEffect(() => {
     if (initialCaseId === 'new') {
-      setLoading(false)
       return
     }
-    let active = true
-    fetch(`/api/cases/${initialCaseId}`, { cache: 'no-store' })
+    const controller = new AbortController()
+    let frame: number | undefined
+    fetch(`/api/cases/${initialCaseId}`, { cache: 'no-store', signal: controller.signal })
       .then(async (r) => {
+        if (controller.signal.aborted) return null
         if (!r.ok) {
           if (r.status === 404) {
             toast.error('Dossier introuvable.')
@@ -58,7 +83,7 @@ export function useChatMessages(
         }>
       })
       .then((data) => {
-        if (!active || !data) return
+        if (controller.signal.aborted || !data) return
         setCaseRow(data.case)
         setDocuments(data.documents ?? [])
         setMessages(
@@ -71,28 +96,42 @@ export function useChatMessages(
               createdAt: m.created_at,
             }))
         )
-        requestAnimationFrame(() => scrollToBottom(false))
+        frame = requestAnimationFrame(() => {
+          if (!controller.signal.aborted) scrollToBottom(false)
+        })
       })
       .catch(() => {
-        if (active) toast.error('Impossible de charger le dossier.')
+        if (!controller.signal.aborted) toast.error('Impossible de charger le dossier.')
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       })
     return () => {
-      active = false
+      controller.abort()
+      if (frame !== undefined) cancelAnimationFrame(frame)
     }
   }, [initialCaseId, scrollToBottom])
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!text.trim() || streaming) return
+      const scope = scopeRef.current
+      if (typeof text !== 'string' || !text.trim() || loading || streamRef.current || !scope || scope.signal.aborted) return
+      const controller = new AbortController()
+      streamRef.current = controller
+      const current = () => !controller.signal.aborted &&
+        scopeRef.current === scope && streamRef.current === controller
+      const cancel = () => {
+        controller.abort()
+        if (streamRef.current === controller) streamRef.current = null
+      }
+      scope.signal.addEventListener('abort', cancel, { once: true })
+      const initialPath = window.location.pathname
       setErrored(null)
       setStreaming(true)
-      autoScrollRef.current = true
 
-      const tempUserId = `temp-user-${Date.now()}`
-      const tempAssistantId = `temp-assistant-${Date.now()}`
+      const sequence = `${Date.now()}-${messageSequence.current++}`
+      const tempUserId = `temp-user-${sequence}`
+      const tempAssistantId = `temp-assistant-${sequence}`
 
       setMessages((prev) => [
         ...prev,
@@ -117,11 +156,16 @@ export function useChatMessages(
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({
             caseId: caseId ?? undefined,
             message: text,
           }),
         })
+        if (!current()) {
+          void res.body?.cancel().catch(() => undefined)
+          return
+        }
 
         if (!res.ok || !res.body) {
           const err = await res.json().catch(() => ({
@@ -132,89 +176,62 @@ export function useChatMessages(
           )
         }
 
-        const reader = res.body.getReader()
-        const decoder = new TextDecoder('utf-8')
-        let buffer = ''
-
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-
-          const parts = buffer.split('\n\n')
-          buffer = parts.pop() ?? ''
-
-          for (const part of parts) {
-            const line = part.trim()
-            if (!line.startsWith('data:')) continue
-            const payload = line.slice(5).trim()
-            if (payload === '[DONE]') continue
-            if (!payload) continue
-            try {
-              const evt = JSON.parse(payload) as {
-                type: 'text' | 'case_created' | 'done' | 'error'
-                content?: string
-                caseId?: string
-                meta?: {
-                  next_actions?: string[] | null
-                } | null
-                error?: string
-              }
-              if (evt.type === 'case_created' && evt.caseId) {
-                finalCaseId = evt.caseId
-                setCaseId(evt.caseId)
-              } else if (evt.type === 'text' && evt.content) {
-                assistantText += evt.content
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === tempAssistantId
-                      ? { ...m, content: assistantText }
-                      : m
-                  )
-                )
-              } else if (evt.type === 'done') {
-                if (evt.caseId) finalCaseId = evt.caseId
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === tempAssistantId
-                      ? {
-                          ...m,
-                          streaming: false,
-                          createdAt: new Date().toISOString(),
-                          actions: evt.meta?.next_actions ?? null,
-                        }
-                      : m
-                  )
-                )
-              } else if (evt.type === 'error' && evt.error) {
-                throw new Error(evt.error)
-              }
-            } catch (parseErr) {
-              if (parseErr instanceof Error && parseErr.message) {
-                throw parseErr
-              }
-            }
+        await readChatStream(res.body, controller.signal, (evt) => {
+          if (!current()) return
+          if (evt.type === 'case_created' && evt.caseId) {
+            finalCaseId = evt.caseId
+            setCaseId(evt.caseId)
+          } else if (evt.type === 'text' && evt.content) {
+            assistantText += evt.content
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === tempAssistantId
+                  ? { ...m, content: assistantText }
+                  : m
+              )
+            )
+          } else if (evt.type === 'done') {
+            if (evt.caseId) finalCaseId = evt.caseId
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === tempAssistantId
+                  ? {
+                      ...m,
+                      streaming: false,
+                      createdAt: new Date().toISOString(),
+                      actions: evt.meta?.next_actions ?? null,
+                    }
+                  : m
+              )
+            )
+          } else if (evt.type === 'error' && evt.error) {
+            throw new Error(evt.error)
           }
-        }
+        })
+        if (!current()) return
 
         // Refetch case row
         if (finalCaseId) {
           const freshRes = await fetch(`/api/cases/${finalCaseId}`, {
             cache: 'no-store',
+            signal: controller.signal,
           })
+          if (!current()) return
           if (freshRes.ok) {
             const fresh = (await freshRes.json()) as {
               case: JurisCase
               documents?: JurisDocumentLite[]
             }
+            if (!current()) return
             setCaseRow(fresh.case)
             setDocuments(fresh.documents ?? [])
           }
-          if (initialCaseId === 'new') {
-            window.history.replaceState(null, '', `/chat/${finalCaseId}`)
+          if (initialCaseId === 'new' && window.location.pathname === initialPath) {
+            window.history.replaceState(window.history.state, '', `/chat/${finalCaseId}`)
           }
         }
       } catch (err) {
+        if (!current()) return
         const msg =
           err instanceof Error
             ? err.message
@@ -233,10 +250,12 @@ export function useChatMessages(
           )
         )
       } finally {
-        setStreaming(false)
+        scope.signal.removeEventListener('abort', cancel)
+        if (current()) setStreaming(false)
+        if (streamRef.current === controller) streamRef.current = null
       }
     },
-    [caseId, initialCaseId, streaming]
+    [caseId, initialCaseId, loading]
   )
 
   return {
