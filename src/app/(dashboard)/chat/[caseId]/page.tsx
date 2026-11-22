@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import ChatInput from '@/components/chat/ChatInput'
@@ -12,6 +12,7 @@ import AIDisclosure from '@/lib/legal/components/AIDisclosure'
 import type { CaseSidebarAction } from '@/components/chat/CaseSidebar'
 import type { NextAction } from '@/components/chat/ActionButtons'
 import { useChatMessages } from '@/hooks/useChatMessages'
+import { usePendingChatMessage } from '@/hooks/usePendingChatMessage'
 import { useChatActions } from '@/hooks/useChatActions'
 import { useScrollManagement } from '@/hooks/useScrollManagement'
 import { APP_NAME } from '@/lib/constants'
@@ -41,7 +42,6 @@ export default function ChatCasePage() {
   const [scanning, setScanning] = useState(false)
   const [docModalOpen, setDocModalOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
-  const pendingSentRef = useRef(false)
 
   const { handleAction: baseHandleAction, handleScanFile, handleGenerateDocument } =
     useChatActions({
@@ -53,24 +53,10 @@ export default function ChatCasePage() {
       scrollToBottom,
     })
 
-  // Auto-send pending message from /chat page
-  useEffect(() => {
-    if (initialCaseId !== 'new') return
-    if (pendingSentRef.current) return
-    try {
-      const raw = sessionStorage.getItem('jurispurama:pending_message')
-      if (!raw) return
-      sessionStorage.removeItem('jurispurama:pending_message')
-      const parsed = JSON.parse(raw) as { message: string; ts: number }
-      if (!parsed?.message) return
-      pendingSentRef.current = true
-      void sendMessage(parsed.message)
-    } catch {
-      // noop
-    }
-  }, [initialCaseId, sendMessage])
+  usePendingChatMessage(initialCaseId, sendMessage)
 
   const handleSubmit = () => {
+    if (loading || streaming) return
     const text = input.trim()
     if (!text) return
     setInput('')
@@ -166,7 +152,7 @@ export default function ChatCasePage() {
             value={input}
             onChange={setInput}
             onSubmit={handleSubmit}
-            disabled={streaming}
+            disabled={streaming || loading}
             placeholder={
               hasMessages
                 ? 'Pose ta question suivante…'

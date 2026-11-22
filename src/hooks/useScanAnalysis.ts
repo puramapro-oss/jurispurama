@@ -33,45 +33,50 @@ const STEPS = [
 ]
 
 export function useScanAnalysis() {
-  const [file, setFile] = useState<File | null>(null)
+  const [file, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [context, setContext] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [stepIdx, setStepIdx] = useState(0)
   const [result, setResult] = useState<ScanResult | null>(null)
-  const stepTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const previewRef = useRef<string | null>(null)
+  const analysisRef = useRef<AbortController | null>(null)
 
-  // Preview
-  useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null)
-      return
-    }
-    if (file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      return () => URL.revokeObjectURL(url)
-    }
-    setPreviewUrl(null)
-  }, [file])
+  const setFile = useCallback((nextFile: File | null) => {
+    const nextPreview = nextFile?.type.startsWith('image/')
+      ? URL.createObjectURL(nextFile)
+      : null
+    analysisRef.current?.abort()
+    setAnalyzing(false)
+    setResult(null)
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+    previewRef.current = nextPreview
+    setSelectedFile(nextFile)
+    setPreviewUrl(nextPreview)
+  }, [])
+
+  useEffect(() => () => {
+    analysisRef.current?.abort()
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+  }, [])
 
   // Rotating step animation during analysis
   useEffect(() => {
-    if (!analyzing) {
-      if (stepTimer.current) clearInterval(stepTimer.current)
-      setStepIdx(0)
-      return
-    }
-    stepTimer.current = setInterval(() => {
+    if (!analyzing) return
+    const stepTimer = setInterval(() => {
       setStepIdx((i) => (i + 1) % STEPS.length)
     }, 1800)
     return () => {
-      if (stepTimer.current) clearInterval(stepTimer.current)
+      clearInterval(stepTimer)
     }
   }, [analyzing])
 
   const analyze = useCallback(async () => {
     if (!file) return
+    analysisRef.current?.abort()
+    const controller = new AbortController()
+    analysisRef.current = controller
+    setStepIdx(0)
     setAnalyzing(true)
     setResult(null)
 
@@ -80,7 +85,8 @@ export function useScanAnalysis() {
       form.append('file', file)
       if (context.trim()) form.append('context', context.trim())
 
-      const res = await fetch('/api/ocr', { method: 'POST', body: form })
+      const res = await fetch('/api/ocr', { method: 'POST', body: form, signal: controller.signal })
+      if (controller.signal.aborted) return
       if (!res.ok) {
         const err = (await res.json().catch(() => null)) as {
           error?: string
@@ -88,13 +94,15 @@ export function useScanAnalysis() {
         throw new Error(err?.error ?? 'Analyse impossible.')
       }
       const data = (await res.json()) as ScanResult
+      if (controller.signal.aborted) return
       setResult(data)
       toast.success('Document analysé avec succès.')
     } catch (err) {
+      if (controller.signal.aborted) return
       const msg = err instanceof Error ? err.message : 'Analyse impossible.'
       toast.error(msg)
     } finally {
-      setAnalyzing(false)
+      if (!controller.signal.aborted) setAnalyzing(false)
     }
   }, [file, context])
 
@@ -102,7 +110,7 @@ export function useScanAnalysis() {
     setFile(null)
     setResult(null)
     setContext('')
-  }, [])
+  }, [setFile])
 
   return {
     file,
@@ -111,8 +119,8 @@ export function useScanAnalysis() {
     context,
     setContext,
     analyzing,
-    stepIdx,
-    currentStep: STEPS[stepIdx],
+    stepIdx: analyzing ? stepIdx : 0,
+    currentStep: STEPS[analyzing ? stepIdx : 0],
     result,
     analyze,
     resetAll,

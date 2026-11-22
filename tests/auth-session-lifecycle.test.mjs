@@ -1,0 +1,247 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { harness, sessionFor, profileFor, flush } from './auth-session-harness.mjs'
+
+test('an initial signed-in session loads its own existing profile', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  assert.equal(h.requests[0].table, 'jurispurama_users')
+  assert.equal(h.requests[0].field, 'auth_user_id')
+  assert.equal(h.requests[0].userId, 'alice')
+  await h.resolve(0, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('an initial signed-out session finishes without reading or creating a profile', async () => {
+  const h = harness()
+  await h.start(null)
+  assert.equal(h.requests.length, 0)
+  assert.equal(h.state.user, null)
+  assert.equal(h.state.profile, null)
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('a new current profile preserves its existing creation defaults', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, null)
+  assert.equal(h.requests[1].value.full_name, 'alice')
+  assert.equal(h.requests[1].value.subscription_plan, 'free')
+  assert.equal(h.requests[1].value.language, 'fr')
+  assert.equal(h.requests[1].value.role, 'user')
+  await h.resolve(1, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('auth events return synchronously and defer profile I/O outside the auth callback', async () => {
+  const h = harness()
+  const returned = h.emit('SIGNED_IN', sessionFor('alice'))
+  assert.equal(returned, undefined)
+  assert.equal(h.requests.length, 0)
+  await h.tick()
+  assert.equal(h.requests.length, 1)
+  assert.equal(h.requests[0].insideAuthCallback, false)
+  await h.resolve(0, profileFor('alice'))
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+for (const boundary of ['sign-out', 'account-switch', 'unmount']) {
+  test(`${boundary} prevents a late profile from restoring the old identity`, async () => {
+    const h = harness()
+    await h.start(sessionFor('alice'))
+    if (boundary === 'sign-out') h.emit('SIGNED_OUT', null)
+    else if (boundary === 'account-switch') h.emit('SIGNED_IN', sessionFor('bob'))
+    else h.cleanup()
+    await h.tick()
+    const before = h.updates.length
+    await h.resolve(0, profileFor('alice'))
+    assert.equal(h.state.profile, null)
+    assert.equal(h.updates.length, before)
+    if (boundary === 'account-switch') {
+      assert.equal(h.state.loading, true)
+      await h.resolve(1, profileFor('bob'))
+      assert.equal(h.state.profile.auth_user_id, 'bob')
+      assert.equal(h.state.loading, false)
+    }
+    h.cleanup()
+  })
+}
+
+test('an old initial session cannot replace a more recent auth event', async () => {
+  const h = harness()
+  h.emit('SIGNED_IN', sessionFor('bob'))
+  await h.tick()
+  await h.start(sessionFor('alice'))
+  assert.equal(h.state.user.id, 'bob')
+  assert.equal(h.requests.length, 1)
+  await h.resolve(0, profileFor('bob'))
+  h.cleanup()
+})
+
+test('a loaded profile is cleared immediately when the account changes', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, profileFor('alice'))
+  h.emit('SIGNED_IN', sessionFor('bob'))
+  assert.equal(h.state.profile, null)
+  assert.equal(h.state.loading, true)
+  h.cleanup()
+})
+
+test('profile completion and repeated same-user events do not resubscribe or duplicate reads', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  h.emit('SIGNED_IN', sessionFor('alice'))
+  await h.tick()
+  assert.equal(h.requests.length, 1)
+  await h.resolve(0, profileFor('alice'))
+  h.render()
+  assert.equal(h.subscriptions, 1)
+  h.emit('SIGNED_IN', sessionFor('alice'))
+  await h.tick()
+  assert.equal(h.requests.length, 1)
+  h.cleanup()
+  assert.equal(h.unsubscriptions, 1)
+})
+
+test('token refresh publishes the latest session without a redundant profile read', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, profileFor('alice'))
+  h.emit('TOKEN_REFRESHED', sessionFor('alice', 'renewed-token'))
+  await h.tick()
+  assert.equal(h.state.session.access_token, 'renewed-token')
+  assert.equal(h.requests.length, 1)
+  h.cleanup()
+})
+
+test('profile lookup errors do not create a new row and can be retried by a later auth event', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, null, { code: '503', message: 'fixture transport error' })
+  assert.equal(h.requests.length, 1)
+  assert.equal(h.state.loading, false)
+  h.emit('SIGNED_IN', sessionFor('alice'))
+  await h.tick()
+  assert.equal(h.requests[1].kind, 'read')
+  await h.resolve(1, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  h.cleanup()
+})
+
+test('only a confirmed missing current profile is created and a concurrent creation is reread', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, null)
+  assert.equal(h.requests[1].kind, 'insert')
+  assert.equal(h.requests[1].value.auth_user_id, 'alice')
+  await h.resolve(1, null, { code: '23505', message: 'fixture duplicate profile' })
+  assert.equal(h.requests[2]?.kind, 'read')
+  await h.resolve(2, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('a missing old profile is never created after sign-out', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  h.emit('SIGNED_OUT', null)
+  await h.resolve(0, null)
+  assert.equal(h.requests.length, 1)
+  assert.equal(h.state.profile, null)
+  h.cleanup()
+})
+
+test('cleanup cancels scheduled profile work and ignores an already queued auth notification', async () => {
+  const h = harness()
+  h.emit('SIGNED_IN', sessionFor('alice'))
+  h.cleanup()
+  const before = h.updates.length
+  h.emit('SIGNED_OUT', null)
+  await h.tick()
+  assert.equal(h.requests.length, 0)
+  assert.equal(h.updates.length, before)
+})
+
+test('a rejected initial session ends loading without an unhandled rejection', async () => {
+  const h = harness()
+  h.initial.reject(new Error('fixture session failure'))
+  await flush()
+  assert.equal(h.state.loading, false)
+  assert.equal(h.state.user, null)
+  assert.equal(h.requests.length, 0)
+  h.cleanup()
+})
+
+test('a rejected profile transport ends loading without creating a row', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  h.requests[0].reject(new Error('fixture profile failure'))
+  await flush()
+  assert.equal(h.state.loading, false)
+  assert.equal(h.state.profile, null)
+  assert.equal(h.requests.length, 1)
+  h.cleanup()
+})
+
+test('a late insert result cannot restore a profile after sign-out', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  await h.resolve(0, null)
+  assert.equal(h.requests[1].kind, 'insert')
+  h.emit('SIGNED_OUT', null)
+  const before = h.updates.length
+  await h.resolve(1, profileFor('alice'))
+  assert.equal(h.state.profile, null)
+  assert.equal(h.updates.length, before)
+  h.cleanup()
+})
+
+test('token refresh during profile loading keeps that read current and updates the session', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  h.emit('TOKEN_REFRESHED', sessionFor('alice', 'renewed-token'))
+  await h.tick()
+  assert.equal(h.requests.length, 1)
+  await h.resolve(0, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  assert.equal(h.state.session.access_token, 'renewed-token')
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('signing back into the same account still rejects a read from the previous session', async () => {
+  const h = harness()
+  await h.start(sessionFor('alice'))
+  h.emit('SIGNED_OUT', null)
+  h.emit('SIGNED_IN', sessionFor('alice', 'new-session'))
+  await h.tick()
+  await h.resolve(0, profileFor('alice'))
+  assert.equal(h.state.profile, null)
+  assert.equal(h.state.loading, true)
+  await h.resolve(1, profileFor('alice'))
+  assert.equal(h.state.profile.auth_user_id, 'alice')
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+})
+
+test('StrictMode effect replay cancels the discarded effect before profile I/O', async () => {
+  const h = harness()
+  h.emit('SIGNED_IN', sessionFor('alice'))
+  h.replayEffects()
+  await h.start(sessionFor('alice'))
+  assert.equal(h.subscriptions, 2)
+  assert.equal(h.unsubscriptions, 1)
+  assert.equal(h.requests.length, 1)
+  await h.resolve(0, profileFor('alice'))
+  assert.equal(h.state.loading, false)
+  h.cleanup()
+  assert.equal(h.unsubscriptions, 2)
+})

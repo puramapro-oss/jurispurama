@@ -1,0 +1,247 @@
+name: Account deletion regressions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: account-deletion-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Install only locked public test dependencies
+        env:
+          JURIS_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-account-deletion-deps
+        run: |
+          mkdir -p "$JURIS_TEST_DEPENDENCY_ROOT"
+          cp tests/account-deletion-deps/package*.json "$JURIS_TEST_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_TEST_DEPENDENCY_ROOT=%s\n' "$JURIS_TEST_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+
+      - name: Check dependency versions against the application lockfile
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const app = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          const tests = JSON.parse(readFileSync('tests/account-deletion-deps/package.json', 'utf8'))
+          for (const [name, version] of Object.entries(tests.dependencies)) {
+            assert.equal(version, app.packages[`node_modules/${name}`].version, `${name}: application lockfile drift`)
+            // Stripe does not export package.json; read its installed public metadata directly.
+            const installed = JSON.parse(readFileSync(resolve(process.env.JURIS_TEST_DEPENDENCY_ROOT, 'node_modules', name, 'package.json'), 'utf8'))
+            assert.equal(installed.version, version, `${name}: installed version mismatch`)
+          }
+          NODE
+
+      - name: OpenTimestamps official primitives, transport and collection bounds
+        run: node --experimental-vm-modules --test tests/opentimestamps.test.mjs tests/collection-limits.test.mjs
+
+      - name: Account deletion concurrency, scheduling and SDK contracts
+        run: node --experimental-vm-modules --test tests/account-deletion-concurrency.test.mjs tests/account-deletion-scheduling.test.mjs tests/account-deletion-sdk.test.mjs
+
+      - name: Historical deletion error regressions
+        run: node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs
+
+      - name: Stripe Connect phase and configuration regressions
+        run: node --experimental-vm-modules --test tests/stripe-connect-gating.test.mjs
+
+      - name: AR24 checkout availability regressions
+        run: node --experimental-vm-modules --test tests/checkout-unit-ar24.test.mjs
+
+      - name: AR24 protocol, safety and route regressions
+        run: node --test tests/ar24-*.test.mjs
+
+      - name: Chat history, persistence, request authentication and stream cancellation
+        run: node --test tests/chat-route-context.test.mjs tests/chat-route-cancellation.test.mjs tests/chat-route-output.test.mjs tests/chat-request-auth.test.mjs tests/claude-stream-transport.test.mjs
+
+      - name: PKCE callback only permits normalized internal destinations
+        run: node --test tests/auth-callback.test.mjs
+
+  native-postgres-rls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify state guards in a private disposable PostgreSQL cluster
+        env:
+          JURIS_RLS_REPORT: ${{ runner.temp }}/juris-account-deletion-rls.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          pg_bin=/usr/lib/postgresql/16/bin
+          for pg_tool in initdb pg_ctl psql; do
+            if [[ ! -x "$pg_bin/$pg_tool" ]]; then
+              printf '::error::Preinstalled PostgreSQL binary is unavailable: %s\n' "$pg_bin/$pg_tool"
+              exit 1
+            fi
+          done
+          python3 tests/account-deletion-postgres.py \
+            --pg-bin "$pg_bin" \
+            --schema schema-legal.sql \
+            --migration migrations/20261111_account_deletion_rls_guards.sql \
+            --migration-sha256 9ac3b8a570baab2c5b08d81f4ae901e2ac2435552091c7dcb918265f9844565a \
+            --report "$JURIS_RLS_REPORT"
+
+      - name: AR24 durable queue, concurrent claims, outbox and service-only privileges
+        run: |
+          python3 tests/ar24-postgres.py \
+            --pg-bin /usr/lib/postgresql/16/bin \
+            --report "$RUNNER_TEMP/juris-ar24-queue-postgres.json"
+
+  signature-state:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Install the UI tests' exact public dependency subset
+        env:
+          JURIS_SIGNATURE_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-signature-deps
+        run: |
+          mkdir -p "$JURIS_SIGNATURE_DEPENDENCY_ROOT"
+          cp tests/signature-state-deps/package*.json "$JURIS_SIGNATURE_DEPENDENCY_ROOT/"
+          mkdir -p "$JURIS_SIGNATURE_DEPENDENCY_ROOT/tooling"
+          cp -a tooling/eslint-config-purama "$JURIS_SIGNATURE_DEPENDENCY_ROOT/tooling/"
+          npm ci --prefix "$JURIS_SIGNATURE_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_SIGNATURE_DEPENDENCY_ROOT=%s\n' "$JURIS_SIGNATURE_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+          test ! -e node_modules && test ! -L node_modules
+          ln -s "$JURIS_SIGNATURE_DEPENDENCY_ROOT/node_modules" node_modules
+
+      - name: Verify every test dependency against the application lock
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const app = JSON.parse(readFileSync('package-lock.json', 'utf8')).packages
+          const subset = JSON.parse(readFileSync('tests/signature-state-deps/package-lock.json', 'utf8')).packages
+          for (const [path, entry] of Object.entries(subset)) {
+            if (!path) continue
+            assert.ok(app[path], `Missing application lock entry: ${path}`)
+            for (const field of ['version', 'resolved', 'integrity']) {
+              assert.equal(entry[field], app[path][field], `${path}: ${field} drift`)
+            }
+          }
+          for (const [name, version] of Object.entries(subset[''].dependencies)) {
+            const directory = resolve(process.env.JURIS_SIGNATURE_DEPENDENCY_ROOT, 'node_modules', name)
+            const installed = JSON.parse(readFileSync(resolve(directory, 'package.json'), 'utf8'))
+            if (name === '@purama/eslint-config') {
+              assert.equal(version, 'file:tooling/eslint-config-purama')
+              const canonical = resolve('tooling/eslint-config-purama')
+              assert.deepEqual(installed, JSON.parse(readFileSync(resolve(canonical, 'package.json'), 'utf8')))
+              assert.equal(readFileSync(resolve(directory, 'index.mjs'), 'utf8'), readFileSync(resolve(canonical, 'index.mjs'), 'utf8'))
+            } else {
+              assert.equal(installed.version, version, `${name}: installed version mismatch`)
+            }
+          }
+          console.log('SIGNATURE_DEPENDENCY_LOCK_PASS')
+          NODE
+
+      - name: Global ESLint using the canonical configuration
+        run: node_modules/.bin/eslint .
+
+      - name: Typecheck every modified lifecycle component and browser test
+        run: node_modules/.bin/tsc --project tests/signature-state-deps/tsconfig.json --noEmit
+
+      - name: Admin reads reject stale results and report network failures
+        run: node --test tests/admin-read-races.test.mjs
+
+      - name: Aid reads cancel stale work without changing profile navigation
+        run: node --test tests/financer-read-races.test.mjs
+
+      - name: Chat readers cancel abandoned streams and release resources
+        run: node --test tests/chat-stream.test.mjs tests/chat-page-admission.test.mjs
+
+      - name: Mobile chat, subscriptions and case list match the server contracts
+        run: node --test tests/mobile-chat.test.mjs tests/mobile-contracts.test.mjs
+
+      - name: Password recovery through the locked web SDK and isolated native storage
+        run: node --test tests/mobile-password-recovery.test.mjs tests/mobile-recovery-isolation.test.mjs
+
+      - name: Install the isolated mobile React lifecycle dependencies
+        env:
+          JURIS_REACT_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-mobile-react-deps
+        run: |
+          mkdir -p "$JURIS_REACT_TEST_DEPENDENCY_ROOT"
+          cp tests/mobile-react-deps/package*.json "$JURIS_REACT_TEST_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_REACT_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_REACT_TEST_DEPENDENCY_ROOT=%s\n' "$JURIS_REACT_TEST_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const mobile = JSON.parse(readFileSync('mobile/package-lock.json', 'utf8')).packages
+          const tests = JSON.parse(readFileSync('tests/mobile-react-deps/package.json', 'utf8'))
+          for (const name of ['react', 'zustand', '@supabase/supabase-js']) {
+            assert.equal(tests.dependencies[name], mobile[`node_modules/${name}`].version, `${name}: mobile lockfile drift`)
+          }
+          assert.equal(tests.dependencies['react-dom'], tests.dependencies.react, 'React renderer version drift')
+          for (const [name, version] of Object.entries(tests.dependencies)) {
+            const installed = JSON.parse(readFileSync(resolve(process.env.JURIS_REACT_TEST_DEPENDENCY_ROOT, 'node_modules', name, 'package.json'), 'utf8'))
+            assert.equal(installed.version, version, `${name}: installed version mismatch`)
+          }
+          NODE
+
+      - name: Mobile chat and auth lifecycle with the locked React and Zustand versions
+        run: node --test tests/mobile-chat-react.test.mjs
+
+      - name: Recovery with the exact SDK locked by the mobile application
+        run: JURIS_RECOVERY_TEST_SDK_ROOT="$JURIS_REACT_TEST_DEPENDENCY_ROOT" node --test tests/mobile-password-recovery.test.mjs tests/mobile-recovery-isolation.test.mjs
+
+      - name: Browser password recovery, identity changes and provider failures
+        run: node --test tests/web-password-recovery.test.mjs tests/web-auth-hook.test.mjs
+
+      - name: Dashboard, document, scanner and chat lifecycle regressions
+        run: node --test tests/dashboard-read-lifecycle.test.mjs tests/document-read-lifecycle.test.mjs tests/scan-preview-lifecycle.test.mjs tests/chat-stream-lifecycle.test.mjs
+
+      - name: Auth sessions isolate profiles and release the Supabase callback
+        run: node --test tests/auth-session-lifecycle.test.mjs
+
+      - name: Notification acknowledgements and request lifecycle
+        run: node --test tests/notification-bell-lifecycle.test.mjs tests/notifications-route.test.mjs
+
+      - name: Install the locked Chromium browser
+        run: node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Exercise forms, scanner, chat, subscription and reads at all existing widths
+        env:
+          PW_BASE_URL: http://127.0.0.1:9
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/juris-signature-browser.json
+        run: node_modules/.bin/playwright test tests/sign-modal-state.spec.ts tests/admin-read-state.spec.ts tests/financer-read-state.spec.ts tests/chat-stream-state.spec.ts tests/lifecycle-forms.spec.ts tests/subscription-clock.spec.ts tests/auth-session-state.spec.ts --retries=0 --workers=1 --reporter=line,json
+
+      - name: Preserve signature browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: juris-signature-browser
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/juris-signature-browser.json
+            test-results/

@@ -30,26 +30,47 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement | null>(null)
+  const mountedRef = useRef(false)
+  const requestRef = useRef<AbortController | null>(null)
+  const mutationRef = useRef<AbortController | null>(null)
 
   const load = useCallback(async () => {
+    if (!mountedRef.current || mutationRef.current) return
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
     try {
-      const res = await fetch('/api/notifications', { cache: 'no-store' })
+      const res = await fetch('/api/notifications', { cache: 'no-store', signal: controller.signal })
       if (!res.ok) return
       const data = (await res.json()) as {
         notifications: NotificationRow[]
         unread: number
       }
-      setItems(data.notifications ?? [])
-      setUnread(data.unread ?? 0)
+      if (controller.signal.aborted || requestRef.current !== controller || !mountedRef.current) return
+      if (!data || !Array.isArray(data.notifications) || !Number.isSafeInteger(data.unread) || data.unread < 0) return
+      setItems(data.notifications)
+      setUnread(data.unread)
     } catch {
-      // silent
+      // Preserve the last confirmed state until the next successful read.
+    } finally {
+      if (requestRef.current === controller) requestRef.current = null
     }
   }, [])
 
   useEffect(() => {
-    queueMicrotask(() => load())
+    mountedRef.current = true
+    let active = true
+    queueMicrotask(() => { if (active) void load() })
     const id = setInterval(load, 60_000)
-    return () => clearInterval(id)
+    return () => {
+      active = false
+      mountedRef.current = false
+      clearInterval(id)
+      requestRef.current?.abort()
+      requestRef.current = null
+      mutationRef.current?.abort()
+      mutationRef.current = null
+    }
   }, [load])
 
   useEffect(() => {
@@ -63,22 +84,29 @@ export default function NotificationBell() {
   }, [open])
 
   const markAllRead = useCallback(async () => {
+    if (!mountedRef.current || mutationRef.current) return
+    const controller = new AbortController()
+    mutationRef.current = controller
+    requestRef.current?.abort()
+    requestRef.current = null
     try {
-      await fetch('/api/notifications', {
+      const res = await fetch('/api/notifications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ allRead: true }),
+        signal: controller.signal,
       })
-      setUnread(0)
-      setItems((prev) =>
-        prev.map((n) =>
-          n.read_at ? n : { ...n, read_at: new Date().toISOString() }
-        )
-      )
+      if (!res.ok) return
+      const data = await res.json()
+      if (controller.signal.aborted || mutationRef.current !== controller || !mountedRef.current || data?.ok !== true) return
+      mutationRef.current = null
+      await load()
     } catch {
-      // silent
+      // A failed or unconfirmed mutation cannot mark notifications as read locally.
+    } finally {
+      if (mutationRef.current === controller) mutationRef.current = null
     }
-  }, [])
+  }, [load])
 
   return (
     <div ref={wrapRef} className="relative">

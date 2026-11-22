@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -18,22 +18,28 @@ export default function GratitudePage() {
   const [loading, setLoading] = useState(true)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const requestRef = useRef<AbortController | null>(null)
 
-  const fetchEntries = useCallback(async () => {
-    try {
-      const res = await fetch('/api/gratitude')
+  const fetchEntries = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/gratitude', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error()
       const json = await res.json()
+      if (controller.signal.aborted) return
       setEntries(json.entries ?? [])
-    } catch {
-      /* silent */
-    } finally {
-      setLoading(false)
-    }
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger tes gratitudes. Réessaie.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
-    fetchEntries()
+    void fetchEntries()
+    return () => requestRef.current?.abort()
   }, [fetchEntries])
 
   const submit = async () => {
@@ -52,7 +58,7 @@ export default function GratitudePage() {
       }
       toast.success('Merci pour cette gratitude !')
       setContent('')
-      fetchEntries()
+      if (!requestRef.current?.signal.aborted) void fetchEntries()
     } catch {
       toast.error('Erreur réseau.')
     } finally {

@@ -1,0 +1,47 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "plugins": [],
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../../src/components/layout/NotificationBell.tsx",
+    "../../src/app/api/notifications/route.ts",
+    "../auth-session-state.spec.ts",
+    "../fixtures/auth-session.tsx",
+    "../sign-modal-state.spec.ts",
+    "../admin-read-state.spec.ts",
+    "../financer-read-state.spec.ts",
+    "../chat-stream-state.spec.ts",
+    "../chat-stream-fixture.ts",
+    "../fixtures/chat-stream.tsx",
+    "../lifecycle-forms.spec.ts",
+    "../subscription-clock.spec.ts",
+    "../fixtures/lifecycle-forms.tsx",
+    "../fixtures/signature-dialog.tsx",
+    "../../src/app/(dashboard)/admin/payments/page.tsx",
+    "../../src/app/(dashboard)/admin/users/page.tsx",
+    "../../src/app/(dashboard)/financer/page.tsx",
+    "../../src/app/(dashboard)/admin/ambassadeurs/page.tsx",
+    "../../src/app/(dashboard)/ambassadeur/page.tsx",
+    "../../src/app/(dashboard)/documents/[id]/page.tsx",
+    "../../src/app/(dashboard)/gratitude/page.tsx",
+    "../../src/app/(dashboard)/parrainage/page.tsx",
+    "../../src/app/(dashboard)/points/page.tsx",
+    "../../src/app/(dashboard)/settings/abonnement/page.tsx",
+    "../../src/app/(dashboard)/wallet/page.tsx",
+    "../../src/app/(auth)/forgot-password/page.tsx",
+    "../../src/app/(auth)/update-password/page.tsx",
+    "../../src/app/(auth)/login/page.tsx",
+    "../../src/app/auth/callback/route.ts",
+    "../../src/components/shared/ErrorBoundary.tsx",
+    "../../src/lib/ots-core.ts",
+    "../../playwright.config.ts"
+  ],
+  "exclude": [
+    "../../node_modules"
+  ]
+}

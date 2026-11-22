@@ -1,0 +1,46 @@
+{
+  "name": "jurispurama-signature-state-test-dependencies",
+  "version": "1.0.0",
+  "private": true,
+  "overrides": {
+    "crypto-js": "^4.2.0",
+    "form-data": "^4.0.4",
+    "tough-cookie": "^4.1.3",
+    "qs": "^6.14.1",
+    "uuid": "^11.1.1",
+    "request": {
+      "uuid": "3.4.0"
+    },
+    "bitcore-lib": {
+      "bn.js": "^4.12.5"
+    },
+    "opentimestamps": {
+      "minimatch": {
+        ".": "^3.1.5",
+        "brace-expansion": "^1.1.21"
+      }
+    },
+    "csstype": "3.2.3"
+  },
+  "dependencies": {
+    "@playwright/test": "1.59.1",
+    "@purama/eslint-config": "file:tooling/eslint-config-purama",
+    "@supabase/ssr": "0.10.2",
+    "@supabase/supabase-js": "2.103.0",
+    "@types/node": "20.19.39",
+    "@types/qrcode": "1.5.6",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "clsx": "2.1.1",
+    "esbuild": "0.27.7",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.4.6",
+    "next": "16.4.6",
+    "qrcode": "1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sonner": "2.0.7",
+    "tailwind-merge": "3.5.0",
+    "typescript": "5.9.3"
+  }
+}

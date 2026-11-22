@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { SUPER_ADMIN_EMAIL } from '@/lib/constants'
 import { generateReferralCode } from '@/lib/utils'
@@ -12,87 +12,131 @@ export function useAuth() {
   const [profile, setProfile] = useState<JurisUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const profileIdRef = useRef<string | null>(null)
-  const supabase = createClient()
-
-  const fetchOrCreateProfile = useCallback(
-    async (u: User) => {
-      if (profileIdRef.current === u.id && profile) return
-      profileIdRef.current = u.id
-
-      const { data } = await supabase
-        .from('jurispurama_users')
-        .select('*')
-        .eq('auth_user_id', u.id)
-        .maybeSingle()
-
-      if (data) {
-        setProfile(data as JurisUser)
-        return
-      }
-
-      // No profile yet — create one (trigger may not have fired or OAuth first login)
-      const fullName =
-        (u.user_metadata?.full_name as string | undefined) ??
-        (u.user_metadata?.name as string | undefined) ??
-        (u.email ? u.email.split('@')[0] : null)
-
-      const { data: created, error } = await supabase
-        .from('jurispurama_users')
-        .insert({
-          auth_user_id: u.id,
-          email: u.email ?? '',
-          full_name: fullName,
-          referral_code: generateReferralCode(),
-          subscription_plan: 'free',
-          language: 'fr',
-          role: u.email === SUPER_ADMIN_EMAIL ? 'super_admin' : 'user',
-        })
-        .select('*')
-        .maybeSingle()
-
-      if (!error && created) {
-        setProfile(created as JurisUser)
-      }
-    },
-    [supabase, profile]
-  )
+  const [supabase] = useState(createClient)
 
   useEffect(() => {
     let active = true
+    let authRevision = 0
+    let profileRevision = 0
+    let profileUserId: string | null = null
+    let currentProfile: JurisUser | null = null
+    let loadingProfile = false
+    let profileTimer: ReturnType<typeof setTimeout> | null = null
 
-    const init = async () => {
-      const {
-        data: { session: s },
-      } = await supabase.auth.getSession()
+    const readProfile = (userId: string) => supabase
+      .from('jurispurama_users')
+      .select('*')
+      .eq('auth_user_id', userId)
+      .maybeSingle()
+
+    const fetchOrCreateProfile = async (u: User, revision: number) => {
+      const isCurrent = () => active && revision === profileRevision && profileUserId === u.id
+      try {
+        const { data, error } = await readProfile(u.id)
+        if (!isCurrent() || error) return
+        if (data) {
+          currentProfile = data as JurisUser
+          setProfile(currentProfile)
+          return
+        }
+
+        // Create only after a successful empty read, never after a read failure.
+        const fullName =
+          (u.user_metadata?.full_name as string | undefined) ??
+          (u.user_metadata?.name as string | undefined) ??
+          (u.email ? u.email.split('@')[0] : null)
+        const { data: created, error: createError } = await supabase
+          .from('jurispurama_users')
+          .insert({
+            auth_user_id: u.id,
+            email: u.email ?? '',
+            full_name: fullName,
+            referral_code: generateReferralCode(),
+            subscription_plan: 'free',
+            language: 'fr',
+            role: u.email === SUPER_ADMIN_EMAIL ? 'super_admin' : 'user',
+          })
+          .select('*')
+          .maybeSingle()
+        if (!isCurrent()) return
+        if (!createError && created) {
+          currentProfile = created as JurisUser
+          setProfile(currentProfile)
+        } else if (createError?.code === '23505') {
+          // The auth trigger or another mounted consumer may have created it.
+          const { data: existing, error: readError } = await readProfile(u.id)
+          if (isCurrent() && !readError && existing) {
+            currentProfile = existing as JurisUser
+            setProfile(currentProfile)
+          }
+        }
+      } catch {
+        // Keep the current identity without inventing a profile on transport failure.
+      } finally {
+        if (isCurrent()) {
+          loadingProfile = false
+          setLoading(false)
+        }
+      }
+    }
+
+    const acceptSession = (s: Session | null) => {
       if (!active) return
       setSession(s)
       setUser(s?.user ?? null)
-      if (s?.user) await fetchOrCreateProfile(s.user)
-      setLoading(false)
+      const nextUserId = s?.user.id ?? null
+      if (nextUserId !== profileUserId) {
+        profileUserId = nextUserId
+        profileRevision++
+        currentProfile = null
+        loadingProfile = false
+        if (profileTimer !== null) clearTimeout(profileTimer)
+        profileTimer = null
+        setProfile(null)
+      }
+      if (!s?.user || currentProfile) {
+        setLoading(false)
+        return
+      }
+      if (loadingProfile) return
+      loadingProfile = true
+      setLoading(true)
+      const revision = ++profileRevision
+      const authUser = s.user
+      // Supabase auth notifications run under its auth lock. Return first,
+      // then start profile I/O without holding that lock or awaiting it there.
+      profileTimer = setTimeout(() => {
+        profileTimer = null
+        if (active && revision === profileRevision) void fetchOrCreateProfile(authUser, revision)
+      }, 0)
     }
 
-    init()
+    const initialRevision = authRevision
+    const init = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (active && authRevision === initialRevision) acceptSession(error ? null : data.session)
+      } catch {
+        if (active && authRevision === initialRevision) acceptSession(null)
+      }
+    }
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, s) => {
-      if (event === 'TOKEN_REFRESHED') return
-      setSession(s)
-      setUser(s?.user ?? null)
-      if (s?.user) await fetchOrCreateProfile(s.user)
-      else {
-        setProfile(null)
-        profileIdRef.current = null
-      }
-      setLoading(false)
+    } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (!active) return
+      authRevision++
+      acceptSession(s)
     })
+    void init()
 
     return () => {
       active = false
+      profileRevision++
+      if (profileTimer !== null) clearTimeout(profileTimer)
       subscription.unsubscribe()
     }
-  }, [supabase, fetchOrCreateProfile])
+  }, [supabase])
 
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
@@ -146,7 +190,7 @@ export function useAuth() {
   const resetPassword = useCallback(
     async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       })
       return { error }
     },

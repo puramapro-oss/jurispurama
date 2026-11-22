@@ -1,0 +1,1994 @@
+{
+  "status": "PASS_CORRECTED_8_OF_8",
+  "recordedAt": "2026-11-11T15:41:24.681Z",
+  "runtime": "v24.22.1",
+  "command": "node --experimental-vm-modules docs/audit-juridique-2026-11-11/cron/verify_fix.mjs",
+  "sourceCommit": "70d123d40ebffc507271c8acf0c9b56c20c428a8",
+  "sourcePath": "src/app/api/cron/account-deletion/route.ts",
+  "beforeSha256": "89d6528f51adb655c109670133bf96df907ed6b7b3cdc587a44be526875e0477",
+  "afterSha256": "8cfd5cba7ad73206e86b922ab3ba2e4758a838aca739daf84462a0230ca5eed2",
+  "baseline": {
+    "label": "before",
+    "checks": 8,
+    "passed": 4,
+    "results": [
+      {
+        "id": "claim_write_error",
+        "meetsExpectedBehavior": false,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 0,
+          "state": "scheduled",
+          "users": 1
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "deleteCalls": 1,
+          "users": 0,
+          "state": "completed",
+          "events": 4
+        },
+        "mismatches": [
+          {
+            "field": "http",
+            "expected": 500,
+            "actual": 200
+          },
+          {
+            "field": "ok",
+            "expected": false,
+            "actual": true
+          },
+          {
+            "field": "succeeded",
+            "expected": 0,
+            "actual": 1
+          },
+          {
+            "field": "failed",
+            "expected": 1,
+            "actual": 0
+          },
+          {
+            "field": "deleteCalls",
+            "expected": 0,
+            "actual": 1
+          },
+          {
+            "field": "state",
+            "expected": "scheduled",
+            "actual": "completed"
+          },
+          {
+            "field": "users",
+            "expected": 1,
+            "actual": 0
+          }
+        ],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 1,
+            "succeeded": 1,
+            "failed": 0,
+            "results": [
+              {
+                "id": "fake-request-claim",
+                "user_id": "fake-user-claim",
+                "ok": true
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-claim",
+              "user_id": "fake-user-claim",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [],
+          "deleteCalls": [
+            "fake-user-claim"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-claim"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-claim"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-claim"
+            ],
+            "payload": {
+              "status": "executing"
+            },
+            "injectedError": "SIMULATED_CLAIM_WRITE_FAILURE"
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-claim",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-claim"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-claim"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          }
+        ]
+      },
+      {
+        "id": "completion_write_error",
+        "meetsExpectedBehavior": false,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "state": "executing",
+          "users": 0,
+          "resultError": "SIMULATED_COMPLETION_WRITE_FAILURE"
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "deleteCalls": 1,
+          "users": 0,
+          "state": "executing",
+          "events": 4
+        },
+        "mismatches": [
+          {
+            "field": "http",
+            "expected": 500,
+            "actual": 200
+          },
+          {
+            "field": "ok",
+            "expected": false,
+            "actual": true
+          },
+          {
+            "field": "succeeded",
+            "expected": 0,
+            "actual": 1
+          },
+          {
+            "field": "failed",
+            "expected": 1,
+            "actual": 0
+          },
+          {
+            "field": "resultError",
+            "expected": "SIMULATED_COMPLETION_WRITE_FAILURE"
+          }
+        ],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 1,
+            "succeeded": 1,
+            "failed": 0,
+            "results": [
+              {
+                "id": "fake-request-completion",
+                "user_id": "fake-user-completion",
+                "ok": true
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-completion",
+              "user_id": "fake-user-completion",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [],
+          "deleteCalls": [
+            "fake-user-completion"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-completion"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-completion",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-completion"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            "injectedError": "SIMULATED_COMPLETION_WRITE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "auth_deletion_error",
+        "meetsExpectedBehavior": false,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "state": "executing",
+          "users": 1
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "users": 1,
+          "state": "executing",
+          "events": 3,
+          "resultError": "SIMULATED_DELETE_FAILURE"
+        },
+        "mismatches": [
+          {
+            "field": "http",
+            "expected": 500,
+            "actual": 200
+          },
+          {
+            "field": "ok",
+            "expected": false,
+            "actual": true
+          }
+        ],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-authfail",
+                "user_id": "fake-user-authfail",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-authfail",
+              "user_id": "fake-user-authfail",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-authfail"
+          ],
+          "deleteCalls": [
+            "fake-user-authfail"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-authfail"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-authfail"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-authfail"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-authfail",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "mixed_batch",
+        "meetsExpectedBehavior": false,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 2,
+          "succeeded": 1,
+          "failed": 1,
+          "deleteCalls": 2,
+          "users": 1
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 2,
+          "succeeded": 1,
+          "failed": 1,
+          "deleteCalls": 2,
+          "users": 1,
+          "state": "completed",
+          "events": 6
+        },
+        "mismatches": [
+          {
+            "field": "http",
+            "expected": 500,
+            "actual": 200
+          },
+          {
+            "field": "ok",
+            "expected": false,
+            "actual": true
+          }
+        ],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 2,
+            "succeeded": 1,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-mixed-ok",
+                "user_id": "fake-user-mixed-ok",
+                "ok": true
+              },
+              {
+                "id": "fake-request-mixed-fail",
+                "user_id": "fake-user-mixed-fail",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-mixed-ok",
+              "user_id": "fake-user-mixed-ok",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            {
+              "id": "fake-request-mixed-fail",
+              "user_id": "fake-user-mixed-fail",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-mixed-fail"
+          ],
+          "deleteCalls": [
+            "fake-user-mixed-ok",
+            "fake-user-mixed-fail"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok",
+              "fake-request-mixed-fail"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-ok"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-mixed-ok",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-ok"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-fail"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-fail"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-mixed-fail",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "healthy_batch",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 200,
+          "ok": true,
+          "processed": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "deleteCalls": 2,
+          "users": 0
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "deleteCalls": 2,
+          "users": 0,
+          "state": "completed",
+          "events": 7
+        },
+        "mismatches": [],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 2,
+            "succeeded": 2,
+            "failed": 0,
+            "results": [
+              {
+                "id": "fake-request-healthy-1",
+                "user_id": "fake-user-healthy-1",
+                "ok": true
+              },
+              {
+                "id": "fake-request-healthy-2",
+                "user_id": "fake-user-healthy-2",
+                "ok": true
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-healthy-1",
+              "user_id": "fake-user-healthy-1",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            {
+              "id": "fake-request-healthy-2",
+              "user_id": "fake-user-healthy-2",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [],
+          "deleteCalls": [
+            "fake-user-healthy-1",
+            "fake-user-healthy-2"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1",
+              "fake-request-healthy-2"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-1"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-healthy-1",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-1"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-2"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-2"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-healthy-2",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-2"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-2"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty_batch",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 200,
+          "ok": true,
+          "processed": 0,
+          "deleteCalls": 0,
+          "users": 0
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 0,
+          "deleteCalls": 0,
+          "users": 0,
+          "events": 1
+        },
+        "mismatches": [],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 0,
+            "note": "no deletion request due"
+          }
+        },
+        "snapshot": {
+          "requests": [],
+          "fakeAuthUsers": [],
+          "deleteCalls": []
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": []
+          }
+        ]
+      },
+      {
+        "id": "authorization_refused",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 401,
+          "deleteCalls": 0,
+          "users": 1,
+          "events": 0
+        },
+        "actual": {
+          "http": 401,
+          "deleteCalls": 0,
+          "users": 1,
+          "state": "scheduled",
+          "events": 0
+        },
+        "mismatches": [],
+        "response": {
+          "status": 401,
+          "body": {
+            "error": "SIMULATED_UNAUTHORIZED"
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-unauthorized",
+              "user_id": "fake-user-unauthorized",
+              "status": "scheduled",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-unauthorized"
+          ],
+          "deleteCalls": []
+        },
+        "events": []
+      },
+      {
+        "id": "manual_recovery_preserved",
+        "meetsExpectedBehavior": true,
+        "expected": "No automatic retry of an executing row, even when the injected deletion fault is removed.",
+        "first": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-manual-preserved",
+                "user_id": "fake-user-manual-preserved",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "second": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 0,
+            "note": "no deletion request due"
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-manual-preserved",
+              "user_id": "fake-user-manual-preserved",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-manual-preserved"
+          ],
+          "deleteCalls": [
+            "fake-user-manual-preserved"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-manual-preserved"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-manual-preserved"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-manual-preserved"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-manual-preserved",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          },
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": []
+          }
+        ]
+      }
+    ]
+  },
+  "corrected": {
+    "label": "after",
+    "checks": 8,
+    "passed": 8,
+    "results": [
+      {
+        "id": "claim_write_error",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 0,
+          "state": "scheduled",
+          "users": 1
+        },
+        "actual": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 0,
+          "users": 1,
+          "state": "scheduled",
+          "events": 2,
+          "resultError": "SIMULATED_CLAIM_WRITE_FAILURE"
+        },
+        "mismatches": [],
+        "response": {
+          "status": 500,
+          "body": {
+            "ok": false,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-claim",
+                "user_id": "fake-user-claim",
+                "ok": false,
+                "error": "SIMULATED_CLAIM_WRITE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-claim",
+              "user_id": "fake-user-claim",
+              "status": "scheduled",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-claim"
+          ],
+          "deleteCalls": []
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-claim"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-claim"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-claim"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-claim"
+            ],
+            "payload": {
+              "status": "executing"
+            },
+            "injectedError": "SIMULATED_CLAIM_WRITE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "completion_write_error",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "state": "executing",
+          "users": 0,
+          "resultError": "SIMULATED_COMPLETION_WRITE_FAILURE"
+        },
+        "actual": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "users": 0,
+          "state": "executing",
+          "events": 4,
+          "resultError": "SIMULATED_COMPLETION_WRITE_FAILURE"
+        },
+        "mismatches": [],
+        "response": {
+          "status": 500,
+          "body": {
+            "ok": false,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-completion",
+                "user_id": "fake-user-completion",
+                "ok": false,
+                "error": "SIMULATED_COMPLETION_WRITE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-completion",
+              "user_id": "fake-user-completion",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [],
+          "deleteCalls": [
+            "fake-user-completion"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-completion"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-completion"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-completion",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-completion"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-completion"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            "injectedError": "SIMULATED_COMPLETION_WRITE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "auth_deletion_error",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "state": "executing",
+          "users": 1
+        },
+        "actual": {
+          "http": 500,
+          "ok": false,
+          "processed": 1,
+          "succeeded": 0,
+          "failed": 1,
+          "deleteCalls": 1,
+          "users": 1,
+          "state": "executing",
+          "events": 3,
+          "resultError": "SIMULATED_DELETE_FAILURE"
+        },
+        "mismatches": [],
+        "response": {
+          "status": 500,
+          "body": {
+            "ok": false,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-authfail",
+                "user_id": "fake-user-authfail",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-authfail",
+              "user_id": "fake-user-authfail",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-authfail"
+          ],
+          "deleteCalls": [
+            "fake-user-authfail"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-authfail"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-authfail"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-authfail"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-authfail"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-authfail",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "mixed_batch",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 500,
+          "ok": false,
+          "processed": 2,
+          "succeeded": 1,
+          "failed": 1,
+          "deleteCalls": 2,
+          "users": 1
+        },
+        "actual": {
+          "http": 500,
+          "ok": false,
+          "processed": 2,
+          "succeeded": 1,
+          "failed": 1,
+          "deleteCalls": 2,
+          "users": 1,
+          "state": "completed",
+          "events": 6
+        },
+        "mismatches": [],
+        "response": {
+          "status": 500,
+          "body": {
+            "ok": false,
+            "processed": 2,
+            "succeeded": 1,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-mixed-ok",
+                "user_id": "fake-user-mixed-ok",
+                "ok": true
+              },
+              {
+                "id": "fake-request-mixed-fail",
+                "user_id": "fake-user-mixed-fail",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-mixed-ok",
+              "user_id": "fake-user-mixed-ok",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            {
+              "id": "fake-request-mixed-fail",
+              "user_id": "fake-user-mixed-fail",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-mixed-fail"
+          ],
+          "deleteCalls": [
+            "fake-user-mixed-ok",
+            "fake-user-mixed-fail"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok",
+              "fake-request-mixed-fail"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-ok"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-mixed-ok"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-mixed-ok",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-ok"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-ok"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-mixed-fail"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-mixed-fail"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-mixed-fail"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-mixed-fail",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          }
+        ]
+      },
+      {
+        "id": "healthy_batch",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 200,
+          "ok": true,
+          "processed": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "deleteCalls": 2,
+          "users": 0
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "deleteCalls": 2,
+          "users": 0,
+          "state": "completed",
+          "events": 7
+        },
+        "mismatches": [],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 2,
+            "succeeded": 2,
+            "failed": 0,
+            "results": [
+              {
+                "id": "fake-request-healthy-1",
+                "user_id": "fake-user-healthy-1",
+                "ok": true
+              },
+              {
+                "id": "fake-request-healthy-2",
+                "user_id": "fake-user-healthy-2",
+                "ok": true
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-healthy-1",
+              "user_id": "fake-user-healthy-1",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            },
+            {
+              "id": "fake-request-healthy-2",
+              "user_id": "fake-user-healthy-2",
+              "status": "completed",
+              "scheduled_for": "2026-11-10T12:00:00.000Z",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [],
+          "deleteCalls": [
+            "fake-user-healthy-1",
+            "fake-user-healthy-2"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1",
+              "fake-request-healthy-2"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-1"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-healthy-1"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-healthy-1",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-1"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-1"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-2"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-healthy-2"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-2"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-healthy-2",
+            "deletedInFakeAuth": true
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-healthy-2"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-healthy-2"
+            ],
+            "payload": {
+              "status": "completed",
+              "completed_at": "2026-11-11T12:00:00.000Z"
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty_batch",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 200,
+          "ok": true,
+          "processed": 0,
+          "deleteCalls": 0,
+          "users": 0
+        },
+        "actual": {
+          "http": 200,
+          "ok": true,
+          "processed": 0,
+          "deleteCalls": 0,
+          "users": 0,
+          "events": 1
+        },
+        "mismatches": [],
+        "response": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 0,
+            "note": "no deletion request due"
+          }
+        },
+        "snapshot": {
+          "requests": [],
+          "fakeAuthUsers": [],
+          "deleteCalls": []
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": []
+          }
+        ]
+      },
+      {
+        "id": "authorization_refused",
+        "meetsExpectedBehavior": true,
+        "expected": {
+          "http": 401,
+          "deleteCalls": 0,
+          "users": 1,
+          "events": 0
+        },
+        "actual": {
+          "http": 401,
+          "deleteCalls": 0,
+          "users": 1,
+          "state": "scheduled",
+          "events": 0
+        },
+        "mismatches": [],
+        "response": {
+          "status": 401,
+          "body": {
+            "error": "SIMULATED_UNAUTHORIZED"
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-unauthorized",
+              "user_id": "fake-user-unauthorized",
+              "status": "scheduled",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-unauthorized"
+          ],
+          "deleteCalls": []
+        },
+        "events": []
+      },
+      {
+        "id": "manual_recovery_preserved",
+        "meetsExpectedBehavior": true,
+        "expected": "No automatic retry of an executing row, even when the injected deletion fault is removed.",
+        "first": {
+          "status": 500,
+          "body": {
+            "ok": false,
+            "processed": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "results": [
+              {
+                "id": "fake-request-manual-preserved",
+                "user_id": "fake-user-manual-preserved",
+                "ok": false,
+                "error": "SIMULATED_DELETE_FAILURE"
+              }
+            ],
+            "runMs": 0
+          }
+        },
+        "second": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "processed": 0,
+            "note": "no deletion request due"
+          }
+        },
+        "snapshot": {
+          "requests": [
+            {
+              "id": "fake-request-manual-preserved",
+              "user_id": "fake-user-manual-preserved",
+              "status": "executing",
+              "scheduled_for": "2026-11-10T12:00:00.000Z"
+            }
+          ],
+          "fakeAuthUsers": [
+            "fake-user-manual-preserved"
+          ],
+          "deleteCalls": [
+            "fake-user-manual-preserved"
+          ]
+        },
+        "events": [
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-manual-preserved"
+            ]
+          },
+          {
+            "operation": "update",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "id",
+                "value": "fake-request-manual-preserved"
+              },
+              {
+                "kind": "eq",
+                "key": "user_id",
+                "value": "fake-user-manual-preserved"
+              },
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "eq",
+                "key": "scheduled_for",
+                "value": "2026-11-10T12:00:00.000Z"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": [
+              "fake-request-manual-preserved"
+            ],
+            "payload": {
+              "status": "executing"
+            }
+          },
+          {
+            "operation": "auth.deleteUser",
+            "userId": "fake-user-manual-preserved",
+            "injectedError": "SIMULATED_DELETE_FAILURE"
+          },
+          {
+            "operation": "select",
+            "table": "account_deletion_requests",
+            "filters": [
+              {
+                "kind": "eq",
+                "key": "status",
+                "value": "scheduled"
+              },
+              {
+                "kind": "lte",
+                "key": "scheduled_for",
+                "value": "2026-11-11T12:00:00.000Z"
+              }
+            ],
+            "matchedIds": []
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Actual handlers executed with fake in-memory dependencies only; no network or real deletion.",
+    "SQL constraints, cascades, storage, external services, actual auth verification, Next.js server and production are not tested.",
+    "Manual recovery of executing requests remains unchanged and is explicitly tested as still required.",
+    "The authorization-refused case verifies handler early return, not the implementation of assertCronAuth.",
+    "HTTP 500 on partial failure is a deliberate response-contract change to be reviewed with real monitoring/invocation configuration."
+  ]
+}

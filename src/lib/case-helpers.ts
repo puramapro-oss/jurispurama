@@ -4,7 +4,7 @@ import type {
   JurisCase,
   JurisDocument,
   JurisMessage,
-} from '@/types'
+} from '../types'
 
 export const CASE_TYPE_LABELS: Record<CaseType, { label: string; icon: string; color: string }> = {
   amende: { label: 'Amendes & Infractions', icon: '🚗', color: 'blue' },

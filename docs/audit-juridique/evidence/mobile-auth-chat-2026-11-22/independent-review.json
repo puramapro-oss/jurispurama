@@ -1,0 +1,180 @@
+{
+  "reviewed_at_utc": "2026-11-22T18:10:50.193347+00:00",
+  "reviewer": "/root/audit_mac",
+  "repository": "/workspace/scratch/000b9c211231/juris-chat-context",
+  "base_commit": "8d4c88383b07af9525195fdd2d159f9e265d3ad3",
+  "status": "PASS within the tested isolated scope",
+  "owned_changes": [
+    "src/hooks/useAuth.ts",
+    "tests/web-auth-hook.fixture.mjs",
+    "tests/web-auth-hook.test.mjs",
+    "tests/mobile-chat-react.fixture.mjs",
+    "tests/mobile-chat-react.test.mjs"
+  ],
+  "tests": {
+    "web_auth_hook_initial_baseline": {
+      "pass": 4,
+      "fail": 8,
+      "test_count": 12,
+      "log": "review/web-auth-hook-baseline.log"
+    },
+    "web_auth_hook_corrected_final": {
+      "pass": 16,
+      "fail": 0,
+      "test_count": 16,
+      "log": "review/web-auth-integrated.log"
+    },
+    "native_react_lifecycle_final": {
+      "pass": 19,
+      "fail": 0,
+      "test_count": 19,
+      "log": "review/mobile-chat-react-final.log"
+    },
+    "canonical_auth_lifecycle": {
+      "pass": 21,
+      "fail": 0,
+      "test_count": 21,
+      "log": "review/web-auth-integrated.log"
+    },
+    "combined_auth_integration": {
+      "pass": 37,
+      "fail": 0,
+      "test_count": 37,
+      "log": "review/web-auth-integrated.log"
+    }
+  },
+  "test_runtime": {
+    "web_react_and_react_dom": "19.2.4 from existing repository dependency tree",
+    "mobile_react_and_react_dom": "19.1.0",
+    "zustand": "5.0.15",
+    "jsdom": "29.0.2",
+    "environment": {
+      "JURIS_REACT_TEST_DEPENDENCY_ROOT": "/workspace/scratch/a8b878cc0adc/qa-tools",
+      "JURIS_REACT_TEST_JSDOM_PATH": "/workspace/scratch/e4ff69a74767/work/moksha/node_modules/jsdom",
+      "JURIS_REACT_TEST_ZUSTAND_PATH": "/workspace/scratch/dcfb234e0a8f/mukti-work/tests/aurora-regression/node_modules/zustand"
+    },
+    "boundaries": "Real React components, Zustand store, helpers, transport and SSE decoder; native view primitives, routing, timers, fetch and Supabase boundaries simulated. No real account or password changed."
+  },
+  "checks": [
+    {
+      "command": "node node_modules/eslint/bin/eslint.js src/hooks/useAuth.ts tests/web-auth-hook.fixture.mjs tests/web-auth-hook.test.mjs",
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 1,
+      "warning": "Pre-existing Next navigation warning on retained signOut hard navigation to /login."
+    },
+    {
+      "command": "node node_modules/eslint/bin/eslint.js tests/mobile-chat-react.fixture.mjs tests/mobile-chat-react.test.mjs",
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --project tests/signature-state-deps/tsconfig.json --noEmit",
+      "exit_code": 0
+    }
+  ],
+  "verified_behaviors": [
+    "Web profile ownership survives account change, sign-out, stale initial snapshot and late profile insert response.",
+    "Web auth callback is synchronous; profile work is not awaited by the SDK callback.",
+    "Web profile is never created after an unsuccessful read or an abandoned pending read.",
+    "Web token refresh preserves the new token without repeating a completed profile query.",
+    "Web read rejection releases loading and later auth events can retry; unique profile creation conflicts recover by reading the existing row.",
+    "Native chat double click, stop, timeout, partial EOF, account change, and unmount discard obsolete work.",
+    "Native recovery callback exchanges once under StrictMode, transfers recovery state to the actual form, and preserves an independently signed-in account.",
+    "Native recovery double submit produces one isolated update; unmount clears recovery and suppresses late success UI."
+  ],
+  "independent_review_findings": {
+    "remaining_reproducible_defects_in_reviewed_scope": [],
+    "auth_redirect": "No bypass identified after reading normalized path and iterative decoding checks, callback and negative cases.",
+    "new_case_receipt_recovery": "New dossier receipt returned on failed initial-message acknowledgement; UUID admission and post-JSON cancellation checks present; not a proof of request-level idempotency.",
+    "prior_reported_defects": [
+      "Uppercase or incomplete metadata leakage during chat streaming: fixed by owning server agent.",
+      "Empty model response acknowledged and persisted: fixed by owning server agent.",
+      "New dossier queried as historical, producing avoidable duplicates on retry: fixed; subsequent missing receipt recovery added by owning server agent.",
+      "Shared PKCE exchange could replace a newer signed-in account: isolated native recovery client implemented by owning mobile agent.",
+      "Legacy web auth/profile races: fixed in this review and covered by baseline/corrected React tests."
+    ]
+  },
+  "limits": [
+    "No new Mac/infrastructure calls after Desktop Commander quota stop; earlier evidence remains mac-status.json.",
+    "No real email delivery, hosted Supabase access, Anthropic billing, browser binary, iOS/Android device, production deployment or end-to-end live environment was verified by this reviewer.",
+    "Already dispatched writes cannot be rolled back by a UI cancellation; tests only establish isolation and suppression of obsolete UI results.",
+    "Exact locked mobile Supabase SDK verification is owned by root and audit_vercel; this React fixture substitutes only that boundary."
+  ],
+  "source_sha256": {
+    "src/hooks/useAuth.ts": "9214d1ac91c8899b166f01d133271d17b8255bd9e1101a78f4960e305c853389",
+    "tests/web-auth-hook.fixture.mjs": "1215e203cdc4067854867e9619593ee5a2d950af268ac16920df6b497ff5992c",
+    "tests/web-auth-hook.test.mjs": "c7a8f00db707f205395ad43db31b2929f809f85c1fcd2bbb49268cda48c96674",
+    "tests/mobile-chat-react.fixture.mjs": "a137f29aab8787de4402621e7e54318b54e056be244cbb78f51505d4e7224aa3",
+    "tests/mobile-chat-react.test.mjs": "7fd78864e7f3f33d98dc44a364ea53669f1862296367f6383acfa6d37a2d5e0b",
+    "mobile/store/auth.ts": "534321845b9103f73169237f25330e98307e04287604cbf0232893e7c8ea43ee",
+    "mobile/lib/supabase.ts": "bc96b017dbcab33582553f32d1ed1ec7a1653eebc13ae9e5324c9c47836ddbd5",
+    "mobile/lib/password-recovery.ts": "9dd89406be3646c0495eb104ae3966b35778d70d1712104f6642771637a0650a",
+    "mobile/app/auth/callback.tsx": "48f0af12ca5a3ad309414f2d2df134dcaf67834a152bd74ac936c05839e0f717",
+    "mobile/app/(auth)/update-password.tsx": "477e3a76ea51716948bdbf1f837950b3f412e974d17f1151f018ed4e5bbb75c6",
+    "mobile/app/(tabs)/chat.tsx": "00fe3c067e424bcf4f319efcf763e878ed9a895e8ab6e78310b41e112e606cc1",
+    "src/lib/auth-redirect.ts": "2770e6b297f92996ddc7084fd1150c935d0f65345c65d80b905bb75376ff9c42",
+    "src/app/auth/callback/route.ts": "58834f78e2271b7623f65583ed22b359f355ae99d7ba051a9d3c08893aee9cc5",
+    "src/app/api/ai/chat/route.ts": "6be1ea0846ee1d9880caf3499dda3a918f8c8634fe3f834076379a4b08f91d86",
+    "src/lib/ai/chat-stream-control.ts": "bfdda22c2fd312a944ad69375e1e0b0a7e3649dad04b1b8eff99e19f26b2c195",
+    "src/lib/claude.ts": "9a6a579f0fd3a1b0e13ab2ed02e6d2fd4bc9f68852d61f3c87410ae4cff453c8",
+    "src/lib/ai/chat-constants.ts": "3f67b1fc7f8deb1cf3babf3b9b4d83ef61b2314bd43c1c57b1973d6bd34e264e",
+    "src/hooks/useChatMessages.ts": "f87438aa6d1f79565410ec690aa8450fdaea0f649d647e68a77807786ac43762",
+    "mobile/lib/chat.ts": "a8724c61de614a87bb9249fbac0b8475d67ef2ecd87fa55a1c35c8b6278c6b2a",
+    "src/lib/password-recovery.ts": "3e1904486a8aa40d612b7ba3c60f598243eb3d27292ea7a3d2ab4f16e49cf6db",
+    "src/lib/password-update-client.ts": "53dd7ffef329a921559345d9d41aec2d9cdd48ba6a30bdf8c83c915b90a98bfd",
+    "src/app/(auth)/update-password/page.tsx": "8bc4bbee20aac6d16b2ad7811b28f52aa72be0d95cd8df94cc0a422fef0d0be0",
+    "tests/auth-session-harness.mjs": "702325a24ee1765fab4ebf9c8650ed18754bb525baeeed084f98a02f1e5aef48",
+    "tests/auth-session-lifecycle.test.mjs": "723fc612c848dd4feae86fbac03652d9e0f29723c9b073821fc33ffd4aabddda",
+    "tests/auth-session-state.spec.ts": "b2cfca063dc08ffed04c896210a759ef6be716af0240db90db08e0dc82045fcb",
+    "tests/fixtures/auth-session.tsx": "0ba17f32b64c3924b1bc98d88329ceb12ed811ad77bef9993038813093586c0b"
+  },
+  "log_sha256": {
+    "review/web-auth-hook-baseline.log": "75ac8b38471e205c137f4d996e2a2045e9fee4915fcdf8e0251824d9d46a33d0",
+    "review/web-auth-hook-corrected.log": "d6ea7392cc91f7c6590cd62f106a84619b52fb12ac50bfc3b558802b01ef71ec",
+    "review/mobile-chat-react-final.log": "4a0fcdd58d6428eea4da5a364f7d7082205b26040ccaae91a9cebbc71e53e095",
+    "review/web-auth-integrated.log": "e5c94e6f7bfe16959cce5f065ec1126417ebdb97b6c02115540bf1ec711b1286"
+  },
+  "mac_evidence_exists": true,
+  "prior_local_candidate_source_sha256": {
+    "src/hooks/useAuth.ts": "1d13042dace44cb99d775cb782185b75df78964874d4952223f99d46c33ed133",
+    "tests/web-auth-hook.fixture.mjs": "bfd747eb871d084589a68e280abb5b0f289cc79bd34e6f677d740bbd2a738765",
+    "tests/web-auth-hook.test.mjs": "c7a8f00db707f205395ad43db31b2929f809f85c1fcd2bbb49268cda48c96674",
+    "tests/mobile-chat-react.fixture.mjs": "a137f29aab8787de4402621e7e54318b54e056be244cbb78f51505d4e7224aa3",
+    "tests/mobile-chat-react.test.mjs": "7fd78864e7f3f33d98dc44a364ea53669f1862296367f6383acfa6d37a2d5e0b",
+    "mobile/store/auth.ts": "534321845b9103f73169237f25330e98307e04287604cbf0232893e7c8ea43ee",
+    "mobile/lib/supabase.ts": "bc96b017dbcab33582553f32d1ed1ec7a1653eebc13ae9e5324c9c47836ddbd5",
+    "mobile/lib/password-recovery.ts": "9dd89406be3646c0495eb104ae3966b35778d70d1712104f6642771637a0650a",
+    "mobile/app/auth/callback.tsx": "48f0af12ca5a3ad309414f2d2df134dcaf67834a152bd74ac936c05839e0f717",
+    "mobile/app/(auth)/update-password.tsx": "477e3a76ea51716948bdbf1f837950b3f412e974d17f1151f018ed4e5bbb75c6",
+    "mobile/app/(tabs)/chat.tsx": "00fe3c067e424bcf4f319efcf763e878ed9a895e8ab6e78310b41e112e606cc1",
+    "src/lib/auth-redirect.ts": "2770e6b297f92996ddc7084fd1150c935d0f65345c65d80b905bb75376ff9c42",
+    "src/app/auth/callback/route.ts": "58834f78e2271b7623f65583ed22b359f355ae99d7ba051a9d3c08893aee9cc5",
+    "src/app/api/ai/chat/route.ts": "6be1ea0846ee1d9880caf3499dda3a918f8c8634fe3f834076379a4b08f91d86",
+    "src/lib/ai/chat-stream-control.ts": "bfdda22c2fd312a944ad69375e1e0b0a7e3649dad04b1b8eff99e19f26b2c195",
+    "src/lib/claude.ts": "9a6a579f0fd3a1b0e13ab2ed02e6d2fd4bc9f68852d61f3c87410ae4cff453c8",
+    "src/lib/ai/chat-constants.ts": "3f67b1fc7f8deb1cf3babf3b9b4d83ef61b2314bd43c1c57b1973d6bd34e264e",
+    "src/hooks/useChatMessages.ts": "f87438aa6d1f79565410ec690aa8450fdaea0f649d647e68a77807786ac43762",
+    "mobile/lib/chat.ts": "a8724c61de614a87bb9249fbac0b8475d67ef2ecd87fa55a1c35c8b6278c6b2a",
+    "src/lib/password-recovery.ts": "3e1904486a8aa40d612b7ba3c60f598243eb3d27292ea7a3d2ab4f16e49cf6db",
+    "src/lib/password-update-client.ts": "53dd7ffef329a921559345d9d41aec2d9cdd48ba6a30bdf8c83c915b90a98bfd",
+    "src/app/(auth)/update-password/page.tsx": "8bc4bbee20aac6d16b2ad7811b28f52aa72be0d95cd8df94cc0a422fef0d0be0"
+  },
+  "canonical_integration": {
+    "remote_commit": "c9c7617292102a2924535e6ce2b084e43c7f1832",
+    "canonical_file": "/workspace/scratch/000b9c211231/concurrent/useAuth.ts",
+    "canonical_sha256": "298d663f7cfc8505efad70e3c339513f1e99b98641ce5fb5d08b9c4a81eb5de9",
+    "only_product_deltas": [
+      "Stable Supabase client initialized with useState(createClient).",
+      "Reset redirect targets /auth/callback?next=/update-password."
+    ],
+    "remote_tests_edited": false,
+    "react_fixture_change": "Wait for the actual setTimeout(0) phase after mounting and auth events; assertions unchanged.",
+    "verification": "37/37 PASS: 21 canonical VM lifecycle cases and 16 complementary real React cases.",
+    "chromium_cases_added_by_remote_commit": {
+      "count": 4,
+      "status": "NOT RUN by this reviewer"
+    }
+  }
+}

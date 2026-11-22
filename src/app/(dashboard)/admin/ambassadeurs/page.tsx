@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -35,11 +35,14 @@ export default function AdminInfluencersPage() {
   const [influencers, setInfluencers] = useState<InfluencerRow[]>([])
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([])
   const [loading, setLoading] = useState(true)
+  const requestRef = useRef<AbortController | null>(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/influencers')
+  const load = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/admin/influencers', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
       if (!res.ok) {
         toast.error('Erreur de chargement')
         return
@@ -48,15 +51,19 @@ export default function AdminInfluencersPage() {
         influencers: InfluencerRow[]
         withdrawals: Withdrawal[]
       }
+      if (controller.signal.aborted) return
       setInfluencers(data.influencers)
       setWithdrawals(data.withdrawals)
-    } finally {
-      setLoading(false)
-    }
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger les ambassadeurs. Réessaie.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
     void load()
+    return () => requestRef.current?.abort()
   }, [load])
 
   async function markPaid(paymentId: string) {
@@ -71,7 +78,10 @@ export default function AdminInfluencersPage() {
       return
     }
     toast.success('Marqué comme payé')
-    await load()
+    if (!requestRef.current?.signal.aborted) {
+      setLoading(true)
+      await load()
+    }
   }
 
   return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -48,22 +48,27 @@ export default function WalletPage() {
   const [iban, setIban] = useState('')
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const requestRef = useRef<AbortController | null>(null)
 
-  const fetchWallet = useCallback(async () => {
-    try {
-      const res = await fetch('/api/wallet')
+  const fetchWallet = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/wallet', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error()
       const json = await res.json()
-      setData(json)
-    } catch {
-      toast.error('Impossible de charger ton wallet.')
-    } finally {
-      setLoading(false)
-    }
+      if (!controller.signal.aborted) setData(json)
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger ton wallet.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
-    fetchWallet()
+    void fetchWallet()
+    return () => requestRef.current?.abort()
   }, [fetchWallet])
 
   const handleWithdraw = async () => {
@@ -95,7 +100,7 @@ export default function WalletPage() {
       setWithdrawOpen(false)
       setIban('')
       setAmount('')
-      fetchWallet()
+      if (!requestRef.current?.signal.aborted) void fetchWallet()
     } catch {
       toast.error('Erreur réseau. Réessaie.')
     } finally {

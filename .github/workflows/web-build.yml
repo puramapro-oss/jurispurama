@@ -1,0 +1,151 @@
+name: Full web qualification
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: juris-full-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-web:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: https://qualification.invalid
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: juris-ci-public-fixture-no-service-access
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+
+      - name: Prepare isolated evidence and dependency paths
+        run: |
+          mkdir -p artifacts/juris-web-build
+          printf 'JURIS_SOURCE_DIRECTORY=%s\n' "$RUNNER_TEMP/juris-smarana-source-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          printf 'npm_config_cache=%s\n' "$RUNNER_TEMP/juris-npm-cache-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+
+      - name: Verify private admission, cleanup, real offline npm and the Node network guard
+        run: >-
+          node --test --test-reporter=tap scripts/private-source-transport.test.mjs
+          scripts/install-private-dependencies.test.mjs scripts/ci-network-guard.test.mjs
+          2>&1 | tee artifacts/juris-web-build/admission-tests.tap
+
+      - name: Require an already configured private read key
+        env:
+          SMARANA_KEY_PRESENT: ${{ secrets.SMARANA_READ_SSH_KEY != '' }}
+          PACKAGES_KEY_PRESENT: ${{ secrets.PURAMA_PACKAGES_READ_SSH_KEY != '' }}
+        run: |
+          if [ "$SMARANA_KEY_PRESENT" != true ] && [ "$PACKAGES_KEY_PRESENT" != true ]; then
+            echo '::error::No known private read key is configured for this repository. SMARANA acquisition is blocked.'
+            exit 1
+          fi
+
+      - name: Retrieve the 21 admitted SMARANA blobs and create a local mirror
+        env:
+          SMARANA_READ_SSH_KEY: ${{ secrets.SMARANA_READ_SSH_KEY || secrets.PURAMA_PACKAGES_READ_SSH_KEY }}
+          TMPDIR: ${{ runner.temp }}/juris-smarana-auth-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          mkdir -m 700 -- "$TMPDIR"
+          node scripts/install-private-dependencies.mjs --retrieve "$JURIS_SOURCE_DIRECTORY" | tee artifacts/juris-web-build/acquired-source.json
+
+      - name: Remove temporary authentication even after acquisition failure
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { lstatSync, rmSync } from 'node:fs';
+          import { privateAuthRoot } from './scripts/install-private-dependencies.mjs';
+          const owned = privateAuthRoot(process.env);
+          rmSync(owned, { recursive: true, force: true });
+          try { lstatSync(owned); throw new Error('Temporary private authentication remains.'); }
+          catch (error) { if (error.code !== 'ENOENT') throw error; }
+          process.stdout.write('{"temporaryAuthenticationAbsent":true}\n');
+          NODE
+
+      - name: Verify all private blobs, local Git identity and absence of checkout authentication before npm
+        run: |
+          node scripts/install-private-dependencies.mjs --verify "$JURIS_SOURCE_DIRECTORY" | tee artifacts/juris-web-build/admitted-source.json
+          node --input-type=module <<'NODE'
+          import { spawnSync } from 'node:child_process';
+          import { cleanGitEnvironment } from './scripts/private-source-transport.mjs';
+          const result = spawnSync('git', ['config', '--local', '--no-includes', '--name-only', '--get-regexp',
+            '^(core\\.sshcommand|core\\.hookspath|http\\..*\\.extraheader|credential\\..*|url\\..*\\.insteadof|include\\.path|includeif\\..*\\.path)$'],
+            { env: cleanGitEnvironment(process.env), encoding: 'utf8', timeout: 5000, maxBuffer: 65536 });
+          if (result.error || result.status !== 1 || result.stdout.trim()) throw new Error('Checkout authentication remains or cannot be verified.');
+          process.stdout.write('{"checkoutAuthenticationAbsent":true}\n');
+          NODE
+
+      - name: Install the unchanged application lock without credentials or lifecycle execution
+        run: node scripts/install-private-dependencies.mjs --install "$JURIS_SOURCE_DIRECTORY" 2>&1 | tee artifacts/juris-web-build/install.log
+
+      - name: Rebuild installed dependencies without credentials and reject unexpected Node network access
+        env:
+          NODE_OPTIONS: --import=${{ github.workspace }}/scripts/ci-network-guard.mjs
+          JURIS_CI_NETWORK_LOG: ${{ github.workspace }}/artifacts/juris-web-build/blocked-network.jsonl
+        run: |
+          npm rebuild --no-audit --no-fund 2>&1 | tee artifacts/juris-web-build/rebuild.log
+          node scripts/install-private-dependencies.mjs --verify-installed "$JURIS_SOURCE_DIRECTORY" | tee artifacts/juris-web-build/installed-source.json
+          git diff --exit-code -- package.json package-lock.json tooling/smarana-source.lock.json
+
+      - name: Generate current routes and typecheck the complete web source
+        env:
+          NODE_OPTIONS: --import=${{ github.workspace }}/scripts/ci-network-guard.mjs
+          JURIS_CI_NETWORK_LOG: ${{ github.workspace }}/artifacts/juris-web-build/blocked-network.jsonl
+        run: |
+          node_modules/.bin/next typegen 2>&1 | tee artifacts/juris-web-build/typegen.log
+          node_modules/.bin/tsc --noEmit --incremental false --pretty false 2>&1 | tee artifacts/juris-web-build/typecheck.log
+
+      - name: Run the unchanged Next application build
+        env:
+          NODE_OPTIONS: --import=${{ github.workspace }}/scripts/ci-network-guard.mjs
+          JURIS_CI_NETWORK_LOG: ${{ github.workspace }}/artifacts/juris-web-build/blocked-network.jsonl
+        run: npm run build 2>&1 | tee artifacts/juris-web-build/build.log
+
+      - name: Reject swallowed Node network attempts and any application lock drift
+        if: always()
+        run: |
+          if [ -s artifacts/juris-web-build/blocked-network.jsonl ]; then
+            cat artifacts/juris-web-build/blocked-network.jsonl
+            exit 1
+          fi
+          git diff --exit-code -- package.json package-lock.json tooling/smarana-source.lock.json
+
+      - name: Remove only this job's private source and npm cache
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { lstatSync, realpathSync, rmSync } from 'node:fs';
+          import path from 'node:path';
+          import { privateAuthRoot } from './scripts/install-private-dependencies.mjs';
+          privateAuthRoot(process.env);
+          const root = realpathSync(process.env.RUNNER_TEMP);
+          for (const prefix of ['juris-smarana-source', 'juris-npm-cache']) {
+            const owned = path.join(root, `${prefix}-${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT}`);
+            rmSync(owned, { recursive: true, force: true });
+            try { lstatSync(owned); throw new Error('Private source or cache cleanup failed.'); }
+            catch (error) { if (error.code !== 'ENOENT') throw error; }
+          }
+          process.stdout.write('{"privateSourceAndCacheRemoved":true}\n');
+          NODE
+
+      - name: Preserve only qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: juris-full-web-qualification
+          retention-days: 14
+          if-no-files-found: warn
+          path: artifacts/juris-web-build/

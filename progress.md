@@ -1,5 +1,17 @@
 # JurisPurama — Progress
 
+## Chat, complément du 22 novembre 2026 — en qualification CI
+
+Base PR 2 `71b14b14`, copie isolée ; les lots administrateur et Financer sont conservés. Le flux quitté ne doit plus réécrire l'URL, notifier la page suivante ni remplacer un autre fil. Les cas d'historique en cours, EOF incomplet et brouillon mal formé ont été reproduits et corrigés pendant la revue. Contrôles locaux ciblés PASS ; navigateur en attente de CI. [Rapport du lot](docs/audit-juridique/chat-stream-lifecycle-2026-11-22.md).
+
+## Audit du 22 novembre 2026 — PARTIEL
+
+Recherche d’aides : nettoyage et annulation des lectures après sortie corrigés, 17 tests de callbacks, types et bundle PASS. Les tests navigateur sont ajoutés à la CI ; [portée de la reproduction et limites](docs/audit-juridique/financer-read-cleanup-2026-11-22.md).
+
+Lectures administrateur : courses de réponses et erreurs réseau corrigées sur Paiements et Utilisateurs, 16 régressions et types ciblés PASS. Les contrôles navigateur sont intégrés à la CI existante. [Preuves et limites du lot](docs/audit-juridique/admin-read-races-2026-11-22.md).
+
+Le linter se charge dans un clone autonome après correction de sa dépendance locale ; règles et versions conservées. Vérification avant/après PASS, 137 tests métier PASS. Le lint global révèle encore 16 erreurs React ; installation privée complète, build et navigateur locaux non qualifiés dans ce nouvel audit. Détails et limites : [preuve de portabilité](docs/audit-juridique/eslint-portability-2026-11-22.md). Les résultats historiques ci-dessous ne valent pas validation globale du candidat actuel.
+
 ## P8 — TERMINÉ ✅ (2026-04-11) — MOBILE EXPO (iOS + Android)
 
 ### Livré
@@ -860,3 +872,57 @@ Le formatter du Tooltip recharts attend `ValueType | undefined`, il faut
 - Pousser sur GitHub (main branche — repo puramapro-oss/jurispurama si créé)
 
 ### Learnings capturés dans ~/purama/LEARNINGS.md
+
+## 11 novembre 2026 — complément concurrence et annulation
+
+Candidat local réconcilié sur PR2 `1fafc538`, avec CAS renforcé et reçu d’annulation vérifié. 23/23 scénarios concurrence/annulation, 16/16 programmation, 11/11 contrats SDK, 8/8 scénarios historiques et 27/27 AR24 réussis. Les sources Mac n’ont pas été modifiées. Production, SQL distant, reprise automatique, écritures directes du socle et périmètre inter-applications non qualifiés. Voir [rapport et limites](docs/audit-juridique/account-deletion-concurrency-2026-11-11.md).
+
+Qualification CI dédiée ajoutée : Node 24.22.1, dépendances publiques de test verrouillées, installation temporaire sans scripts ni audit npm. Toutes ses commandes `run` ont réussi localement après installation neuve (50 + 8 + 27). L’exécution sur GitHub reste NON TESTÉE à ce stade.
+
+## 16 novembre 2026 — AR24 candidat, garde d'envoi fermée
+
+L'ancien contrat /envois Bearer échoue sur un contrôle officiel signé/chiffré. Le candidat remplace le transport et le suivi et ajoute la construction d'envoi explicite (PDF, compte fournisseur, OTP/hash, destinataire structuré). Les anciennes mentions de simulation dans cet historique sont obsolètes : aucune simulation n'existe dans le candidat. Envoi application et checkout refusent toujours, même avec clés, avant tout effet externe. 36 AR24 + 6 checkout + 53 suppression/Connect + 8 historiques PASS; compilation TypeScript ciblée PASS. Aucun appel fournisseur, paiement, migration, merge ou déploiement. Le sandbox réel, le build complet et les parcours UI restent NON TESTÉS. Voir [contrat et limites](docs/audit-juridique/ar24-contract-2026-11-16.md).
+
+## 16 novembre 2026 — contre-revue AR24
+
+Trois incohérences de réponse reproduites puis corrigées : type status, statut destinataire et ensemble exact des pièces. ID expéditeur numérique refusé avant upload. Cron désormais borné à90s globales (15s GET/10s autres IO, plafonds réduits au reste) et erreurs/reste différé explicites. 55 tests ciblés PASS, TypeScript5modules et route+SDK isolé PASS. Équité de toute la file et rattrapage des notifications exigent un état durable absent du schéma; limitations précises consignées dans le rapport AR24. Toujours aucun appel API fournisseur, activation, fusion ou déploiement.
+
+## 16 novembre 2026 — reprise durable AR24 (candidat)
+
+Depuis le merge de qualification 28214d2 : état de contrôle dédié avec échéances et réservations atomiques, transaction reçu/message/notification/outbox, contenu email figé et clé stable, reprises Resend limitées à23h puis réconciliation. Les fichiers SQL ne sont pas appliqués à un serveur. 58 tests AR24 +59 connexes +8 historiques PASS et TypeScript application complet PASS avec dépendances exactes matérialisées dans une copie isolée. CI43813198970 PASS :18 nouveaux scénarios PostgreSQL16.15 et67 anciens, clusters arrêtés/supprimés. Contre-revue indépendante PASS au SHAa9df140f. Build Next16.2.11 complet PASS dans la copie aux sources identiques, sans secret, avec uniquement configuration publique Supabase synthétique et téléchargements Google Fonts autorisés ; aucune connexion métier. Le build standard du runner exige encore l’accès SMARANA privé et le package frère canonique. Voir [état durable et limites](docs/audit-juridique/ar24-queue-2026-11-16.md). Aucune activation AR24/checkout, fusion main ou publication.
+
+## 16 novembre 2026 — dépendances corrigées et requalification
+
+Next 16.4.6 / sharp 0.35.5, Zod 4.6.6 et OpenTimestamps officiel 0.4.9 suppriment toutes les alertes critiques/hautes observées : production 12 groupes résiduels (6 modérés, 6 faibles), complet 21 (14 modérés, 7 faibles). Transport OTS borné et refus des pseudo-preuves sans quorum ; contrat UTF-8 conservé. 145 vérifications locales PASS, typage complet et build Next corrigé PASS dans copie isolée sans secrets ni fournisseurs, 338 sources identiques. Le build antérieur et ses alertes restent conservés comme référence. Voir [versions, preuves et résiduels](docs/audit-juridique/dependencies-2026-11-16.md). CI/revue du nouvel arbre requises avant fusion vers qualification ; aucun main ni déploiement.
+
+## 22 novembre 2026 — cycles React et contenus vérifiables
+
+Les 16 erreurs globales React ont été reproduites sur `71b14b14bbcadacffbf4e5ada3b5b740bfbb4650`. Les chargements synchrones sont déplacés vers les événements qui les déclenchent ; les réponses asynchrones, erreurs et décodages tardifs sont annulés ou ignorés. Les formulaires conservent leurs brouillons au bon niveau, les aperçus sont libérés et l’horloge d’abonnement est actualisée hors du rendu.
+
+83 tests Node PASS : 16 admin, 19 Financer, 36 lectures de tableaux de bord, 8 documents, 4 scanner. Les 36 tests des nouvelles lectures donnent 10 PASS / 26 FAIL sur les sources de départ, puis 36 PASS sur le candidat. TypeScript de tous les composants modifiés PASS. Un lint global après correction donne 0 erreur / 2 avertissements de rechargement complet conservés. Quatre autres tentatives locales de lint global ont été interrompues avec le code 137, sans cause affirmée ; elles ne valent pas une vérification réussie. Les derniers tests navigateur et leurs composants passent le lint ciblé ; le lint global exact du candidat final reste à confirmer en CI.
+
+36 scénarios Chromium sont intégrés à la CI avec réponses locales contrôlées et blocage des requêtes externes. Exécution distante du nouveau candidat encore à confirmer. Aucun accès privé SMARANA confirmé dans le workflow JURIS ; build applicatif complet, fournisseurs, données distantes et production restent hors de cette qualification. Aucun appel payant.
+
+Le lot de contenu retire le classement fixe et le témoignage non vérifié, les délais de résultat non sourcés et l’affirmation d’alerte automatique des équipes. Les statistiques personnelles continuent de venir de l’API existante, sans publier les données privées des autres ambassadeurs.
+
+Revue du lot : deux risques supplémentaires confirmés et corrigés. Une analyse OCR est désormais annulée au reset, à une nouvelle sélection et à la sortie ; elle ne peut réafficher ni résultat ni erreur tardive. Le consommateur réel `chat/[caseId]/page.tsx` réutilise le hook sans clé : le hook efface désormais l’ancien dossier et ses messages sur une autre route, annule les lectures/flux obsolètes et conserve le dossier créé lorsqu’on adopte son ID pendant le flux. Les contrats POST/SSE et les actions de réponse sont conservés.
+
+Contrôles source sur le candidat de revue précédent : scanner 4/11 PASS, chat 0/6 PASS ; nouveau candidat 11/11 et 6/6 PASS. Total local 96/96 tests Node, sans échec ni skip ; types et lint ciblé du delta PASS. 45 scénarios Chromium attendus en CI, dont abandon d’analyse, ancien dossier → nouveau et adoption d’un ID créé pendant son flux. Aucun appel fournisseur.
+
+Dernier contrôle de revue : `case_created` ne vaut plus chargement du dossier. Le GET attend la fin du flux et reprend si le refresh final a échoué (503). Régression source 6/7 avant → 7/7 après ; total 97/97 Node PASS, types et lint ciblé PASS. La fixture navigateur couvre l’adoption pendant le flux suivie du 503 ; 51 scénarios attendus en CI.
+
+## Réconciliation du 22 novembre 2026
+
+Avant publication, la garde de tête a détecté le merge concurrent PR7 `dd53211e40076de807108d8f8cfe8760c149a506`, deux commits après `71b14b14`. Le candidat initial est conservé en `79ca2b7` ; une copie isolée rapproche les deux travaux par fusion trois voies. Les quatre conflits sont résolus explicitement : hook, workflow, configuration de typage et historique des erreurs. Les dix fichiers concurrents sans recouvrement restent identiques ; six fichiers combinent les apports.
+
+Le lecteur SSE, le blocage d’envoi pendant loading, l’admission d’un seul POST, la validation du brouillon StrictMode, les 13 tests natifs et les 36 scénarios navigateur concurrents sont conservés. Le hook reçoit seulement l’adoption d’identité et le rattrapage après refresh 503 revus dans ce lot. Qualification réunie : 110/110 tests Node de cycles de vie PASS, types ciblés PASS, 87 scénarios Chromium collectés avant exécution CI.
+
+Horodatage : le parser amont 0.4.9 acceptait des longueurs internes tronquées ou non minimales malgré assertEof. Le timestamp et le reçu sauvegardé doivent désormais se resérialiser à l’identique après les contrôles de taille/arbre ; le contrôle des reçus est exécuté avant tout HTTP. Suite OTS complète : 17/27 avant, 27/27 après, cinq fixtures officielles conservées. Aucun ancrage Bitcoin n’est déduit du seul parsing, aucun calendrier ou fournisseur réel n’a été appelé.
+
+La copie réconciliée permet également un lint global complet : commande canonique sur tout le dépôt, sortie 0, aucune erreur et deux avertissements de navigation conservés. Ce résultat remplace le statut local incomplet des quatre tentatives interrompues de la copie précédente.
+
+## 22 novembre 2026 — proposition de qualification web complète
+
+Le lot React/OTS est publié dans PR2 à `320711b5` ; CI `44971255694` PASS, 110 Node frontend, 27 OTS, 87 Chromium et trois jobs réussis. L’arbre du checkout CI est identique à celui publié. L’échec initial 84/87 concernait les constantes Next manquantes dans la seule fixture d’horloge ; il est corrigé sans changement produit.
+
+Une proposition isolée ajoute un workflow d’installation privée/typegen/types/build. Les 21 empreintes SMARANA sont reprises du commit verrouillé, sans SDK dans le dépôt ; le miroir Git vérifié ne conserve aucune authentification et npm garde les manifestes applicatifs inchangés. 40 tests synthétiques et lint global 403 fichiers PASS (0 erreur / 2 avertissements conservés). La contre-revue a reproduit l’acceptation d’un historique rendu atteignable en supprimant shallow ; la garde impose désormais un seul commit atteignable, égal au pin. Publication, présence de clés JURIS et qualification applicative complète restent en attente de revue et de preuve CI. Voir `docs/audit-juridique/full-web-qualification-2026-11-22.md`.

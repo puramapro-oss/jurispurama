@@ -11,6 +11,7 @@ export default function RootLayout() {
   const init = useAuth((s) => s.init);
   const loading = useAuth((s) => s.loading);
   const session = useAuth((s) => s.session);
+  const recovery = useAuth((s) => s.passwordRecovery);
   const router = useRouter();
   const segments = useSegments();
 
@@ -20,13 +21,22 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loading) return;
+    const inRecoveryCallback = segments[0] === "auth" && segments[1] === "callback";
+    const inPasswordUpdate = segments[0] === "(auth)" && segments[1] === "update-password";
+    const inPasswordRequest = segments[0] === "(auth)" && segments[1] === "forgot-password";
+    if (inRecoveryCallback || inPasswordUpdate || inPasswordRequest) return;
+    if (recovery?.phase === "ready") {
+      router.replace("/(auth)/update-password");
+      return;
+    }
+    if (recovery?.phase === "exchanging") return;
     const inAuthGroup = segments[0] === "(auth)";
     if (!session && !inAuthGroup) {
       router.replace("/(auth)/login");
     } else if (session && inAuthGroup) {
       router.replace("/(tabs)/dashboard");
     }
-  }, [loading, session, segments, router]);
+  }, [loading, session, recovery, segments, router]);
 
   if (loading) {
     return (
@@ -56,6 +66,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="auth/callback" />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

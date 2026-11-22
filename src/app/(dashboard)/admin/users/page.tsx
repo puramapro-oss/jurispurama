@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -34,17 +34,24 @@ export default function AdminUsersPage() {
   const [planFilter, setPlanFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const requestRef = useRef<AbortController | null>(null)
+  const loadRef = useRef<(() => Promise<void>) | null>(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (q) params.set('q', q)
-      if (planFilter) params.set('plan', planFilter)
-      params.set('page', String(page))
-      const res = await fetch(`/api/admin/users?${params.toString()}`)
+  const load = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (planFilter) params.set('plan', planFilter)
+    params.set('page', String(page))
+    return fetch(`/api/admin/users?${params.toString()}`, {
+      signal: controller.signal,
+    }).then(async (res) => {
+      if (controller.signal.aborted) return
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
+        if (controller.signal.aborted) return
         toast.error(data.error ?? 'Erreur de chargement')
         return
       }
@@ -52,15 +59,25 @@ export default function AdminUsersPage() {
         users: AdminUser[]
         total: number
       }
+      if (controller.signal.aborted) return
       setUsers(data.users)
       setTotal(data.total)
-    } finally {
-      setLoading(false)
-    }
+    }).catch(() => {
+      if (!controller.signal.aborted) {
+        toast.error('Impossible de charger les utilisateurs. Réessaie.')
+      }
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [q, planFilter, page])
 
   useEffect(() => {
+    loadRef.current = load
     void load()
+    return () => {
+      loadRef.current = null
+      requestRef.current?.abort()
+    }
   }, [load])
 
   async function updatePlan(userId: string, plan: AdminUser['subscription_plan']) {
@@ -77,7 +94,10 @@ export default function AdminUsersPage() {
         return
       }
       toast.success('Plan mis à jour')
-      await load()
+      if (loadRef.current) {
+        setLoading(true)
+        await loadRef.current()
+      }
     } finally {
       setUpdatingId(null)
     }
@@ -96,6 +116,8 @@ export default function AdminUsersPage() {
             placeholder="Email ou nom…"
             value={q}
             onChange={(e) => {
+              if (e.target.value === q && page === 1) return
+              setLoading(true)
               setQ(e.target.value)
               setPage(1)
             }}
@@ -103,6 +125,8 @@ export default function AdminUsersPage() {
           <select
             value={planFilter}
             onChange={(e) => {
+              if (e.target.value === planFilter && page === 1) return
+              setLoading(true)
               setPlanFilter(e.target.value)
               setPage(1)
             }}
@@ -192,7 +216,10 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => {
+              setLoading(true)
+              setPage((p) => Math.max(1, p - 1))
+            }}
             disabled={page === 1}
           >
             ← Précédent
@@ -200,7 +227,10 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => {
+              setLoading(true)
+              setPage((p) => p + 1)
+            }}
             disabled={users.length < 25}
           >
             Suivant →

@@ -79,7 +79,7 @@ export const JURIS_UNITS: Record<UnitSlug, UnitDefinition> = {
     amount: 599,
     envKey: 'STRIPE_PRICE_UNIT_RECOMMANDE',
     description:
-      'Envoi d\'un recommandé avec AR horodaté (valeur légale Art. 1369-7 CC).',
+      'Envoi électronique via AR24, disponible lorsque le service est activé.',
   },
   signature_supplementaire: {
     slug: 'signature_supplementaire',
