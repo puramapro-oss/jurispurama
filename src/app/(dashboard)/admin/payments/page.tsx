@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 
 interface Payment {
@@ -26,18 +25,16 @@ export default function AdminPaymentsPage() {
   const [status, setStatus] = useState('')
   const requestRef = useRef<AbortController | null>(null)
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     requestRef.current?.abort()
     const controller = new AbortController()
     requestRef.current = controller
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (type) params.set('type', type)
-      if (status) params.set('status', status)
-      const res = await fetch(`/api/admin/payments?${params.toString()}`, {
-        signal: controller.signal,
-      })
+    const params = new URLSearchParams()
+    if (type) params.set('type', type)
+    if (status) params.set('status', status)
+    return fetch(`/api/admin/payments?${params.toString()}`, {
+      signal: controller.signal,
+    }).then(async (res) => {
       if (controller.signal.aborted) return
       if (!res.ok) {
         toast.error('Erreur de chargement')
@@ -46,13 +43,13 @@ export default function AdminPaymentsPage() {
       const data = (await res.json()) as { payments: Payment[] }
       if (controller.signal.aborted) return
       setPayments(data.payments)
-    } catch {
+    }).catch(() => {
       if (!controller.signal.aborted) {
         toast.error('Impossible de charger les paiements. Réessaie.')
       }
-    } finally {
+    }).finally(() => {
       if (!controller.signal.aborted) setLoading(false)
-    }
+    })
   }, [type, status])
 
   useEffect(() => {
@@ -66,12 +63,9 @@ export default function AdminPaymentsPage() {
     .filter((p) => p.status === 'succeeded' || p.status === 'paid')
     .reduce((a, b) => a + Number(b.amount ?? 0), 0)
 
-  async function downloadCsv() {
-    const params = new URLSearchParams({ format: 'csv' })
-    if (type) params.set('type', type)
-    if (status) params.set('status', status)
-    window.location.href = `/api/admin/payments?${params.toString()}`
-  }
+  const csvParams = new URLSearchParams({ format: 'csv' })
+  if (type) csvParams.set('type', type)
+  if (status) csvParams.set('status', status)
 
   return (
     <Card padding="lg">
@@ -82,7 +76,11 @@ export default function AdminPaymentsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={type}
-            onChange={(e) => setType(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === type) return
+              setLoading(true)
+              setType(e.target.value)
+            }}
             className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm"
           >
             {TYPE_FILTERS.map((t) => (
@@ -93,7 +91,11 @@ export default function AdminPaymentsPage() {
           </select>
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === status) return
+              setLoading(true)
+              setStatus(e.target.value)
+            }}
             className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm"
           >
             {STATUS_FILTERS.map((s) => (
@@ -102,9 +104,13 @@ export default function AdminPaymentsPage() {
               </option>
             ))}
           </select>
-          <Button variant="secondary" size="sm" onClick={downloadCsv}>
+          <a
+            href={`/api/admin/payments?${csvParams.toString()}`}
+            download
+            className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--justice)] hover:bg-[var(--parchment)]"
+          >
             Exporter CSV
-          </Button>
+          </a>
         </div>
       </div>
 

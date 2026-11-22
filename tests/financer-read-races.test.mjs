@@ -44,7 +44,7 @@ function deferred() {
 }
 
 function harness() {
-  const state = { aides: [], loading: false, selectedAides: new Set() }
+  const state = { aides: [], loading: false, selectedAides: new Set(), step: 1 }
   const requests = [], errors = [], updates = []
   const requestRef = { current: null }
   function render(parameters) {
@@ -57,6 +57,7 @@ function harness() {
       },
       setAides: aides => { state.aides = aides; updates.push('aides') },
       setLoading: loading => { state.loading = loading; updates.push('loading') },
+      setStep: step => { state.step = step },
       setSelectedAides: update => { state.selectedAides = update(state.selectedAides) },
       toast: { error: message => errors.push(message) },
     }
@@ -65,7 +66,11 @@ function harness() {
     let lastTask
     context.fetchAides = () => { lastTask = read(); return lastTask }
     const effect = evaluate('effect')
-    return { read: context.fetchAides, effect: () => ({ cleanup: effect(), task: lastTask }),
+    const showAides = evaluate('showAides')
+    return { read: () => { showAides(); return context.fetchAides() },
+      effect: () => ({ cleanup: effect(), task: lastTask }),
+      enter: () => { showAides(); return { cleanup: effect(), task: lastTask } },
+      showAides,
       toggleAide: evaluate('toggleAide') }
   }
   const response = id => ({ ok: true, json: async () => ({ aides: [{ id }] }) })
@@ -89,7 +94,7 @@ for (const parameters of [
 
 for (const parameters of [active, { ...active, profil: '' }, { ...active, situation: '' }]) {
   test(`preserves GET parameters and completes the current read: ${JSON.stringify(parameters)}`, async () => {
-    const h = harness(), mounted = h.render(parameters).effect(), request = h.requests[0]
+    const h = harness(), mounted = h.render(parameters).enter(), request = h.requests[0]
     const url = new URL(request.url, 'https://fixture.invalid')
     assert.equal(url.pathname, '/api/financer')
     assert.deepEqual(Object.fromEntries(url.searchParams), Object.fromEntries(
@@ -132,14 +137,14 @@ test('an old JSON body is ignored even when transport completed before cancellat
 })
 
 test('leaving step two aborts the read and returning starts a fresh one', async () => {
-  const h = harness(), mounted = h.render(active).effect()
+  const h = harness(), mounted = h.render(active).enter()
   assert.equal(typeof mounted.cleanup, 'function')
   mounted.cleanup()
   assert.equal(h.requests[0].options.signal.aborted, true)
   assert.equal(h.render({ ...active, step: 3 }).effect().task, undefined)
   h.requests[0].reject(new Error('cancelled transport')); await mounted.task
   assert.deepEqual(h.errors, [])
-  const returned = h.render(active).effect()
+  const returned = h.render(active).enter()
   assert.equal(h.requests.length, 2)
   h.requests[1].resolve(h.response('after-return')); await returned.task
   assert.equal(h.state.aides[0].id, 'after-return')
@@ -147,7 +152,7 @@ test('leaving step two aborts the read and returning starts a fresh one', async 
 })
 
 test('unmount cleanup prevents late decoding from updating state', async () => {
-  const h = harness(), body = deferred(), mounted = h.render(active).effect()
+  const h = harness(), body = deferred(), mounted = h.render(active).enter()
   h.requests[0].resolve({ ok: true, json: () => body.promise }); await flush()
   assert.equal(typeof mounted.cleanup, 'function')
   mounted.cleanup()
@@ -182,4 +187,20 @@ test('reading aids preserves the existing selection and toggle behavior', async 
   const task = view.read()
   h.requests[0].resolve(h.response('aide-2')); await task
   assert.deepEqual(Array.from(h.state.selectedAides), ['aide-2'])
+})
+
+test('the navigation event starts loading before entering step two, without a request', () => {
+  const h = harness()
+  h.render(active).showAides()
+  assert.equal(h.state.step, 2)
+  assert.equal(h.state.loading, true)
+  assert.equal(h.requests.length, 0)
+})
+
+test('an empty profile enters step two without leaving a loading indicator stuck', () => {
+  const h = harness()
+  h.render({ ...active, profil: '', situation: '' }).showAides()
+  assert.equal(h.state.step, 2)
+  assert.equal(h.state.loading, false)
+  assert.equal(h.requests.length, 0)
 })

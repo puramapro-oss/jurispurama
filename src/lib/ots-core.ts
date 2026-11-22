@@ -15,6 +15,7 @@ export interface OtsTimestamp {
   attestations: OtsAttestation[];
   add(operation: unknown): OtsTimestamp;
   merge(other: OtsTimestamp): void;
+  serialize(context: unknown): void;
 }
 export interface OtsDetached {
   fileHashOp: unknown;
@@ -25,7 +26,10 @@ export interface OtsDetached {
 export interface OtsLibrary {
   DetachedTimestampFile: { fromHash(op: unknown, hash: number[]): OtsDetached; deserialize(bytes: Uint8Array): OtsDetached };
   Ops: { OpSHA256: new () => unknown; OpAppend: new (bytes: number[]) => unknown };
-  Context: { StreamDeserialization: new (bytes: Uint8Array) => { assertEof(): void } };
+  Context: {
+    StreamDeserialization: new (bytes: Uint8Array) => { assertEof(): void };
+    StreamSerialization: new () => { getOutput(): number[] };
+  };
   Timestamp: { deserialize(context: unknown, digest: number[]): OtsTimestamp };
   Notary: {
     PendingAttestation: new (uri: string) => OtsAttestation & { uri: string };
@@ -133,7 +137,13 @@ export function createOtsClient(library: OtsLibrary) {
     try {
       const context = new library.Context.StreamDeserialization(bytes);
       const timestamp = library.Timestamp.deserialize(context, digest);
-      context.assertEof(); nodes(timestamp); return timestamp;
+      context.assertEof(); nodes(timestamp);
+      // EOF alone misses truncated lengths and ignored nested attestation bytes.
+      const serialized = new library.Context.StreamSerialization();
+      timestamp.serialize(serialized);
+      const canonical = serialized.getOutput();
+      if (canonical.length !== bytes.length || canonical.some((byte, index) => byte !== bytes[index])) return fail("OTS_INVALID_RESPONSE");
+      return timestamp;
     } catch { return fail("OTS_INVALID_RESPONSE"); }
   }
   async function stampDigest(hash: Uint8Array): Promise<string> {
@@ -166,6 +176,8 @@ export function createOtsClient(library: OtsLibrary) {
     try { detached = library.DetachedTimestampFile.deserialize(bytes); } catch { return fail("OTS_INVALID_PROOF"); }
     if (!(detached.fileHashOp instanceof library.Ops.OpSHA256) || hex(detached.fileDigest()) !== hex(hash)) return fail("OTS_HASH_MISMATCH");
     let tree = nodes(detached.timestamp); let requests = 0;
+    const canonical = detached.serializeToBytes();
+    if (canonical.length !== bytes.length || canonical.some((byte, index) => byte !== bytes[index])) return fail("OTS_INVALID_PROOF");
     if (!tree.some(node => node.attestations.some(usable))) return fail("OTS_INVALID_PROOF");
     if (upgrade && !tree.some(node => node.attestations.some(attestation => attestation instanceof library.Notary.BitcoinBlockHeaderAttestation))) {
       const seen = new Set<string>(); let successfulCalendars = 0;

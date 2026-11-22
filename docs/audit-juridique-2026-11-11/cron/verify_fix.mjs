@@ -92,8 +92,8 @@ const report = {
   ],
 };
 fs.writeFileSync(path.join(directory, 'fix-results.json'), JSON.stringify(report, null, 2) + '\n');
-console.log(JSON.stringify({
+process.stdout.write(JSON.stringify({
   status: report.status, beforeSha256: report.beforeSha256, afterSha256: report.afterSha256,
   baselinePassed: `${baseline.passed}/${baseline.checks}`, correctedPassed: `${corrected.passed}/${corrected.checks}`,
   cases: corrected.results.map(item => ({ id: item.id, pass: item.meetsExpectedBehavior })),
-}, null, 2));
+}, null, 2) + '\n');

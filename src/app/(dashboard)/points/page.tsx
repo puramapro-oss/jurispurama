@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -52,21 +52,27 @@ export default function PointsPage() {
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [claimedGift, setClaimedGift] = useState<DailyGift | null>(null)
+  const requestRef = useRef<AbortController | null>(null)
 
-  const fetchPoints = useCallback(async () => {
-    try {
-      const res = await fetch('/api/points')
+  const fetchPoints = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/points', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error()
-      setData(await res.json())
-    } catch {
-      toast.error('Impossible de charger tes points.')
-    } finally {
-      setLoading(false)
-    }
+      const data = await res.json()
+      if (!controller.signal.aborted) setData(data)
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger tes points.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
-    fetchPoints()
+    void fetchPoints()
+    return () => requestRef.current?.abort()
   }, [fetchPoints])
 
   const claimDailyGift = async () => {
@@ -84,7 +90,7 @@ export default function PointsPage() {
       } else {
         toast.success(`Cadeau : ${GIFT_LABELS[json.gift.type] ?? json.gift.type}`)
       }
-      fetchPoints()
+      if (!requestRef.current?.signal.aborted) void fetchPoints()
     } catch {
       toast.error('Erreur réseau.')
     } finally {

@@ -63,6 +63,11 @@ for (const fixture of fixtures.fixtures) test(`official .ots fixture ${fixture.n
   const proof = decode(fixture.proof_base64)
   assert.equal(Buffer.from(proof.fileDigest()).toString('hex'), fixture.content_sha256)
   assert.deepEqual(Buffer.from(proof.serializeToBytes()), bytes)
+  const timestampBytes = serializeTimestamp(proof.timestamp)
+  const context = new primitives.Context.StreamDeserialization(timestampBytes)
+  const timestamp = primitives.Timestamp.deserialize(context, proof.fileDigest())
+  context.assertEof()
+  assert.deepEqual(serializeTimestamp(timestamp), timestampBytes, 'Official timestamps retain exact canonical encoding')
 })
 
 test('stampHash and stampDocument preserve UTF-8 content and legacy hex-string semantics', async () => {
@@ -160,4 +165,66 @@ test('proof paths never invoke ECDSA signing or load legacy request transport', 
   assert.equal((await ots.verifyProof('contract', 'malformed')).verified, false)
   assert.equal(tripwire.mock.callCount(), 0)
   assert.equal(Object.keys(require.cache).filter(path => /\/node_modules\/(?:request|request-promise|request-promise-core|uuid)\//.test(path)).length, 0)
+})
+
+for (const mode of ['outer payload overrun', 'inner URI overrun', 'ignored pending payload byte',
+  'non-minimal outer length', 'non-minimal URI length', 'empty Bitcoin payload',
+  'unterminated Bitcoin height', 'ignored Bitcoin payload byte', 'non-minimal operation length']) {
+  test(`malformed internal proof lengths are rejected: ${mode}`, async () => {
+    const { ots } = await library({ fetch: async (_url, init) => {
+      let bytes = new Uint8Array(await pendingResponse(init).arrayBuffer())
+      assert.equal(bytes[9], bytes.length - 10, 'A one-byte attestation payload length precedes the URI')
+      if (mode === 'outer payload overrun') bytes[9]++
+      if (mode === 'inner URI overrun') bytes[10]++
+      if (mode === 'ignored pending payload byte') {
+        bytes[9]++
+        bytes = Buffer.concat([bytes, Buffer.from([0])])
+      }
+      if (mode === 'non-minimal outer length') {
+        bytes = Buffer.concat([bytes.slice(0, 9), Buffer.from([bytes[9] | 0x80, 0]), bytes.slice(10)])
+      }
+      if (mode === 'non-minimal URI length') {
+        bytes[9]++
+        bytes = Buffer.concat([bytes.slice(0, 10), Buffer.from([bytes[10] | 0x80, 0]), bytes.slice(11)])
+      }
+      if (mode.includes('Bitcoin')) {
+        const timestamp = new primitives.Timestamp(Array.from(init.body))
+        timestamp.attestations.push(new primitives.Notary.BitcoinBlockHeaderAttestation(1))
+        bytes = serializeTimestamp(timestamp)
+        if (mode === 'empty Bitcoin payload') { bytes[9] = 0; bytes = bytes.slice(0, -1) }
+        if (mode === 'unterminated Bitcoin height') bytes[10] = 0x80
+        if (mode === 'ignored Bitcoin payload byte') { bytes[9]++; bytes = Buffer.concat([bytes, Buffer.from([0])]) }
+      }
+      if (mode === 'non-minimal operation length') {
+        const timestamp = new primitives.Timestamp(Array.from(init.body))
+        timestamp.add(new primitives.Ops.OpAppend([0x42])).add(new primitives.Ops.OpSHA256())
+          .attestations.push(new primitives.Notary.PendingAttestation(calendar))
+        bytes = serializeTimestamp(timestamp)
+        assert.equal(bytes[1], 1)
+        bytes = Buffer.concat([bytes.slice(0, 1), Buffer.from([0x81, 0]), bytes.slice(2)])
+      }
+      return new Response(bytes)
+    } })
+    await assert.rejects(ots.stampHash('contract'), { code: 'OTS_CALENDAR_UNAVAILABLE' })
+  })
+}
+
+
+test('truncated or noncanonical stored receipts are rejected before calendar or Bitcoin HTTP', async () => {
+  const { ots, calls } = await library()
+  const encoded = proofFor('contract')
+  const good = Buffer.from(encoded, 'base64')
+  const offset = good.length - serializeTimestamp(decode(encoded).timestamp).length
+  const outer = Buffer.from(good); outer[offset + 9]++
+  const inner = Buffer.from(good); inner[offset + 10]++
+  const ignored = Buffer.concat([good, Buffer.from([0])]); ignored[offset + 9]++
+  const nonminimal = Buffer.concat([good.subarray(0, offset + 9), Buffer.from([good[offset + 9] | 0x80, 0]), good.subarray(offset + 10)])
+  const bitcoin = Buffer.from(proofFor('contract', new primitives.Notary.BitcoinBlockHeaderAttestation(1)), 'base64')
+  bitcoin[bitcoin.length - 2] = 0
+  for (const bytes of [outer, inner, ignored, nonminimal, bitcoin.subarray(0, -1)]) {
+    const result = await ots.verifyProof('contract', bytes.toString('base64'))
+    assert.equal(result.verified, false)
+    assert.notEqual(result.pending, true)
+  }
+  assert.equal(calls.length, 0)
 })

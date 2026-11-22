@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Button from '@/components/ui/Button'
 import {
   DOCUMENT_TEMPLATE_LABELS,
@@ -21,8 +21,12 @@ interface GenerateDocumentModalProps {
   loading?: boolean
 }
 
-export default function GenerateDocumentModal({
-  open,
+export default function GenerateDocumentModal(props: GenerateDocumentModalProps) {
+  if (!props.open) return null
+  return <GenerateDocumentForm key={props.caseType} {...props} />
+}
+
+function GenerateDocumentForm({
   caseType,
   defaultTitle,
   onClose,
@@ -37,17 +41,6 @@ export default function GenerateDocumentModal({
     defaultTitle ?? DOCUMENT_TEMPLATE_LABELS[suggested[0] ?? 'courrier-generique']
   )
   const [instructions, setInstructions] = useState('')
-
-  useEffect(() => {
-    if (!open) return
-    const next = suggested[0] ?? 'courrier-generique'
-    setSelected(next)
-    setTitle(defaultTitle ?? DOCUMENT_TEMPLATE_LABELS[next])
-    setInstructions('')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, caseType])
-
-  if (!open) return null
 
   const handleSubmit = async () => {
     if (!title.trim()) return

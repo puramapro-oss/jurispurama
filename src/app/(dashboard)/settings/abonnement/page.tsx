@@ -26,13 +26,30 @@ export default function SettingsAbonnementPage() {
   const [loading, setLoading] = useState(true)
   const [pauseLoading, setPauseLoading] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
-    fetch('/api/stripe/portal?action=status', { cache: 'no-store' })
+    const controller = new AbortController()
+    fetch('/api/stripe/portal?action=status', { cache: 'no-store', signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => setInfo(data))
-      .catch(() => setInfo(null))
-      .finally(() => setLoading(false))
+      .then((data) => {
+        if (controller.signal.aborted) return
+        setInfo(data)
+        setNow(Date.now())
+      })
+      .catch(() => { if (!controller.signal.aborted) setInfo(null) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const updateClock = () => setNow(Date.now())
+    const timer = window.setInterval(updateClock, 60_000)
+    window.addEventListener('focus', updateClock)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', updateClock)
+    }
   }, [])
 
   async function handlePause() {
@@ -59,7 +76,7 @@ export default function SettingsAbonnementPage() {
   const hasPaid = info && info.plan !== 'free'
   const subStart = info?.subscription_started_at ? new Date(info.subscription_started_at) : null
   const daysActive = subStart
-    ? Math.floor((Date.now() - subStart.getTime()) / (1000 * 60 * 60 * 24))
+    ? Math.floor((now - subStart.getTime()) / (1000 * 60 * 60 * 24))
     : 0
   const withdrawUnlockDate = subStart
     ? new Date(subStart.getTime() + 30 * 24 * 60 * 60 * 1000)

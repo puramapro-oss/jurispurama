@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
@@ -48,8 +48,8 @@ interface ReferralStatsResponse {
 }
 
 function buildShareTemplates(link: string) {
-  const msg = `J'ai découvert JurisPurama, un assistant juridique IA qui rédige ta contestation, la signe et l'envoie à ta place. Amende, caution, URSSAF — ça marche pour tout. Essaie avec mon lien, -50% sur ton premier mois : ${link}`
-  const short = `JurisPurama t'aide à te défendre en 3 minutes. -50% avec mon lien : ${link}`
+  const msg = `J'ai découvert JurisPurama, un assistant juridique IA qui t'aide à préparer une contestation et propose des outils de signature et d'envoi. Amende, caution, URSSAF : décris ta situation. Essaie avec mon lien, -50% sur ton premier mois : ${link}`
+  const short = `JurisPurama t'aide à préparer tes démarches juridiques. -50% avec mon lien : ${link}`
   return {
     whatsapp: `https://wa.me/?text=${encodeURIComponent(msg)}`,
     sms: `sms:?body=${encodeURIComponent(short)}`,
@@ -70,6 +70,7 @@ export default function ParrainagePage() {
   const [loading, setLoading] = useState(true)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [withdrawLoading, setWithdrawLoading] = useState(false)
+  const requestRef = useRef<AbortController | null>(null)
 
   const code = stats?.code ?? profile?.referral_code ?? null
   const link = useMemo(
@@ -81,31 +82,37 @@ export default function ParrainagePage() {
   )
   const share = useMemo(() => buildShareTemplates(link), [link])
 
-  const refresh = useCallback(async () => {
-    try {
-      const res = await fetch('/api/referral')
-      if (!res.ok) return
+  const refresh = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/referral', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
+      if (!res.ok) throw new Error()
       const data = (await res.json()) as ReferralStatsResponse
-      setStats(data.stats)
-    } catch {
-      // silent
-    } finally {
-      setLoading(false)
-    }
+      if (!controller.signal.aborted) setStats(data.stats)
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger ton parrainage. Réessaie.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
     void refresh()
+    return () => requestRef.current?.abort()
   }, [refresh])
 
   useEffect(() => {
+    let active = true
     QRCode.toDataURL(link, {
       width: 256,
       margin: 1,
       color: { dark: '#1E3A5F', light: '#FFFFFF00' },
     })
-      .then(setQrUrl)
-      .catch(() => setQrUrl(null))
+      .then((url) => { if (active) setQrUrl(url) })
+      .catch(() => { if (active) setQrUrl(null) })
+    return () => { active = false }
   }, [link])
 
   async function handleCopy() {
@@ -149,7 +156,7 @@ export default function ParrainagePage() {
         return
       }
       toast.success('Demande de virement envoyée. Délai 3 à 5 jours ouvrés.')
-      await refresh()
+      if (!requestRef.current?.signal.aborted) await refresh()
     } catch {
       toast.error('Erreur réseau. Réessaie.')
     } finally {

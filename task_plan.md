@@ -6,11 +6,15 @@ Annulation et isolation des flux, lecteur SSE libéré, conservation du brouillo
 
 ## Audit du 22 novembre 2026 — PARTIEL
 
+Cycles React : les 16 erreurs ESLint reproduites sont corrigées sans désactiver de règle. Chargements, annulations, formulaires, scanner, conversations, liens de document et horloge d’abonnement : 110 tests Node et types de tous les composants modifiés PASS. Le lint global du candidat réconcilié passe avec 0 erreur et 2 avertissements conservés pour les rechargements complets après déconnexion et erreur. La CI doit encore confirmer les 87 scénarios navigateur du nouveau candidat ; ce lot ne qualifie ni le build complet, ni les fournisseurs, ni la production.
+
+Contenus : classement ambassadeur fixe, témoignage de récupération et durées non sourcées retirés. L’API existante fournit les statistiques personnelles, conservées ; aucun classement public vérifié n’est disponible. L’état vide l’indique explicitement.
+
 Recherche d’aides : nettoyage et annulation des lectures après sortie corrigés, 17 tests de callbacks, types et bundle PASS. Les tests navigateur sont ajoutés à la CI ; [portée de la reproduction et limites](docs/audit-juridique/financer-read-cleanup-2026-11-22.md).
 
 Lectures administrateur : courses de réponses et erreurs réseau corrigées sur Paiements et Utilisateurs, 16 régressions et types ciblés PASS. Les contrôles navigateur sont intégrés à la CI existante. [Preuves et limites du lot](docs/audit-juridique/admin-read-races-2026-11-22.md).
 
-Le linter se charge dans un clone autonome après correction de sa dépendance locale ; règles et versions conservées. Vérification avant/après PASS, 137 tests métier PASS. Le lint global révèle encore 16 erreurs React ; installation privée complète, build et navigateur locaux non qualifiés dans ce nouvel audit. Détails et limites : [preuve de portabilité](docs/audit-juridique/eslint-portability-2026-11-22.md). Les résultats historiques ci-dessous ne valent pas validation globale du candidat actuel.
+Le linter se charge dans un clone autonome après correction de sa dépendance locale ; règles et versions conservées. Vérification avant/après PASS, 137 tests métier PASS lors du lot de portabilité. Les 16 erreurs React alors observées sont traitées dans le lot ci-dessus ; installation privée complète, build et navigateur locaux non qualifiés dans ce nouvel audit. Détails et limites : [preuve de portabilité](docs/audit-juridique/eslint-portability-2026-11-22.md). Les résultats historiques ci-dessous ne valent pas validation globale du candidat actuel.
 
 ## Phases
 - [x] P1 — Scaffold + Auth Supabase + DB schema + Landing + Deploy ✅ 2026-04-11

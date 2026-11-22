@@ -37,19 +37,17 @@ export default function AdminUsersPage() {
   const requestRef = useRef<AbortController | null>(null)
   const loadRef = useRef<(() => Promise<void>) | null>(null)
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     requestRef.current?.abort()
     const controller = new AbortController()
     requestRef.current = controller
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (q) params.set('q', q)
-      if (planFilter) params.set('plan', planFilter)
-      params.set('page', String(page))
-      const res = await fetch(`/api/admin/users?${params.toString()}`, {
-        signal: controller.signal,
-      })
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (planFilter) params.set('plan', planFilter)
+    params.set('page', String(page))
+    return fetch(`/api/admin/users?${params.toString()}`, {
+      signal: controller.signal,
+    }).then(async (res) => {
       if (controller.signal.aborted) return
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
@@ -64,13 +62,13 @@ export default function AdminUsersPage() {
       if (controller.signal.aborted) return
       setUsers(data.users)
       setTotal(data.total)
-    } catch {
+    }).catch(() => {
       if (!controller.signal.aborted) {
         toast.error('Impossible de charger les utilisateurs. Réessaie.')
       }
-    } finally {
+    }).finally(() => {
       if (!controller.signal.aborted) setLoading(false)
-    }
+    })
   }, [q, planFilter, page])
 
   useEffect(() => {
@@ -96,7 +94,10 @@ export default function AdminUsersPage() {
         return
       }
       toast.success('Plan mis à jour')
-      await loadRef.current?.()
+      if (loadRef.current) {
+        setLoading(true)
+        await loadRef.current()
+      }
     } finally {
       setUpdatingId(null)
     }
@@ -115,6 +116,8 @@ export default function AdminUsersPage() {
             placeholder="Email ou nom…"
             value={q}
             onChange={(e) => {
+              if (e.target.value === q && page === 1) return
+              setLoading(true)
               setQ(e.target.value)
               setPage(1)
             }}
@@ -122,6 +125,8 @@ export default function AdminUsersPage() {
           <select
             value={planFilter}
             onChange={(e) => {
+              if (e.target.value === planFilter && page === 1) return
+              setLoading(true)
               setPlanFilter(e.target.value)
               setPage(1)
             }}
@@ -211,7 +216,10 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => {
+              setLoading(true)
+              setPage((p) => Math.max(1, p - 1))
+            }}
             disabled={page === 1}
           >
             ← Précédent
@@ -219,7 +227,10 @@ export default function AdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => {
+              setLoading(true)
+              setPage((p) => p + 1)
+            }}
             disabled={users.length < 25}
           >
             Suivant →

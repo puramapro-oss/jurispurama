@@ -17,9 +17,14 @@ export default function AmbassadorLeaderboard({
   return (
     <Card padding="lg" className="mt-6">
       <h2 className="mb-3 font-serif text-xl font-semibold text-[var(--justice)]">
-        Top 10 ambassadeurs du mois
+        Classement des ambassadeurs
       </h2>
-      <ul className="space-y-2">
+      {leaderboard.length === 0 ? (
+        <p className="text-sm text-[var(--text-muted)]">
+          Aucun classement vérifié n&apos;est disponible pour le moment.
+          Tes statistiques personnelles restent disponibles dans ton tableau de bord.
+        </p>
+      ) : <ul className="space-y-2">
         {leaderboard.map((row) => (
           <li
             key={row.rank}
@@ -39,10 +44,7 @@ export default function AmbassadorLeaderboard({
             </div>
           </li>
         ))}
-      </ul>
-      <p className="mt-3 text-xs text-[var(--text-muted)]">
-        Classement actualisé chaque lundi à 9h (Paris).
-      </p>
+      </ul>}
     </Card>
   )
 }

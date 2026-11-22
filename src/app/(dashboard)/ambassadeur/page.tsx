@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
 import Badge from '@/components/ui/Badge'
@@ -97,19 +97,6 @@ const TIER_INFO: Record<
   },
 }
 
-const LEADERBOARD = [
-  { rank: 1, name: 'Astrid T.', conversions: 187, commissions: 3920 },
-  { rank: 2, name: 'Sami R.', conversions: 143, commissions: 2840 },
-  { rank: 3, name: 'Nadia K.', conversions: 112, commissions: 2215 },
-  { rank: 4, name: 'Pierre L.', conversions: 98, commissions: 1940 },
-  { rank: 5, name: 'Mélanie G.', conversions: 87, commissions: 1720 },
-  { rank: 6, name: 'Yassin D.', conversions: 73, commissions: 1450 },
-  { rank: 7, name: 'Camille V.', conversions: 61, commissions: 1205 },
-  { rank: 8, name: 'Jules B.', conversions: 54, commissions: 1065 },
-  { rank: 9, name: 'Rania S.', conversions: 48, commissions: 950 },
-  { rank: 10, name: 'Thomas E.', conversions: 42, commissions: 830 },
-]
-
 const KIT_BANNERS = [
   {
     title: 'Bannière hero 1200×630',
@@ -128,11 +115,11 @@ const KIT_BANNERS = [
 const TEMPLATES = [
   {
     title: 'Amende routière',
-    text: "Tu viens de recevoir une amende ? JurisPurama (@jurispurama) rédige ta contestation en 2 minutes et l'envoie en recommandé à ta place. Lien -50% : ",
+    text: "Tu viens de recevoir une amende ? JurisPurama (@jurispurama) t'aide à préparer ta contestation et propose un envoi en recommandé. Lien -50% : ",
   },
   {
     title: 'Caution retenue',
-    text: "Ton proprio refuse de rendre ta caution ? JurisIA fait la mise en demeure, tu signes et c'est parti. 1200€ récupérés pour Karim sans tribunal. Essaie avec mon lien : ",
+    text: "Ton proprio refuse de rendre ta caution ? JurisIA t'aide à préparer une mise en demeure que tu peux relire, signer et envoyer. Essaie avec mon lien : ",
   },
   {
     title: 'URSSAF / impôts',
@@ -144,6 +131,7 @@ export default function AmbassadeurPage() {
   const [loading, setLoading] = useState(true)
   const [influencer, setInfluencer] = useState<Influencer | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
+  const requestRef = useRef<AbortController | null>(null)
 
   const goLink = useMemo(
     () =>
@@ -160,32 +148,38 @@ export default function AmbassadeurPage() {
     [influencer]
   )
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch('/api/influencer')
-      if (!res.ok) return
+  const load = useCallback(() => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch('/api/influencer', { signal: controller.signal }).then(async (res) => {
+      if (controller.signal.aborted) return
+      if (!res.ok) throw new Error()
       const data = (await res.json()) as { influencer: Influencer | null }
-      setInfluencer(data.influencer)
-    } catch {
-      // silent
-    } finally {
-      setLoading(false)
-    }
+      if (!controller.signal.aborted) setInfluencer(data.influencer)
+    }).catch(() => {
+      if (!controller.signal.aborted) toast.error('Impossible de charger ton espace ambassadeur. Réessaie.')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
     void load()
+    return () => requestRef.current?.abort()
   }, [load])
 
   useEffect(() => {
     if (!influencer) return
+    let active = true
     QRCode.toDataURL(goLink, {
       width: 256,
       margin: 1,
       color: { dark: '#1E3A5F', light: '#FFFFFF00' },
     })
-      .then(setQrUrl)
-      .catch(() => setQrUrl(null))
+      .then((url) => { if (active) setQrUrl(url) })
+      .catch(() => { if (active) setQrUrl(null) })
+    return () => { active = false }
   }, [influencer, goLink])
 
   async function handleCopy(link: string) {
@@ -255,7 +249,8 @@ export default function AmbassadeurPage() {
         onCopy={handleCopy}
       />
 
-      <AmbassadorLeaderboard leaderboard={LEADERBOARD} />
+      {/* The existing API exposes personal totals, not a verified public ranking. */}
+      <AmbassadorLeaderboard leaderboard={[]} />
     </div>
   )
 }

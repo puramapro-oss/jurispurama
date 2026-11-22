@@ -40,12 +40,15 @@ export default function SendModal({
   const [recCity, setRecCity] = useState('')
   const [recCountry, setRecCountry] = useState('FR')
   const [recEmailOpt, setRecEmailOpt] = useState('')
+  const [previousDocument, setPreviousDocument] = useState({ open, documentTitle })
 
-  useEffect(() => {
+  // Keep recipient drafts, but reset the subject for each opening or new title.
+  if (previousDocument.open !== open || previousDocument.documentTitle !== documentTitle) {
+    setPreviousDocument({ open, documentTitle })
     if (open) {
       setSubject(`Document juridique — ${documentTitle}`)
     }
-  }, [open, documentTitle])
+  }
 
   useEffect(() => {
     if (!open) return

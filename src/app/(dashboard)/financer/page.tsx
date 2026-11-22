@@ -18,26 +18,24 @@ export default function FinancerPage() {
   const [selectedAides, setSelectedAides] = useState<Set<string>>(new Set())
   const requestRef = useRef<AbortController | null>(null)
 
-  const fetchAides = useCallback(async () => {
+  const fetchAides = useCallback(() => {
     requestRef.current?.abort()
     const controller = new AbortController()
     requestRef.current = controller
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (profil) params.set('profil', profil)
-      if (situation) params.set('situation', situation)
-      const res = await fetch(`/api/financer?${params}`, { signal: controller.signal })
+    const params = new URLSearchParams()
+    if (profil) params.set('profil', profil)
+    if (situation) params.set('situation', situation)
+    return fetch(`/api/financer?${params}`, { signal: controller.signal }).then(async (res) => {
       if (controller.signal.aborted) return
       if (!res.ok) throw new Error()
       const json = await res.json()
       if (controller.signal.aborted) return
       setAides(json.aides ?? [])
-    } catch {
+    }).catch(() => {
       if (!controller.signal.aborted) toast.error('Impossible de charger les aides.')
-    } finally {
+    }).finally(() => {
       if (!controller.signal.aborted) setLoading(false)
-    }
+    })
   }, [profil, situation])
 
   useEffect(() => {
@@ -48,6 +46,11 @@ export default function FinancerPage() {
       }
     }
   }, [step, profil, situation, fetchAides])
+
+  const showAides = () => {
+    setLoading(Boolean(profil || situation))
+    setStep(2)
+  }
 
   const toggleAide = (id: string) => {
     setSelectedAides((prev) => {
@@ -66,8 +69,8 @@ export default function FinancerPage() {
             Financer ton dossier juridique
           </h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Découvre les aides auxquelles tu as droit. La plupart des gens ne
-            paient rien grâce aux aides.
+            Découvre les aides qui peuvent correspondre à ta situation et
+            consulte leurs critères d&apos;éligibilité.
           </p>
         </div>
 
@@ -79,7 +82,7 @@ export default function FinancerPage() {
             situation={situation}
             setProfil={setProfil}
             setSituation={setSituation}
-            onNext={() => setStep(2)}
+            onNext={showAides}
           />
         )}
 
@@ -98,7 +101,7 @@ export default function FinancerPage() {
           <DossierConstitution
             aides={aides}
             selectedAides={selectedAides}
-            onBack={() => setStep(2)}
+            onBack={showAides}
             onNext={() => setStep(4)}
           />
         )}

@@ -894,3 +894,29 @@ Depuis le merge de qualification 28214d2 : état de contrôle dédié avec éch�
 ## 16 novembre 2026 — dépendances corrigées et requalification
 
 Next 16.4.6 / sharp 0.35.5, Zod 4.6.6 et OpenTimestamps officiel 0.4.9 suppriment toutes les alertes critiques/hautes observées : production 12 groupes résiduels (6 modérés, 6 faibles), complet 21 (14 modérés, 7 faibles). Transport OTS borné et refus des pseudo-preuves sans quorum ; contrat UTF-8 conservé. 145 vérifications locales PASS, typage complet et build Next corrigé PASS dans copie isolée sans secrets ni fournisseurs, 338 sources identiques. Le build antérieur et ses alertes restent conservés comme référence. Voir [versions, preuves et résiduels](docs/audit-juridique/dependencies-2026-11-16.md). CI/revue du nouvel arbre requises avant fusion vers qualification ; aucun main ni déploiement.
+
+## 22 novembre 2026 — cycles React et contenus vérifiables
+
+Les 16 erreurs globales React ont été reproduites sur `71b14b14bbcadacffbf4e5ada3b5b740bfbb4650`. Les chargements synchrones sont déplacés vers les événements qui les déclenchent ; les réponses asynchrones, erreurs et décodages tardifs sont annulés ou ignorés. Les formulaires conservent leurs brouillons au bon niveau, les aperçus sont libérés et l’horloge d’abonnement est actualisée hors du rendu.
+
+83 tests Node PASS : 16 admin, 19 Financer, 36 lectures de tableaux de bord, 8 documents, 4 scanner. Les 36 tests des nouvelles lectures donnent 10 PASS / 26 FAIL sur les sources de départ, puis 36 PASS sur le candidat. TypeScript de tous les composants modifiés PASS. Un lint global après correction donne 0 erreur / 2 avertissements de rechargement complet conservés. Quatre autres tentatives locales de lint global ont été interrompues avec le code 137, sans cause affirmée ; elles ne valent pas une vérification réussie. Les derniers tests navigateur et leurs composants passent le lint ciblé ; le lint global exact du candidat final reste à confirmer en CI.
+
+36 scénarios Chromium sont intégrés à la CI avec réponses locales contrôlées et blocage des requêtes externes. Exécution distante du nouveau candidat encore à confirmer. Aucun accès privé SMARANA confirmé dans le workflow JURIS ; build applicatif complet, fournisseurs, données distantes et production restent hors de cette qualification. Aucun appel payant.
+
+Le lot de contenu retire le classement fixe et le témoignage non vérifié, les délais de résultat non sourcés et l’affirmation d’alerte automatique des équipes. Les statistiques personnelles continuent de venir de l’API existante, sans publier les données privées des autres ambassadeurs.
+
+Revue du lot : deux risques supplémentaires confirmés et corrigés. Une analyse OCR est désormais annulée au reset, à une nouvelle sélection et à la sortie ; elle ne peut réafficher ni résultat ni erreur tardive. Le consommateur réel `chat/[caseId]/page.tsx` réutilise le hook sans clé : le hook efface désormais l’ancien dossier et ses messages sur une autre route, annule les lectures/flux obsolètes et conserve le dossier créé lorsqu’on adopte son ID pendant le flux. Les contrats POST/SSE et les actions de réponse sont conservés.
+
+Contrôles source sur le candidat de revue précédent : scanner 4/11 PASS, chat 0/6 PASS ; nouveau candidat 11/11 et 6/6 PASS. Total local 96/96 tests Node, sans échec ni skip ; types et lint ciblé du delta PASS. 45 scénarios Chromium attendus en CI, dont abandon d’analyse, ancien dossier → nouveau et adoption d’un ID créé pendant son flux. Aucun appel fournisseur.
+
+Dernier contrôle de revue : `case_created` ne vaut plus chargement du dossier. Le GET attend la fin du flux et reprend si le refresh final a échoué (503). Régression source 6/7 avant → 7/7 après ; total 97/97 Node PASS, types et lint ciblé PASS. La fixture navigateur couvre l’adoption pendant le flux suivie du 503 ; 51 scénarios attendus en CI.
+
+## Réconciliation du 22 novembre 2026
+
+Avant publication, la garde de tête a détecté le merge concurrent PR7 `dd53211e40076de807108d8f8cfe8760c149a506`, deux commits après `71b14b14`. Le candidat initial est conservé en `79ca2b7` ; une copie isolée rapproche les deux travaux par fusion trois voies. Les quatre conflits sont résolus explicitement : hook, workflow, configuration de typage et historique des erreurs. Les dix fichiers concurrents sans recouvrement restent identiques ; six fichiers combinent les apports.
+
+Le lecteur SSE, le blocage d’envoi pendant loading, l’admission d’un seul POST, la validation du brouillon StrictMode, les 13 tests natifs et les 36 scénarios navigateur concurrents sont conservés. Le hook reçoit seulement l’adoption d’identité et le rattrapage après refresh 503 revus dans ce lot. Qualification réunie : 110/110 tests Node de cycles de vie PASS, types ciblés PASS, 87 scénarios Chromium collectés avant exécution CI.
+
+Horodatage : le parser amont 0.4.9 acceptait des longueurs internes tronquées ou non minimales malgré assertEof. Le timestamp et le reçu sauvegardé doivent désormais se resérialiser à l’identique après les contrôles de taille/arbre ; le contrôle des reçus est exécuté avant tout HTTP. Suite OTS complète : 17/27 avant, 27/27 après, cinq fixtures officielles conservées. Aucun ancrage Bitcoin n’est déduit du seul parsing, aucun calendrier ou fournisseur réel n’a été appelé.
+
+La copie réconciliée permet également un lint global complet : commande canonique sur tout le dépôt, sortie 0, aucune erreur et deux avertissements de navigation conservés. Ce résultat remplace le statut local incomplet des quatre tentatives interrompues de la copie précédente.

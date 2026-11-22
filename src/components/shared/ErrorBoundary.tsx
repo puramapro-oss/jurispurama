@@ -46,8 +46,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               Une erreur est survenue
             </h2>
             <p className="mb-6 text-sm text-[var(--text-secondary)]">
-              Désolé pour la gêne — nos équipes ont été prévenues. Tu peux
-              réessayer ou revenir à l&apos;accueil.
+              Tu peux réessayer ou revenir à l&apos;accueil.
             </p>
             <div className="flex gap-3 justify-center">
               <button

@@ -40,6 +40,7 @@ export default function SendEmailForm({
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Input
+          id="send-recipient-name"
           label="Nom du destinataire"
           value={recEmailName}
           onChange={(e) => onRecEmailNameChange(e.target.value)}
@@ -47,6 +48,7 @@ export default function SendEmailForm({
           required
         />
         <Input
+          id="send-recipient-email"
           label="Email du destinataire"
           type="email"
           value={recEmail}
@@ -56,15 +58,17 @@ export default function SendEmailForm({
         />
       </div>
       <Input
+        id="send-subject"
         label="Objet"
         value={subject}
         onChange={(e) => onSubjectChange(e.target.value)}
       />
       <div>
-        <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
+        <label htmlFor="send-message" className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">
           Message (facultatif)
         </label>
         <textarea
+          id="send-message"
           value={bodyMessage}
           onChange={(e) => onBodyMessageChange(e.target.value)}
           rows={4}

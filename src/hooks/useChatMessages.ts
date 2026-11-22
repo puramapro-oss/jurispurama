@@ -34,39 +34,46 @@ export function useChatMessages(
   const [loading, setLoading] = useState(initialCaseId !== 'new')
   const [streaming, setStreaming] = useState(false)
   const [errored, setErrored] = useState<string | null>(null)
+  const [conversationVersion, setConversationVersion] = useState(0)
 
   const scopeRef = useRef<AbortController | null>(null)
   const streamRef = useRef<AbortController | null>(null)
   const messageSequence = useRef(0)
+  const loadedCaseRef = useRef<string | null>(null)
 
   if (sourceId !== initialCaseId) {
     setSourceId(initialCaseId)
-    setCaseId(initialCaseId === 'new' ? null : initialCaseId)
-    setCaseRow(null)
-    setDocuments([])
-    setMessages([])
-    setLoading(initialCaseId !== 'new')
-    setStreaming(false)
-    setErrored(null)
+    // Adopting the ID just created by this stream keeps the same conversation.
+    if (initialCaseId !== caseId) {
+      setConversationVersion(version => version + 1)
+      setCaseId(initialCaseId === 'new' ? null : initialCaseId)
+      setCaseRow(null)
+      setDocuments([])
+      setMessages([])
+      setLoading(initialCaseId !== 'new')
+      setStreaming(false)
+      setErrored(null)
+    }
   }
 
   useEffect(() => {
+    loadedCaseRef.current = null
     const scope = new AbortController()
     scopeRef.current = scope
     return () => {
       scope.abort()
       if (scopeRef.current === scope) scopeRef.current = null
     }
-  }, [initialCaseId])
+  }, [conversationVersion])
 
-  // Load case on mount
+  // Load on mount or after a streamed case's final refresh fails.
   useEffect(() => {
-    if (initialCaseId === 'new') {
-      return
-    }
+    const readCaseId = initialCaseId === 'new' ? caseId : initialCaseId
+    if (!readCaseId || streaming || loadedCaseRef.current === readCaseId) return
+    loadedCaseRef.current = null
     const controller = new AbortController()
     let frame: number | undefined
-    fetch(`/api/cases/${initialCaseId}`, { cache: 'no-store', signal: controller.signal })
+    fetch(`/api/cases/${readCaseId}`, { cache: 'no-store', signal: controller.signal })
       .then(async (r) => {
         if (controller.signal.aborted) return null
         if (!r.ok) {
@@ -84,6 +91,7 @@ export function useChatMessages(
       })
       .then((data) => {
         if (controller.signal.aborted || !data) return
+        loadedCaseRef.current = data.case.id
         setCaseRow(data.case)
         setDocuments(data.documents ?? [])
         setMessages(
@@ -110,7 +118,7 @@ export function useChatMessages(
       controller.abort()
       if (frame !== undefined) cancelAnimationFrame(frame)
     }
-  }, [initialCaseId, scrollToBottom])
+  }, [initialCaseId, caseId, scrollToBottom, streaming])
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -223,6 +231,7 @@ export function useChatMessages(
               documents?: JurisDocumentLite[]
             }
             if (!current()) return
+            loadedCaseRef.current = fresh.case.id
             setCaseRow(fresh.case)
             setDocuments(fresh.documents ?? [])
           }

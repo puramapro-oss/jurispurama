@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import SignModal from '@/components/documents/SignModal'
@@ -43,38 +43,27 @@ interface CaseSummary {
 }
 
 export default function DocumentDetailPage() {
-  const router = useRouter()
   const params = useParams<{ id: string }>()
-  const id = params.id
+  return <DocumentDetail key={params.id} id={params.id} />
+}
+
+function DocumentDetail({ id }: { id: string }) {
+  const router = useRouter()
   const [doc, setDoc] = useState<DocumentRow | null>(null)
   const [caseRow, setCaseRow] = useState<CaseSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [regenLoading, setRegenLoading] = useState(false)
   const [signOpen, setSignOpen] = useState(false)
   const [sendOpen, setSendOpen] = useState(false)
+  const requestRef = useRef<AbortController | null>(null)
 
   const refetch = useCallback(() => {
-    fetch(`/api/documents/${id}`, { cache: 'no-store' })
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    return fetch(`/api/documents/${id}`, { cache: 'no-store', signal: controller.signal })
       .then(async (r) => {
-        if (!r.ok) throw new Error('load')
-        return (await r.json()) as {
-          document: DocumentRow
-          case: CaseSummary
-        }
-      })
-      .then((data) => {
-        setDoc(data.document)
-        setCaseRow(data.case)
-      })
-      .catch(() => {
-        toast.error('Impossible de charger le document.')
-      })
-  }, [id])
-
-  useEffect(() => {
-    let active = true
-    fetch(`/api/documents/${id}`, { cache: 'no-store' })
-      .then(async (r) => {
+        if (controller.signal.aborted) return null
         if (!r.ok) {
           if (r.status === 404) {
             toast.error('Document introuvable.')
@@ -89,31 +78,29 @@ export default function DocumentDetailPage() {
         }
       })
       .then((data) => {
-        if (!active || !data) return
+        if (controller.signal.aborted || !data) return
         setDoc(data.document)
         setCaseRow(data.case)
+        const hash = window.location.hash.replace('#', '')
+        if (hash === 'sign' && data.document.signature_status !== 'signed') {
+          setSignOpen(true)
+        } else if (hash === 'send-email' || hash === 'send-recommande') {
+          setSendOpen(true)
+        }
+        if (hash) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        }
       })
       .catch(() => {
-        if (active) toast.error('Impossible de charger le document.')
+        if (!controller.signal.aborted) toast.error('Impossible de charger le document.')
       })
-      .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
   }, [id, router])
 
   useEffect(() => {
-    if (loading || !doc) return
-    if (typeof window === 'undefined') return
-    const hash = window.location.hash.replace('#', '')
-    if (!hash) return
-    if (hash === 'sign' && doc.signature_status !== 'signed') {
-      setSignOpen(true)
-    } else if (hash === 'send-email' || hash === 'send-recommande') {
-      setSendOpen(true)
-    }
-    window.history.replaceState(null, '', window.location.pathname)
-  }, [loading, doc])
+    void refetch()
+    return () => requestRef.current?.abort()
+  }, [refetch])
 
   const handleDelete = useCallback(async () => {
     if (!doc) return
