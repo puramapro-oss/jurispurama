@@ -10,6 +10,6 @@ name: 07 — Pricing page
       - assertVisible: "Le bon plan pour ton cabinet."
       - assertVisible: "Essentiel"
       - assertVisible: "Pro"
-      - assertVisible: "Cabinet"
+      - assertVisible: "Premium"
       - assertVisible: "POPULAIRE"
       - takeScreenshot: 07-pricing

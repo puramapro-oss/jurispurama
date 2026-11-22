@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -12,27 +12,18 @@ import { Button } from "@/components/Button";
 import { api, ApiError } from "@/lib/api";
 import { FolderOpen, Plus } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/store/auth";
+import { CASE_STATUS_LABELS, CASE_TYPE_LABELS } from "../../../src/lib/case-helpers";
+import type { JurisCase } from "../../../src/types";
 
-type Case = {
-  id: string;
-  title: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-};
+type Case = Pick<JurisCase, "id" | "type" | "summary" | "status" | "created_at" | "updated_at">;
 
 type CasesResponse = { cases: Case[] };
-
-const STATUS_LABEL: Record<string, string> = {
-  draft: "Brouillon",
-  active: "En cours",
-  pending: "En attente",
-  closed: "Clos",
-};
 
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
     return d.toLocaleDateString("fr-FR", {
       day: "2-digit",
       month: "short",
@@ -45,30 +36,52 @@ function formatDate(iso: string): string {
 
 export default function DossiersScreen() {
   const router = useRouter();
-  const [cases, setCases] = useState<Case[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const userId = useAuth((state) => state.user?.id ?? null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const [result, setResult] = useState<{
+    owner: string | null;
+    cases: Case[];
+    loading: boolean;
+    refreshing: boolean;
+    error: string | null;
+  }>({ owner: userId, cases: [], loading: true, refreshing: false, error: null });
+  // Hide the previous account's data immediately, before the next effect runs.
+  const empty = { owner: userId, cases: [], loading: !!userId, refreshing: false,
+    error: userId ? null : "Reconnecte-toi pour voir tes dossiers." };
+  if (result.owner !== userId) setResult(empty);
+  const { cases, loading, refreshing, error } = !userId || result.owner !== userId ? empty : result;
 
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await api<CasesResponse>("/api/cases");
-      setCases(data.cases ?? []);
-    } catch (e) {
+  const load = useCallback(() => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const isCurrent = () => activeRequest.current === controller &&
+      !controller.signal.aborted && (useAuth.getState().user?.id ?? null) === userId;
+    if (!userId) {
+      activeRequest.current = null;
+      return;
+    }
+    return api<CasesResponse>("/api/cases", { signal: controller.signal }).then((data) => {
+      if (!isCurrent()) return;
+      setResult({ owner: userId, cases: data.cases ?? [], loading: false, refreshing: false, error: null });
+    }).catch((e) => {
+      if (!isCurrent()) return;
       const msg =
         e instanceof ApiError && e.status === 401
           ? "Reconnecte-toi pour voir tes dossiers."
           : "Chargement impossible. Tire pour rafraîchir.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+      setResult((previous) => ({ ...previous, owner: userId, error: msg, loading: false, refreshing: false }));
+    }).finally(() => {
+      if (activeRequest.current === controller) activeRequest.current = null;
+    });
+  }, [userId]);
 
   useEffect(() => {
-    load();
+    void load();
+    return () => {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+    };
   }, [load]);
 
   if (loading) {
@@ -131,8 +144,8 @@ export default function DossiersScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              setRefreshing(true);
-              load();
+              setResult((previous) => ({ ...previous, owner: userId, error: null, refreshing: true }));
+              void load();
             }}
             tintColor="#C9A84C"
           />
@@ -150,7 +163,7 @@ export default function DossiersScreen() {
                     marginTop: 12,
                   }}
                 >
-                  Aucun dossier pour l'instant
+                  Aucun dossier pour l’instant
                 </Text>
                 <Text
                   style={{
@@ -205,12 +218,12 @@ export default function DossiersScreen() {
                   }}
                   numberOfLines={1}
                 >
-                  {item.title || "Dossier sans titre"}
+                  {item.summary?.trim() || CASE_TYPE_LABELS[item.type]?.label || "Dossier sans résumé"}
                 </Text>
                 <Text
                   style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}
                 >
-                  {STATUS_LABEL[item.status] ?? item.status} ·{" "}
+                  {CASE_STATUS_LABELS[item.status]?.label ?? item.status} ·{" "}
                   {formatDate(item.updated_at)}
                 </Text>
               </View>

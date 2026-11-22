@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@anthropic-ai/sdk": "0.82.0",
     "@supabase/supabase-js": "2.103.0",
+    "opentimestamps": "0.4.9",
     "stripe": "22.0.1",
-    "zod": "4.6.6",
-    "opentimestamps": "0.4.9"
+    "zod": "4.6.6"
   },
   "overrides": {
     "form-data": "^4.0.4",

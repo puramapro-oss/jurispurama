@@ -129,3 +129,28 @@ test('a confirmed terminal event settles without waiting for the transport to cl
     await task
   }
 })
+
+test('a native AbortSignal without throwIfAborted can read the existing SSE protocol', async () => {
+  const controller = new AbortController(), events = []
+  Object.defineProperty(controller.signal, 'throwIfAborted', { value: undefined })
+  const body = new ReadableStream({ start(stream) {
+    stream.enqueue(encode('data: {"type":"text","content":"Échéance"}\n\ndata: {"type":"done"}\n\n'))
+    stream.close()
+  } })
+  await readChatStream(body, controller.signal, event => events.push(event))
+  assert.deepEqual(events.map(event => event.type), ['text', 'done'])
+  assert.equal(body.locked, false)
+})
+
+test('an older native signal without reason retains explicit cancellation and releases the reader', async () => {
+  const signal = new EventTarget()
+  signal.aborted = false
+  let cancellations = 0
+  const body = new ReadableStream({ cancel() { cancellations++ } })
+  const task = readChatStream(body, signal, () => assert.fail('obsolete native event'))
+  signal.aborted = true
+  signal.dispatchEvent(new Event('abort'))
+  await assert.rejects(task, { name: 'AbortError' })
+  assert.equal(cancellations, 1)
+  assert.equal(body.locked, false)
+})

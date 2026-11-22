@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createRequestSupabaseClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase'
 import { APP_DOMAIN } from '@/lib/constants'
 
@@ -20,11 +20,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Action inconnue.' }, { status: 400 })
   }
 
-  const supabase = await createServerSupabaseClient()
+  const requestClient = await createRequestSupabaseClient(req)
+  if (!requestClient) return NextResponse.json({ error: 'Auth requise' }, { status: 401 })
+  const { client: supabase, accessToken } = requestClient
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Auth requise' }, { status: 401 })
+    error: authError,
+  } = await supabase.auth.getUser(accessToken)
+  if (authError || !user) return NextResponse.json({ error: 'Auth requise' }, { status: 401 })
 
   const { data: profile } = await supabase
     .from('jurispurama_users')
@@ -77,11 +80,19 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const requestClient = await createRequestSupabaseClient(req)
+  if (!requestClient) {
+    return NextResponse.json(
+      { error: 'Connecte-toi pour gérer ton abonnement.' },
+      { status: 401 }
+    )
+  }
+  const { client: supabase, accessToken } = requestClient
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
+    error: authError,
+  } = await supabase.auth.getUser(accessToken)
+  if (authError || !user) {
     return NextResponse.json(
       { error: 'Connecte-toi pour gérer ton abonnement.' },
       { status: 401 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
@@ -12,19 +12,38 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const requestRef = useRef<symbol | null>(null)
+  const mountedRef = useRef(false)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false; requestRef.current = null }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email) return
+    if (!email.trim() || requestRef.current) return
+    const request = Symbol('password-recovery-email')
+    requestRef.current = request
     setLoading(true)
-    const { error } = await resetPassword(email)
-    setLoading(false)
-    if (error) {
-      toast.error('Envoi impossible : ' + error.message)
-      return
+    const isCurrent = () => mountedRef.current && requestRef.current === request
+    try {
+      const { error } = await resetPassword(email.trim())
+      if (!isCurrent()) return
+      if (error) {
+        toast.error('Envoi impossible. Vérifie ta connexion et réessaie.')
+        return
+      }
+      setSent(true)
+      toast.success('Demande de réinitialisation envoyée')
+    } catch {
+      if (isCurrent()) toast.error('Envoi impossible. Vérifie ta connexion et réessaie.')
+    } finally {
+      if (requestRef.current === request) {
+        requestRef.current = null
+        if (mountedRef.current) setLoading(false)
+      }
     }
-    setSent(true)
-    toast.success('Email de réinitialisation envoyé')
   }
 
   return (
@@ -43,8 +62,8 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <div className="mb-4 text-5xl">📬</div>
             <p className="mb-6 text-sm text-[var(--text-secondary)]">
-              Un email a été envoyé à <strong>{email}</strong>. Clique sur le
-              lien reçu pour choisir un nouveau mot de passe.
+              Si un compte correspond à <strong>{email.trim()}</strong>, tu recevras
+              un lien pour choisir un nouveau mot de passe. Ouvre-le dans ce navigateur.
             </p>
             <Link
               href="/login"
@@ -64,6 +83,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
             <Button
               type="submit"

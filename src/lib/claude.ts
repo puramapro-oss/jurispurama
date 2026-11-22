@@ -78,6 +78,10 @@ export interface ClaudeCallOptions {
   userId?: string
 }
 
+export interface ClaudeStreamOptions extends ClaudeCallOptions {
+  signal?: AbortSignal
+}
+
 /**
  * Non-streaming call. Returns the full text response.
  * Use for short / structured calls (e.g. title generation).
@@ -132,8 +136,9 @@ export async function askClaude(opts: ClaudeCallOptions): Promise<string> {
  * HORS PÉRIMÈTRE smarana (streaming non supporté) — SDK direct uniquement.
  */
 export async function* streamClaude(
-  opts: ClaudeCallOptions
+  opts: ClaudeStreamOptions
 ): AsyncGenerator<string, void, unknown> {
+  opts.signal?.throwIfAborted()
   const client = getAnthropic()
   const stream = client.messages.stream({
     model: opts.model ?? DEFAULT_MODEL,
@@ -141,14 +146,22 @@ export async function* streamClaude(
     temperature: opts.temperature ?? 0.5,
     system: opts.system,
     messages: toAnthropicMessages(opts.messages),
-  })
-  for await (const event of stream) {
-    if (
-      event.type === 'content_block_delta' &&
-      event.delta.type === 'text_delta'
-    ) {
-      yield event.delta.text
+  }, { signal: opts.signal })
+  let completed = false
+  try {
+    for await (const event of stream) {
+      opts.signal?.throwIfAborted()
+      if (
+        event.type === 'content_block_delta' &&
+        event.delta.type === 'text_delta'
+      ) {
+        yield event.delta.text
+      }
     }
+    opts.signal?.throwIfAborted()
+    completed = true
+  } finally {
+    if (!completed) stream.abort()
   }
 }
 

@@ -12,7 +12,7 @@ export function useAuth() {
   const [profile, setProfile] = useState<JurisUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const [supabase] = useState(createClient)
 
   useEffect(() => {
     let active = true
@@ -190,7 +190,7 @@ export function useAuth() {
   const resetPassword = useCallback(
     async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       })
       return { error }
     },

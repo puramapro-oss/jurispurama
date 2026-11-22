@@ -7,11 +7,12 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import { safeAuthRedirect } from '@/lib/auth-redirect'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = safeAuthRedirect(searchParams.get('next'))
   const { signInWithEmail, signInWithGoogle } = useAuth()
 
   const [email, setEmail] = useState('')

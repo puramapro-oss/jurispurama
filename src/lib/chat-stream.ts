@@ -14,6 +14,13 @@ export async function readChatStream(
 ) {
   const reader = body.getReader()
   const decoder = new TextDecoder('utf-8')
+  // React Native's AbortSignal does not always expose throwIfAborted().
+  const throwIfAborted = () => {
+    if (!signal.aborted) return
+    const fallback = new Error('La lecture a été annulée.')
+    fallback.name = 'AbortError'
+    throw signal.reason ?? fallback
+  }
   let buffer = ''
   let finished = false
   let cancelled = false
@@ -25,10 +32,10 @@ export async function readChatStream(
   }
   signal.addEventListener('abort', cancel, { once: true })
   try {
-    signal.throwIfAborted()
+    throwIfAborted()
     while (true) {
       const { done, value } = await reader.read()
-      signal.throwIfAborted()
+      throwIfAborted()
       if (done) {
         finished = true
         throw new Error('La réponse a été interrompue. Tu peux réessayer.')
@@ -37,14 +44,14 @@ export async function readChatStream(
       const parts = buffer.split('\n\n')
       buffer = parts.pop() ?? ''
       for (const part of parts) {
-        signal.throwIfAborted()
+        throwIfAborted()
         const line = part.trim()
         if (!line.startsWith('data:')) continue
         const payload = line.slice(5).trim()
         if (!payload || payload === '[DONE]') continue
         const event = JSON.parse(payload) as ChatStreamEvent
         onEvent(event)
-        signal.throwIfAborted()
+        throwIfAborted()
         // The route sends `done` after its work, then a redundant [DONE] marker.
         // A transport EOF on its own does not confirm that the response completed.
         if (event.type === 'done') return

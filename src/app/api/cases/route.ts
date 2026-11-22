@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createRequestSupabaseClient } from '@/lib/supabase-server'
 import type { CaseStatus, CaseType } from '@/types'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -37,11 +37,14 @@ function unauthorized() {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const requestClient = await createRequestSupabaseClient(req)
+  if (!requestClient) return unauthorized()
+  const { client: supabase, accessToken } = requestClient
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return unauthorized()
+    error: authError,
+  } = await supabase.auth.getUser(accessToken)
+  if (authError || !user) return unauthorized()
 
   const { data: profile } = await supabase
     .from('jurispurama_users')
@@ -102,11 +105,14 @@ const postSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const requestClient = await createRequestSupabaseClient(req)
+  if (!requestClient) return unauthorized()
+  const { client: supabase, accessToken } = requestClient
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return unauthorized()
+    error: authError,
+  } = await supabase.auth.getUser(accessToken)
+  if (authError || !user) return unauthorized()
 
   const { data: profile } = await supabase
     .from('jurispurama_users')

@@ -33,6 +33,10 @@
     "../../src/app/(dashboard)/points/page.tsx",
     "../../src/app/(dashboard)/settings/abonnement/page.tsx",
     "../../src/app/(dashboard)/wallet/page.tsx",
+    "../../src/app/(auth)/forgot-password/page.tsx",
+    "../../src/app/(auth)/update-password/page.tsx",
+    "../../src/app/(auth)/login/page.tsx",
+    "../../src/app/auth/callback/route.ts",
     "../../src/components/shared/ErrorBoundary.tsx",
     "../../src/lib/ots-core.ts",
     "../../playwright.config.ts"

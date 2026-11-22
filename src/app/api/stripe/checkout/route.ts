@@ -8,7 +8,7 @@ import {
   type PlanSlug,
   type BillingCycle,
 } from '@/lib/stripe'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createRequestSupabaseClient } from '@/lib/supabase-server'
 import { APP_DOMAIN } from '@/lib/constants'
 import { PROMO_COOKIE_NAME } from '@/lib/cross-promo'
 
@@ -47,11 +47,19 @@ export async function POST(req: NextRequest) {
     idempotencyKey: string
   }
 
-  const supabase = await createServerSupabaseClient()
+  const requestClient = await createRequestSupabaseClient(req)
+  if (!requestClient) {
+    return NextResponse.json(
+      { error: 'Tu dois être connecté pour souscrire un abonnement.' },
+      { status: 401 }
+    )
+  }
+  const { client: supabase, accessToken } = requestClient
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
+    error: authError,
+  } = await supabase.auth.getUser(accessToken)
+  if (authError || !user) {
     return NextResponse.json(
       { error: 'Tu dois être connecté pour souscrire un abonnement.' },
       { status: 401 }

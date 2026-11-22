@@ -1,0 +1,3560 @@
+TAP version 13
+# (node:17) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:17) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# Subtest: two concurrent cron handlers claim a due request at most once
+ok 1 - two concurrent cron handlers claim a due request at most once
+  ---
+  duration_ms: 68.297546
+  type: 'test'
+  ...
+# Subtest: a request cancelled after the scan is not deleted
+ok 2 - a request cancelled after the scan is not deleted
+  ---
+  duration_ms: 3.994727
+  type: 'test'
+  ...
+# Subtest: a request postponed after the scan is not deleted
+ok 3 - a request postponed after the scan is not deleted
+  ---
+  duration_ms: 4.637327
+  type: 'test'
+  ...
+# Subtest: a request rescheduled but still due after the scan is not deleted
+ok 4 - a request rescheduled but still due after the scan is not deleted
+  ---
+  duration_ms: 4.225778
+  type: 'test'
+  ...
+# Subtest: a request user identity changed after the scan is not deleted
+ok 5 - a request user identity changed after the scan is not deleted
+  ---
+  duration_ms: 3.378436
+  type: 'test'
+  ...
+# Subtest: a request removed after the scan is not deleted
+ok 6 - a request removed after the scan is not deleted
+  ---
+  duration_ms: 3.387429
+  type: 'test'
+  ...
+# Subtest: unconfirmed claim undefined fails before auth deletion
+ok 7 - unconfirmed claim undefined fails before auth deletion
+  ---
+  duration_ms: 3.697227
+  type: 'test'
+  ...
+# Subtest: unconfirmed claim {} fails before auth deletion
+ok 8 - unconfirmed claim {} fails before auth deletion
+  ---
+  duration_ms: 16.659833
+  type: 'test'
+  ...
+# Subtest: unconfirmed claim {"id":"other-request","user_id":"fake-user-invalid-claim"} fails before auth deletion
+ok 9 - unconfirmed claim {"id":"other-request","user_id":"fake-user-invalid-claim"} fails before auth deletion
+  ---
+  duration_ms: 3.604209
+  type: 'test'
+  ...
+# Subtest: an auth cascade removing its request does not turn a deletion into a retry
+ok 10 - an auth cascade removing its request does not turn a deletion into a retry
+  ---
+  duration_ms: 3.805487
+  type: 'test'
+  ...
+# Subtest: the real cancellation handler winning before claim prevents deletion
+ok 11 - the real cancellation handler winning before claim prevents deletion
+  ---
+  duration_ms: 7.010466
+  type: 'test'
+  ...
+# Subtest: cancellation after claim reports conflict without pretending to stop deletion
+ok 12 - cancellation after claim reports conflict without pretending to stop deletion
+  ---
+  duration_ms: 5.73553
+  type: 'test'
+  ...
+# Subtest: cancellation changes only the authenticated user scheduled request
+ok 13 - cancellation changes only the authenticated user scheduled request
+  ---
+  duration_ms: 4.134844
+  type: 'test'
+  ...
+# Subtest: cancellation reports conflict for a executing request
+ok 14 - cancellation reports conflict for a executing request
+  ---
+  duration_ms: 2.775074
+  type: 'test'
+  ...
+# Subtest: cancellation reports conflict for a completed request
+ok 15 - cancellation reports conflict for a completed request
+  ---
+  duration_ms: 2.716307
+  type: 'test'
+  ...
+# Subtest: cancellation reports conflict for a cancelled request
+ok 16 - cancellation reports conflict for a cancelled request
+  ---
+  duration_ms: 2.559494
+  type: 'test'
+  ...
+# Subtest: cancellation reports conflict when no request exists
+ok 17 - cancellation reports conflict when no request exists
+  ---
+  duration_ms: 3.032635
+  type: 'test'
+  ...
+# Subtest: cancellation database failure is reported
+ok 18 - cancellation database failure is reported
+  ---
+  duration_ms: 3.327851
+  type: 'test'
+  ...
+# Subtest: cancellation does not accept an invalid receipt undefined
+ok 19 - cancellation does not accept an invalid receipt undefined
+  ---
+  duration_ms: 2.881731
+  type: 'test'
+  ...
+# Subtest: cancellation does not accept an invalid receipt {}
+ok 20 - cancellation does not accept an invalid receipt {}
+  ---
+  duration_ms: 2.627665
+  type: 'test'
+  ...
+# Subtest: cancellation does not accept an invalid receipt {"id":""}
+ok 21 - cancellation does not accept an invalid receipt {"id":""}
+  ---
+  duration_ms: 2.893298
+  type: 'test'
+  ...
+# Subtest: cancellation 401 refuses before any database write
+ok 22 - cancellation 401 refuses before any database write
+  ---
+  duration_ms: 3.092433
+  type: 'test'
+  ...
+# Subtest: cancellation 429 refuses before any database write
+ok 23 - cancellation 429 refuses before any database write
+  ---
+  duration_ms: 3.182516
+  type: 'test'
+  ...
+# (node:18) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:18) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# Subtest: POST cannot promise a new grace period after the cron has acquired the request
+ok 24 - POST cannot promise a new grace period after the cron has acquired the request
+  ---
+  duration_ms: 156.442668
+  type: 'test'
+  ...
+# Subtest: POST winning before cron acquisition postpones deletion
+ok 25 - POST winning before cron acquisition postpones deletion
+  ---
+  duration_ms: 7.287635
+  type: 'test'
+  ...
+# Subtest: a cron winning between POST read and write prevents rescheduling
+ok 26 - a cron winning between POST read and write prevents rescheduling
+  ---
+  duration_ms: 6.308137
+  type: 'test'
+  ...
+# Subtest: a cancellation winning between POST read and write is not undone
+ok 27 - a cancellation winning between POST read and write is not undone
+  ---
+  duration_ms: 4.410011
+  type: 'test'
+  ...
+# Subtest: POST refuses to overwrite a executing request
+ok 28 - POST refuses to overwrite a executing request
+  ---
+  duration_ms: 3.425535
+  type: 'test'
+  ...
+# Subtest: POST refuses to overwrite a completed request
+ok 29 - POST refuses to overwrite a completed request
+  ---
+  duration_ms: 5.32264
+  type: 'test'
+  ...
+# Subtest: POST may reschedule a cancelled request with a new grace period
+ok 30 - POST may reschedule a cancelled request with a new grace period
+  ---
+  duration_ms: 4.331294
+  type: 'test'
+  ...
+# Subtest: POST inserts the first request for its authenticated user
+ok 31 - POST inserts the first request for its authenticated user
+  ---
+  duration_ms: 4.067755
+  type: 'test'
+  ...
+# Subtest: concurrent POST creation has a single winner
+ok 32 - concurrent POST creation has a single winner
+  ---
+  duration_ms: 59.928
+  type: 'test'
+  ...
+# Subtest: concurrent POST rescheduling has a single winner
+ok 33 - concurrent POST rescheduling has a single winner
+  ---
+  duration_ms: 11.625149
+  type: 'test'
+  ...
+# Subtest: POST does not change another user request
+ok 34 - POST does not change another user request
+  ---
+  duration_ms: 3.021708
+  type: 'test'
+  ...
+# Subtest: POST refuses invalid or unauthorized input before DB access (400, {})
+ok 35 - POST refuses invalid or unauthorized input before DB access (400, {})
+  ---
+  duration_ms: 2.884906
+  type: 'test'
+  ...
+# Subtest: POST refuses invalid or unauthorized input before DB access (400, {})
+ok 36 - POST refuses invalid or unauthorized input before DB access (400, {})
+  ---
+  duration_ms: 2.726311
+  type: 'test'
+  ...
+# Subtest: POST refuses invalid or unauthorized input before DB access (401, {"authorized":false})
+ok 37 - POST refuses invalid or unauthorized input before DB access (401, {"authorized":false})
+  ---
+  duration_ms: 2.498284
+  type: 'test'
+  ...
+# Subtest: POST refuses invalid or unauthorized input before DB access (429, {"allowed":false})
+ok 38 - POST refuses invalid or unauthorized input before DB access (429, {"allowed":false})
+  ---
+  duration_ms: 2.410805
+  type: 'test'
+  ...
+# Subtest: POST database read failure is redacted and does not write
+ok 39 - POST database read failure is redacted and does not write
+  ---
+  duration_ms: 2.664079
+  type: 'test'
+  ...
+# (node:19) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:19) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# Subtest: the installed SDK scheduling receipt schedule-new yields HTTP 200
+ok 40 - the installed SDK scheduling receipt schedule-new yields HTTP 200
+  ---
+  duration_ms: 82.433237
+  type: 'test'
+  ...
+# Subtest: the installed SDK scheduling receipt schedule-existing yields HTTP 200
+ok 41 - the installed SDK scheduling receipt schedule-existing yields HTTP 200
+  ---
+  duration_ms: 10.682315
+  type: 'test'
+  ...
+# Subtest: the installed SDK scheduling receipt schedule-conflict yields HTTP 409
+ok 42 - the installed SDK scheduling receipt schedule-conflict yields HTTP 409
+  ---
+  duration_ms: 5.652538
+  type: 'test'
+  ...
+# Subtest: the installed SDK scheduling receipt schedule-lost yields HTTP 409
+ok 43 - the installed SDK scheduling receipt schedule-lost yields HTTP 409
+  ---
+  duration_ms: 4.926395
+  type: 'test'
+  ...
+# Subtest: the installed SDK scheduling receipt schedule-error yields HTTP 500
+ok 44 - the installed SDK scheduling receipt schedule-error yields HTTP 500
+  ---
+  duration_ms: 4.485532
+  type: 'test'
+  ...
+# Subtest: the installed SDK sends all claim filters and returns the acquired identity
+ok 45 - the installed SDK sends all claim filters and returns the acquired identity
+  ---
+  duration_ms: 8.175588
+  type: 'test'
+  ...
+# Subtest: the installed SDK treats a zero-row PATCH receipt as an unacquired claim
+ok 46 - the installed SDK treats a zero-row PATCH receipt as an unacquired claim
+  ---
+  duration_ms: 3.156928
+  type: 'test'
+  ...
+# Subtest: the installed SDK reports a rejected claim before deletion
+ok 47 - the installed SDK reports a rejected claim before deletion
+  ---
+  duration_ms: 3.390743
+  type: 'test'
+  ...
+# Subtest: the installed SDK cancellation receipt claimed yields HTTP 200
+ok 48 - the installed SDK cancellation receipt claimed yields HTTP 200
+  ---
+  duration_ms: 3.211269
+  type: 'test'
+  ...
+# Subtest: the installed SDK cancellation receipt zero yields HTTP 409
+ok 49 - the installed SDK cancellation receipt zero yields HTTP 409
+  ---
+  duration_ms: 3.561406
+  type: 'test'
+  ...
+# Subtest: the installed SDK cancellation receipt error yields HTTP 500
+ok 50 - the installed SDK cancellation receipt error yields HTTP 500
+  ---
+  duration_ms: 3.047325
+  type: 'test'
+  ...
+# Subtest: payments: preserves filters and completes the current read
+ok 51 - payments: preserves filters and completes the current read
+  ---
+  duration_ms: 193.495415
+  type: 'test'
+  ...
+# Subtest: payments: an obsolete response cannot overwrite the latest filter
+ok 52 - payments: an obsolete response cannot overwrite the latest filter
+  ---
+  duration_ms: 2.777667
+  type: 'test'
+  ...
+# Subtest: payments: a cancelled read neither clears active loading nor reports an error
+ok 53 - payments: a cancelled read neither clears active loading nor reports an error
+  ---
+  duration_ms: 2.932896
+  type: 'test'
+  ...
+# Subtest: payments: cancellation during JSON decoding suppresses late data
+ok 54 - payments: cancellation during JSON decoding suppresses late data
+  ---
+  duration_ms: 10.38793
+  type: 'test'
+  ...
+# Subtest: payments: a current network failure stops loading and shows a safe message
+ok 55 - payments: a current network failure stops loading and shows a safe message
+  ---
+  duration_ms: 1.842554
+  type: 'test'
+  ...
+# Subtest: payments: preserves the current HTTP error message
+ok 56 - payments: preserves the current HTTP error message
+  ---
+  duration_ms: 1.648457
+  type: 'test'
+  ...
+# Subtest: payments: effect cleanup aborts and ignores a late response
+ok 57 - payments: effect cleanup aborts and ignores a late response
+  ---
+  duration_ms: 1.712131
+  type: 'test'
+  ...
+# Subtest: users: preserves filters and completes the current read
+ok 58 - users: preserves filters and completes the current read
+  ---
+  duration_ms: 53.991973
+  type: 'test'
+  ...
+# Subtest: users: an obsolete response cannot overwrite the latest filter
+ok 59 - users: an obsolete response cannot overwrite the latest filter
+  ---
+  duration_ms: 4.28787
+  type: 'test'
+  ...
+# Subtest: users: a cancelled read neither clears active loading nor reports an error
+ok 60 - users: a cancelled read neither clears active loading nor reports an error
+  ---
+  duration_ms: 2.645982
+  type: 'test'
+  ...
+# Subtest: users: cancellation during JSON decoding suppresses late data
+ok 61 - users: cancellation during JSON decoding suppresses late data
+  ---
+  duration_ms: 2.780591
+  type: 'test'
+  ...
+# Subtest: users: a current network failure stops loading and shows a safe message
+ok 62 - users: a current network failure stops loading and shows a safe message
+  ---
+  duration_ms: 1.245401
+  type: 'test'
+  ...
+# Subtest: users: preserves the current HTTP error message
+ok 63 - users: preserves the current HTTP error message
+  ---
+  duration_ms: 1.147967
+  type: 'test'
+  ...
+# Subtest: users: effect cleanup aborts and ignores a late response
+ok 64 - users: effect cleanup aborts and ignores a late response
+  ---
+  duration_ms: 1.30546
+  type: 'test'
+  ...
+# Subtest: users: a plan update refreshes the current filters instead of its captured filters
+ok 65 - users: a plan update refreshes the current filters instead of its captured filters
+  ---
+  duration_ms: 3.93623
+  type: 'test'
+  ...
+# Subtest: users: finishing a plan update after cleanup does not start a new read
+ok 66 - users: finishing a plan update after cleanup does not start a new read
+  ---
+  duration_ms: 1.826791
+  type: 'test'
+  ...
+# (node:49) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/app/api/cron/check-ar-status/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: slow provider stops at 90 seconds, aborts GETs and preserves all unconfirmed rows
+ok 67 - slow provider stops at 90 seconds, aborts GETs and preserves all unconfirmed rows
+  ---
+  duration_ms: 30.036953
+  type: 'test'
+  ...
+# Subtest: last GET is capped to remaining 500ms and a later cron resumes only unconfirmed rows
+ok 68 - last GET is capped to remaining 500ms and a later cron resumes only unconfirmed rows
+  ---
+  duration_ms: 13.835407
+  type: 'test'
+  ...
+# Subtest: a stalled initial DB read is bounded before any provider call
+ok 69 - a stalled initial DB read is bounded before any provider call
+  ---
+  duration_ms: 1.655268
+  type: 'test'
+  ...
+# Subtest: a timed-out receipt write is unconfirmed, not counted or notified as persisted
+ok 70 - a timed-out receipt write is unconfirmed, not counted or notified as persisted
+  ---
+  duration_ms: 2.711099
+  type: 'test'
+  ...
+# Subtest: a provider reply arriving after timeout cannot later persist or notify a receipt
+ok 71 - a provider reply arriving after timeout cannot later persist or notify a receipt
+  ---
+  duration_ms: 2.287442
+  type: 'test'
+  ...
+# Subtest: a stalled email is bounded and reported uncertain without repeating a confirmed receipt
+ok 72 - a stalled email is bounded and reported uncertain without repeating a confirmed receipt
+  ---
+  duration_ms: 2.423222
+  type: 'test'
+  ...
+# Subtest: an explicit email failure remains partial and redacted after confirmed receipt
+ok 73 - an explicit email failure remains partial and redacted after confirmed receipt
+  ---
+  duration_ms: 2.55589
+  type: 'test'
+  ...
+# (node:57) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24-email.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: receipt commit followed by lost DB response is recovered from outbox on a fresh invocation
+ok 74 - receipt commit followed by lost DB response is recovered from outbox on a fresh invocation
+  ---
+  duration_ms: 30.487549
+  type: 'test'
+  ...
+# Subtest: lost email acknowledgement retries the same persisted payload/key and accepts only fenced DB completion
+ok 75 - lost email acknowledgement retries the same persisted payload/key and accepts only fenced DB completion
+  ---
+  duration_ms: 10.708454
+  type: 'test'
+  ...
+# Subtest: an available email is attempted before a slow tracking backlog consumes the shared budget
+ok 76 - an available email is attempted before a slow tracking backlog consumes the shared budget
+  ---
+  duration_ms: 11.620302
+  type: 'test'
+  ...
+# Subtest: route cap 200 leaves the remaining five claims for a subsequent cron
+ok 77 - route cap 200 leaves the remaining five claims for a subsequent cron
+  ---
+  duration_ms: 161.566684
+  type: 'test'
+  ...
+# Subtest: missing durable migration blocks all external work
+ok 78 - missing durable migration blocks all external work
+  ---
+  duration_ms: 1.02092
+  type: 'test'
+  ...
+# Subtest: email transport sends the exact stored JSON and idempotency header once
+ok 79 - email transport sends the exact stored JSON and idempotency header once
+  ---
+  duration_ms: 0.522092
+  type: 'test'
+  ...
+# Subtest: email cannot start without configuration, after expiry or after cancellation
+ok 80 - email cannot start without configuration, after expiry or after cancellation
+  ---
+  duration_ms: 0.964386
+  type: 'test'
+  ...
+# Subtest: email malformed/oversized responses are bounded and never confirmed
+ok 81 - email malformed/oversized responses are bounded and never confirmed
+  ---
+  duration_ms: 0.880012
+  type: 'test'
+  ...
+# Subtest: email idempotency conflicts require reconciliation, concurrent provider requests stay retryable, errors are redacted
+ok 82 - email idempotency conflicts require reconciliation, concurrent provider requests stay retryable, errors are redacted
+  ---
+  duration_ms: 0.83809
+  type: 'test'
+  ...
+# (node:65) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: official encrypted mail response is read through signed GET /api/mail
+ok 83 - official encrypted mail response is read through signed GET /api/mail
+  ---
+  duration_ms: 22.975412
+  type: 'test'
+  ...
+# (node:72) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: regression: unconfigured deposit must reject instead of returning SIM success
+ok 84 - regression: unconfigured deposit must reject instead of returning SIM success
+  ---
+  duration_ms: 1.632423
+  type: 'test'
+  ...
+# Subtest: regression: three hours never prove a simulated letter was received
+ok 85 - regression: three hours never prove a simulated letter was received
+  ---
+  duration_ms: 1.820041
+  type: 'test'
+  ...
+# (node:81) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24-protocol.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: send route without activation returns 503 without download, transport or writes
+ok 86 - send route without activation returns 503 without download, transport or writes
+  ---
+  duration_ms: 8.468472
+  type: 'test'
+  ...
+# Subtest: quota guard with explicit sender double blocks exhausted/unreadable quotas
+ok 87 - quota guard with explicit sender double blocks exhausted/unreadable quotas
+  ---
+  duration_ms: 2.34674
+  type: 'test'
+  ...
+# Subtest: existing tracking requires reconciliation instead of another deposit
+ok 88 - existing tracking requires reconciliation instead of another deposit
+  ---
+  duration_ms: 1.026928
+  type: 'test'
+  ...
+# Subtest: unconfirmed sender double cannot set sent status or notify success
+ok 89 - unconfirmed sender double cannot set sent status or notify success
+  ---
+  duration_ms: 4.514114
+  type: 'test'
+  ...
+# Subtest: explicit accepted sender double persists reference before success messages
+ok 90 - explicit accepted sender double persists reference before success messages
+  ---
+  duration_ms: 1.896854
+  type: 'test'
+  ...
+# Subtest: failed or absent local save after deposit returns reconciliation without success notifications
+ok 91 - failed or absent local save after deposit returns reconciliation without success notifications
+  ---
+  duration_ms: 1.921311
+  type: 'test'
+  ...
+# Subtest: cron without activation does not query or mutate a receipt
+ok 92 - cron without activation does not query or mutate a receipt
+  ---
+  duration_ms: 1.535961
+  type: 'test'
+  ...
+# Subtest: cron never upgrades a historical simulated deposit to received
+ok 93 - cron never upgrades a historical simulated deposit to received
+  ---
+  duration_ms: 2.118343
+  type: 'test'
+  ...
+# Subtest: cron isolates an unconfirmed response and processes the next receipt
+ok 94 - cron isolates an unconfirmed response and processes the next receipt
+  ---
+  duration_ms: 7.127289
+  type: 'test'
+  ...
+# Subtest: cron sends no receipt notification when its conditional update finds no row
+ok 95 - cron sends no receipt notification when its conditional update finds no row
+  ---
+  duration_ms: 1.397496
+  type: 'test'
+  ...
+# Subtest: cron reports failure when every provider status check fails
+ok 96 - cron reports failure when every provider status check fails
+  ---
+  duration_ms: 1.311019
+  type: 'test'
+  ...
+# Subtest: cron reports a failed receipt save without exposing database errors or notifying
+ok 97 - cron reports a failed receipt save without exposing database errors or notifying
+  ---
+  duration_ms: 1.090693
+  type: 'test'
+  ...
+# Subtest: real send route remains closed with complete transport configuration
+ok 98 - real send route remains closed with complete transport configuration
+  ---
+  duration_ms: 0.468082
+  type: 'test'
+  ...
+# (node:89) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: official public PHP encryption vectors agree byte for byte
+ok 99 - official public PHP encryption vectors agree byte for byte
+  ---
+  duration_ms: 4.930171
+  type: 'test'
+  ...
+# Subtest: French dates follow summer/winter time and reject ambiguous or impossible dates
+ok 100 - French dates follow summer/winter time and reject ambiguous or impossible dates
+  ---
+  duration_ms: 1.255837
+  type: 'test'
+  ...
+# Subtest: credentials and activation cannot open unqualified sending or checkout
+ok 101 - credentials and activation cannot open unqualified sending or checkout
+  ---
+  duration_ms: 1.486317
+  type: 'test'
+  ...
+# Subtest: tracking requires explicit activation plus both distinct credentials
+ok 102 - tracking requires explicit activation plus both distinct credentials
+  ---
+  duration_ms: 1.986367
+  type: 'test'
+  ...
+# Subtest: untrusted origins, credentials, ports, paths, fragments and queries fail before transport
+ok 103 - untrusted origins, credentials, ports, paths, fragments and queries fail before transport
+  ---
+  duration_ms: 2.309695
+  type: 'test'
+  ...
+# Subtest: simulations never become received and non-provider IDs never reach the network
+ok 104 - simulations never become received and non-provider IDs never reach the network
+  ---
+  duration_ms: 1.455151
+  type: 'test'
+  ...
+# Subtest: a missing or timezone-free local send time cannot establish a receipt
+ok 105 - a missing or timezone-free local send time cannot establish a receipt
+  ---
+  duration_ms: 0.488272
+  type: 'test'
+  ...
+# Subtest: known pending/failure/draft statuses never become received even with a view date
+ok 106 - known pending/failure/draft statuses never become received even with a view date
+  ---
+  duration_ms: 11.353408
+  type: 'test'
+  ...
+# Subtest: receipt requires matching numeric ID, LRE type, successful sending and plausible view date
+ok 107 - receipt requires matching numeric ID, LRE type, successful sending and plausible view date
+  ---
+  duration_ms: 10.396041
+  type: 'test'
+  ...
+# Subtest: confirmed receipt preserves provider time, accepting documented ar/AR spellings
+ok 108 - confirmed receipt preserves provider time, accepting documented ar/AR spellings
+  ---
+  duration_ms: 1.27121
+  type: 'test'
+  ...
+# Subtest: request uses signed official GET and disables redirects and caching
+ok 109 - request uses signed official GET and disables redirects and caching
+  ---
+  duration_ms: 0.682169
+  type: 'test'
+  ...
+# Subtest: plaintext errors, plaintext success, malformed/encrypted invalid envelopes stay unconfirmed
+ok 110 - plaintext errors, plaintext success, malformed/encrypted invalid envelopes stay unconfirmed
+  ---
+  duration_ms: 3.207432
+  type: 'test'
+  ...
+# Subtest: transport failures are redacted and not retried
+ok 111 - transport failures are redacted and not retried
+  ---
+  duration_ms: 0.848615
+  type: 'test'
+  ...
+# Subtest: an already-aborted caller cannot start a provider status request
+ok 112 - an already-aborted caller cannot start a provider status request
+  ---
+  duration_ms: 0.667337
+  type: 'test'
+  ...
+# Subtest: oversized provider responses stop before decryption
+ok 113 - oversized provider responses stop before decryption
+  ---
+  duration_ms: 2.235816
+  type: 'test'
+  ...
+# (node:95) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24-send-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: review regression: status must be a primitive string, without coercion
+ok 114 - review regression: status must be a primitive string, without coercion
+  ---
+  duration_ms: 6.058919
+  type: 'test'
+  ...
+# Subtest: runtime numeric sender ID is rejected before uploading or creating any mail
+ok 115 - runtime numeric sender ID is rejected before uploading or creating any mail
+  ---
+  duration_ms: 0.367564
+  type: 'test'
+  ...
+# Subtest: review regression: recipient status must match the submitted status in both directions
+ok 116 - review regression: recipient status must match the submitted status in both directions
+  ---
+  duration_ms: 1.496833
+  type: 'test'
+  ...
+# Subtest: review regression: attachments must contain exactly the uploaded file, once
+ok 117 - review regression: attachments must contain exactly the uploaded file, once
+  ---
+  duration_ms: 1.426309
+  type: 'test'
+  ...
+# Subtest: verified recipient name replacement and canonical attachment IDs remain accepted
+ok 118 - verified recipient name replacement and canonical attachment IDs remain accepted
+  ---
+  duration_ms: 1.895953
+  type: 'test'
+  ...
+# (node:105) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/ar24-send-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: qualified construction uploads PDF then sends one signed eIDAS /mail request
+ok 119 - qualified construction uploads PDF then sends one signed eIDAS /mail request
+  ---
+  duration_ms: 13.673448
+  type: 'test'
+  ...
+# Subtest: professional company and explicit OTP hash are preserved without guessing person names
+ok 120 - professional company and explicit OTP hash are preserved without guessing person names
+  ---
+  duration_ms: 0.745713
+  type: 'test'
+  ...
+# Subtest: missing sender, identity, recipient type/names/email, references or PDF are rejected before upload
+ok 121 - missing sender, identity, recipient type/names/email, references or PDF are rejected before upload
+  ---
+  duration_ms: 2.045525
+  type: 'test'
+  ...
+# Subtest: invalid upload reference prevents any mail creation
+ok 122 - invalid upload reference prevents any mail creation
+  ---
+  duration_ms: 1.351317
+  type: 'test'
+  ...
+# Subtest: drafts, unknown status, mismatched identities/attachment and invalid prices cannot establish deposit
+ok 123 - drafts, unknown status, mismatched identities/attachment and invalid prices cannot establish deposit
+  ---
+  duration_ms: 2.214744
+  type: 'test'
+  ...
+# Subtest: mail transport uncertainty is not retried and reveals no provider body or credentials
+ok 124 - mail transport uncertainty is not retried and reveals no provider body or credentials
+  ---
+  duration_ms: 2.125853
+  type: 'test'
+  ...
+# (node:111) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/app/auth/callback/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: PKCE callback preserves the internal normalized destination null
+ok 125 - PKCE callback preserves the internal normalized destination null
+  ---
+  duration_ms: 6.092949
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/dashboard"
+ok 126 - PKCE callback preserves the internal normalized destination "/dashboard"
+  ---
+  duration_ms: 0.922073
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/update-password"
+ok 127 - PKCE callback preserves the internal normalized destination "/update-password"
+  ---
+  duration_ms: 0.676621
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/cases/../dashboard?tab=active\#latest"
+ok 128 - PKCE callback preserves the internal normalized destination "/cases/../dashboard?tab=active\#latest"
+  ---
+  duration_ms: 0.695468
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/chat/11111111-1111-4111-8111-111111111111?draft=a%20b"
+ok 129 - PKCE callback preserves the internal normalized destination "/chat/11111111-1111-4111-8111-111111111111?draft=a%20b"
+  ---
+  duration_ms: 0.779553
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/recherche?q=https%3A%2F%2Fexample.invalid%2Ffoo\#résumé"
+ok 130 - PKCE callback preserves the internal normalized destination "/recherche?q=https%3A%2F%2Fexample.invalid%2Ffoo\#résumé"
+  ---
+  duration_ms: 0.670081
+  type: 'test'
+  ...
+# Subtest: PKCE callback preserves the internal normalized destination "/dossiers/caf%C3%A9?tri=r%C3%A9cent"
+ok 131 - PKCE callback preserves the internal normalized destination "/dossiers/caf%C3%A9?tri=r%C3%A9cent"
+  ---
+  duration_ms: 0.370818
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination ""
+ok 132 - PKCE callback refuses the unsafe destination ""
+  ---
+  duration_ms: 0.613127
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "dashboard"
+ok 133 - PKCE callback refuses the unsafe destination "dashboard"
+  ---
+  duration_ms: 0.359662
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "?next=//example.invalid"
+ok 134 - PKCE callback refuses the unsafe destination "?next=//example.invalid"
+  ---
+  duration_ms: 0.50729
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "\#fragment"
+ok 135 - PKCE callback refuses the unsafe destination "\#fragment"
+  ---
+  duration_ms: 0.239694
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "https://example.invalid/phishing"
+ok 136 - PKCE callback refuses the unsafe destination "https://example.invalid/phishing"
+  ---
+  duration_ms: 0.324029
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "http://example.invalid"
+ok 137 - PKCE callback refuses the unsafe destination "http://example.invalid"
+  ---
+  duration_ms: 0.185715
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "https://juris-fixture.invalid/dashboard"
+ok 138 - PKCE callback refuses the unsafe destination "https://juris-fixture.invalid/dashboard"
+  ---
+  duration_ms: 0.174808
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "//example.invalid/path"
+ok 139 - PKCE callback refuses the unsafe destination "//example.invalid/path"
+  ---
+  duration_ms: 0.292042
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "///example.invalid"
+ok 140 - PKCE callback refuses the unsafe destination "///example.invalid"
+  ---
+  duration_ms: 0.251151
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "//juris-fixture.invalid@evil.invalid"
+ok 141 - PKCE callback refuses the unsafe destination "//juris-fixture.invalid@evil.invalid"
+  ---
+  duration_ms: 0.200246
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/\\\\example.invalid"
+ok 142 - PKCE callback refuses the unsafe destination "/\\\\example.invalid"
+  ---
+  duration_ms: 0.195058
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "\\\\example.invalid"
+ok 143 - PKCE callback refuses the unsafe destination "\\\\example.invalid"
+  ---
+  duration_ms: 0.169631
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/safe\\\\..\\\\\\\\example.invalid"
+ok 144 - PKCE callback refuses the unsafe destination "/safe\\\\..\\\\\\\\example.invalid"
+  ---
+  duration_ms: 0.501011
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "javascript:alert(1)"
+ok 145 - PKCE callback refuses the unsafe destination "javascript:alert(1)"
+  ---
+  duration_ms: 0.331541
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "data:text/html,example"
+ok 146 - PKCE callback refuses the unsafe destination "data:text/html,example"
+  ---
+  duration_ms: 0.322456
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "\\n//example.invalid"
+ok 147 - PKCE callback refuses the unsafe destination "\\n//example.invalid"
+  ---
+  duration_ms: 0.180456
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/\\t/example.invalid"
+ok 148 - PKCE callback refuses the unsafe destination "/\\t/example.invalid"
+  ---
+  duration_ms: 0.150132
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/safe\\u0000"
+ok 149 - PKCE callback refuses the unsafe destination "/safe\\u0000"
+  ---
+  duration_ms: 0.197172
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%2fexample.invalid"
+ok 150 - PKCE callback refuses the unsafe destination "/%2fexample.invalid"
+  ---
+  duration_ms: 0.242479
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%2F%2Fexample.invalid"
+ok 151 - PKCE callback refuses the unsafe destination "/%2F%2Fexample.invalid"
+  ---
+  duration_ms: 0.29113
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%5cexample.invalid"
+ok 152 - PKCE callback refuses the unsafe destination "/%5cexample.invalid"
+  ---
+  duration_ms: 0.190913
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%255cexample.invalid"
+ok 153 - PKCE callback refuses the unsafe destination "/%255cexample.invalid"
+  ---
+  duration_ms: 0.258131
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%252fexample.invalid"
+ok 154 - PKCE callback refuses the unsafe destination "/%252fexample.invalid"
+  ---
+  duration_ms: 0.233896
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%25252fexample.invalid"
+ok 155 - PKCE callback refuses the unsafe destination "/%25252fexample.invalid"
+  ---
+  duration_ms: 0.172435
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%09/example.invalid"
+ok 156 - PKCE callback refuses the unsafe destination "/%09/example.invalid"
+  ---
+  duration_ms: 0.174308
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%0d%0aLocation:evil"
+ok 157 - PKCE callback refuses the unsafe destination "/%0d%0aLocation:evil"
+  ---
+  duration_ms: 0.177262
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/a/..//example.invalid"
+ok 158 - PKCE callback refuses the unsafe destination "/a/..//example.invalid"
+  ---
+  duration_ms: 0.235208
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/a/%2e%2e//example.invalid"
+ok 159 - PKCE callback refuses the unsafe destination "/a/%2e%2e//example.invalid"
+  ---
+  duration_ms: 0.32468
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/a/%252e%252e/%252fexample.invalid"
+ok 160 - PKCE callback refuses the unsafe destination "/a/%252e%252e/%252fexample.invalid"
+  ---
+  duration_ms: 0.211072
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%E0%A4%A"
+ok 161 - PKCE callback refuses the unsafe destination "/%E0%A4%A"
+  ---
+  duration_ms: 0.199995
+  type: 'test'
+  ...
+# Subtest: PKCE callback refuses the unsafe destination "/%zz"
+ok 162 - PKCE callback refuses the unsafe destination "/%zz"
+  ---
+  duration_ms: 0.207447
+  type: 'test'
+  ...
+# Subtest: a failed PKCE exchange retains the login failure path regardless of next
+ok 163 - a failed PKCE exchange retains the login failure path regardless of next
+  ---
+  duration_ms: 0.244191
+  type: 'test'
+  ...
+# Subtest: a callback without a code does not create an authenticated client
+ok 164 - a callback without a code does not create an authenticated client
+  ---
+  duration_ms: 0.233104
+  type: 'test'
+  ...
+# Subtest: an initial signed-in session loads its own existing profile
+ok 165 - an initial signed-in session loads its own existing profile
+  ---
+  duration_ms: 5.150165
+  type: 'test'
+  ...
+# Subtest: an initial signed-out session finishes without reading or creating a profile
+ok 166 - an initial signed-out session finishes without reading or creating a profile
+  ---
+  duration_ms: 1.167927
+  type: 'test'
+  ...
+# Subtest: a new current profile preserves its existing creation defaults
+ok 167 - a new current profile preserves its existing creation defaults
+  ---
+  duration_ms: 1.219864
+  type: 'test'
+  ...
+# Subtest: auth events return synchronously and defer profile I/O outside the auth callback
+ok 168 - auth events return synchronously and defer profile I/O outside the auth callback
+  ---
+  duration_ms: 0.996904
+  type: 'test'
+  ...
+# Subtest: sign-out prevents a late profile from restoring the old identity
+ok 169 - sign-out prevents a late profile from restoring the old identity
+  ---
+  duration_ms: 1.133326
+  type: 'test'
+  ...
+# Subtest: account-switch prevents a late profile from restoring the old identity
+ok 170 - account-switch prevents a late profile from restoring the old identity
+  ---
+  duration_ms: 1.026788
+  type: 'test'
+  ...
+# Subtest: unmount prevents a late profile from restoring the old identity
+ok 171 - unmount prevents a late profile from restoring the old identity
+  ---
+  duration_ms: 0.878008
+  type: 'test'
+  ...
+# Subtest: an old initial session cannot replace a more recent auth event
+ok 172 - an old initial session cannot replace a more recent auth event
+  ---
+  duration_ms: 1.089461
+  type: 'test'
+  ...
+# Subtest: a loaded profile is cleared immediately when the account changes
+ok 173 - a loaded profile is cleared immediately when the account changes
+  ---
+  duration_ms: 0.952348
+  type: 'test'
+  ...
+# Subtest: profile completion and repeated same-user events do not resubscribe or duplicate reads
+ok 174 - profile completion and repeated same-user events do not resubscribe or duplicate reads
+  ---
+  duration_ms: 1.323888
+  type: 'test'
+  ...
+# Subtest: token refresh publishes the latest session without a redundant profile read
+ok 175 - token refresh publishes the latest session without a redundant profile read
+  ---
+  duration_ms: 0.678453
+  type: 'test'
+  ...
+# Subtest: profile lookup errors do not create a new row and can be retried by a later auth event
+ok 176 - profile lookup errors do not create a new row and can be retried by a later auth event
+  ---
+  duration_ms: 0.742608
+  type: 'test'
+  ...
+# Subtest: only a confirmed missing current profile is created and a concurrent creation is reread
+ok 177 - only a confirmed missing current profile is created and a concurrent creation is reread
+  ---
+  duration_ms: 0.650171
+  type: 'test'
+  ...
+# Subtest: a missing old profile is never created after sign-out
+ok 178 - a missing old profile is never created after sign-out
+  ---
+  duration_ms: 0.580579
+  type: 'test'
+  ...
+# Subtest: cleanup cancels scheduled profile work and ignores an already queued auth notification
+ok 179 - cleanup cancels scheduled profile work and ignores an already queued auth notification
+  ---
+  duration_ms: 0.876175
+  type: 'test'
+  ...
+# Subtest: a rejected initial session ends loading without an unhandled rejection
+ok 180 - a rejected initial session ends loading without an unhandled rejection
+  ---
+  duration_ms: 3.038213
+  type: 'test'
+  ...
+# Subtest: a rejected profile transport ends loading without creating a row
+ok 181 - a rejected profile transport ends loading without creating a row
+  ---
+  duration_ms: 0.743529
+  type: 'test'
+  ...
+# Subtest: a late insert result cannot restore a profile after sign-out
+ok 182 - a late insert result cannot restore a profile after sign-out
+  ---
+  duration_ms: 0.727346
+  type: 'test'
+  ...
+# Subtest: token refresh during profile loading keeps that read current and updates the session
+ok 183 - token refresh during profile loading keeps that read current and updates the session
+  ---
+  duration_ms: 0.79126
+  type: 'test'
+  ...
+# Subtest: signing back into the same account still rejects a read from the previous session
+ok 184 - signing back into the same account still rejects a read from the previous session
+  ---
+  duration_ms: 0.869876
+  type: 'test'
+  ...
+# Subtest: StrictMode effect replay cancels the discarded effect before profile I/O
+ok 185 - StrictMode effect replay cancels the discarded effect before profile I/O
+  ---
+  duration_ms: 0.721808
+  type: 'test'
+  ...
+# Subtest: actual page preserves its draft and disables submission during history loading
+ok 186 - actual page preserves its draft and disables submission during history loading
+  ---
+  duration_ms: 2.982049
+  type: 'test'
+  ...
+# Subtest: actual page preserves its draft and disables submission during streaming
+ok 187 - actual page preserves its draft and disables submission during streaming
+  ---
+  duration_ms: 1.100887
+  type: 'test'
+  ...
+# Subtest: actual page sends and clears a valid draft once the history is ready
+ok 188 - actual page sends and clears a valid draft once the history is ready
+  ---
+  duration_ms: 1.134037
+  type: 'test'
+  ...
+# (node:137) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/supabase-server.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: absent Authorization preserves the browser cookie client and application schema
+ok 189 - absent Authorization preserves the browser cookie client and application schema
+  ---
+  duration_ms: 6.422346
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "" cannot use a valid browser session
+ok 190 - invalid explicit authorization "" cannot use a valid browser session
+  ---
+  duration_ms: 2.557932
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "Basic fixture" cannot use a valid browser session
+ok 191 - invalid explicit authorization "Basic fixture" cannot use a valid browser session
+  ---
+  duration_ms: 1.139455
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "Bearer" cannot use a valid browser session
+ok 192 - invalid explicit authorization "Bearer" cannot use a valid browser session
+  ---
+  duration_ms: 1.130462
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "Bearer token with spaces" cannot use a valid browser session
+ok 193 - invalid explicit authorization "Bearer token with spaces" cannot use a valid browser session
+  ---
+  duration_ms: 2.078873
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "Bearer first,Bearer second" cannot use a valid browser session
+ok 194 - invalid explicit authorization "Bearer first,Bearer second" cannot use a valid browser session
+  ---
+  duration_ms: 1.353051
+  type: 'test'
+  ...
+# Subtest: invalid explicit authorization "Bearer\\tfixture" cannot use a valid browser session
+ok 195 - invalid explicit authorization "Bearer\\tfixture" cannot use a valid browser session
+  ---
+  duration_ms: 0.590133
+  type: 'test'
+  ...
+# Subtest: Bearer verifies its token with the actual SDK and scopes the database client to that identity
+ok 196 - Bearer verifies its token with the actual SDK and scopes the database client to that identity
+  ---
+  duration_ms: 11.251526
+  type: 'test'
+  ...
+# Subtest: bEaReR verifies its token with the actual SDK and scopes the database client to that identity
+ok 197 - bEaReR verifies its token with the actual SDK and scopes the database client to that identity
+  ---
+  duration_ms: 5.15289
+  type: 'test'
+  ...
+# Subtest: invalid token from the actual SDK stops before tables or model, without cookie fallback
+ok 198 - invalid token from the actual SDK stops before tables or model, without cookie fallback
+  ---
+  duration_ms: 3.093224
+  type: 'test'
+  ...
+# (node:143) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/app/api/ai/chat/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: already cancelled request performs no authentication, database or model work
+ok 199 - already cancelled request performs no authentication, database or model work
+  ---
+  duration_ms: 6.802719
+  type: 'test'
+  ...
+# Subtest: cancellation during a history read stops before a user insert
+ok 200 - cancellation during a history read stops before a user insert
+  ---
+  duration_ms: 5.499572
+  type: 'test'
+  ...
+# Subtest: response cancellation aborts and drains a waiting model without assistant persistence
+ok 201 - response cancellation aborts and drains a waiting model without assistant persistence
+  ---
+  duration_ms: 4.083418
+  type: 'test'
+  ...
+# Subtest: request cancellation rejects its pending reader and drains the model
+ok 202 - request cancellation rejects its pending reader and drains the model
+  ---
+  duration_ms: 4.67376
+  type: 'test'
+  ...
+# Subtest: late provider work after response cancellation cannot enqueue or save
+ok 203 - late provider work after response cancellation cannot enqueue or save
+  ---
+  duration_ms: 13.350831
+  type: 'test'
+  ...
+# Subtest: cancellation at model completion prevents assistant insertion
+ok 204 - cancellation at model completion prevents assistant insertion
+  ---
+  duration_ms: 1.927279
+  type: 'test'
+  ...
+# Subtest: cancellation during assistant insertion cannot continue to case metadata or done
+ok 205 - cancellation during assistant insertion cannot continue to case metadata or done
+  ---
+  duration_ms: 20.216182
+  type: 'test'
+  ...
+# Subtest: a receipt already committed before cancellation remains stored but triggers no later metadata write
+ok 206 - a receipt already committed before cancellation remains stored but triggers no later metadata write
+  ---
+  duration_ms: 2.201736
+  type: 'test'
+  ...
+# Subtest: server deadline emits one public error and aborts a waiting model without persistence
+ok 207 - server deadline emits one public error and aborts a waiting model without persistence
+  ---
+  duration_ms: 2.755865
+  type: 'test'
+  ...
+# Subtest: successful completion removes the deadline and keeps its single confirmation
+ok 208 - successful completion removes the deadline and keeps its single confirmation
+  ---
+  duration_ms: 1.703809
+  type: 'test'
+  ...
+# (node:153) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/app/api/ai/chat/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: context includes the latest prior turns and current request for 0 stored messages
+ok 209 - context includes the latest prior turns and current request for 0 stored messages
+  ---
+  duration_ms: 15.361033
+  type: 'test'
+  ...
+# Subtest: context includes the latest prior turns and current request for 1 stored messages
+ok 210 - context includes the latest prior turns and current request for 1 stored messages
+  ---
+  duration_ms: 3.534115
+  type: 'test'
+  ...
+# Subtest: context includes the latest prior turns and current request for 39 stored messages
+ok 211 - context includes the latest prior turns and current request for 39 stored messages
+  ---
+  duration_ms: 4.576607
+  type: 'test'
+  ...
+# Subtest: context includes the latest prior turns and current request for 40 stored messages
+ok 212 - context includes the latest prior turns and current request for 40 stored messages
+  ---
+  duration_ms: 2.087126
+  type: 'test'
+  ...
+# Subtest: context includes the latest prior turns and current request for 81 stored messages
+ok 213 - context includes the latest prior turns and current request for 81 stored messages
+  ---
+  duration_ms: 2.376204
+  type: 'test'
+  ...
+# Subtest: a truncated context discards its orphan assistant prefix before calling the provider
+ok 214 - a truncated context discards its orphan assistant prefix before calling the provider
+  ---
+  duration_ms: 1.691631
+  type: 'test'
+  ...
+# Subtest: an assistant-only historical prefix never becomes a fabricated user turn
+ok 215 - an assistant-only historical prefix never becomes a fabricated user turn
+  ---
+  duration_ms: 1.911526
+  type: 'test'
+  ...
+# Subtest: timestamps tied across old messages still produce deterministic chronological context
+ok 216 - timestamps tied across old messages still produce deterministic chronological context
+  ---
+  duration_ms: 1.568709
+  type: 'test'
+  ...
+# Subtest: current images belong only to the current request after a long history
+ok 217 - current images belong only to the current request after a long history
+  ---
+  duration_ms: 3.231548
+  type: 'test'
+  ...
+# Subtest: same text in an old turn does not replace or duplicate the current request
+ok 218 - same text in an old turn does not replace or duplicate the current request
+  ---
+  duration_ms: 1.896164
+  type: 'test'
+  ...
+# Subtest: nonconversation roles do not consume the bounded history window
+ok 219 - nonconversation roles do not consume the bounded history window
+  ---
+  duration_ms: 1.945026
+  type: 'test'
+  ...
+# Subtest: unavailable history (database error) stops before user persistence or provider
+ok 220 - unavailable history (database error) stops before user persistence or provider
+  ---
+  duration_ms: 1.249908
+  type: 'test'
+  ...
+# Subtest: unavailable history (missing data) stops before user persistence or provider
+ok 221 - unavailable history (missing data) stops before user persistence or provider
+  ---
+  duration_ms: 0.566027
+  type: 'test'
+  ...
+# Subtest: unconfirmed user persistence (database error) never calls model
+ok 222 - unconfirmed user persistence (database error) never calls model
+  ---
+  duration_ms: 0.695458
+  type: 'test'
+  ...
+# Subtest: unconfirmed user persistence (missing receipt) never calls model
+ok 223 - unconfirmed user persistence (missing receipt) never calls model
+  ---
+  duration_ms: 0.66927
+  type: 'test'
+  ...
+# Subtest: unconfirmed assistant persistence (database error) yields error without done
+ok 224 - unconfirmed assistant persistence (database error) yields error without done
+  ---
+  duration_ms: 1.083071
+  type: 'test'
+  ...
+# Subtest: unconfirmed assistant persistence (missing receipt) yields error without done
+ok 225 - unconfirmed assistant persistence (missing receipt) yields error without done
+  ---
+  duration_ms: 1.075971
+  type: 'test'
+  ...
+# Subtest: unconfirmed case metadata (database error) yields error without done
+ok 226 - unconfirmed case metadata (database error) yields error without done
+  ---
+  duration_ms: 1.389695
+  type: 'test'
+  ...
+# Subtest: unconfirmed case metadata (missing receipt) yields error without done
+ok 227 - unconfirmed case metadata (missing receipt) yields error without done
+  ---
+  duration_ms: 0.908824
+  type: 'test'
+  ...
+# Subtest: new case confirmation and metadata keep the existing SSE contract
+ok 228 - new case confirmation and metadata keep the existing SSE contract
+  ---
+  duration_ms: 1.556842
+  type: 'test'
+  ...
+# Subtest: auth error with a populated user remains a denial before database or provider
+ok 229 - auth error with a populated user remains a denial before database or provider
+  ---
+  duration_ms: 0.467972
+  type: 'test'
+  ...
+# Subtest: unowned case remains unavailable without message writes or model work
+ok 230 - unowned case remains unavailable without message writes or model work
+  ---
+  duration_ms: 0.541301
+  type: 'test'
+  ...
+# Subtest: missing new-case identity cannot continue to message persistence or the model
+ok 231 - missing new-case identity cannot continue to message persistence or the model
+  ---
+  duration_ms: 0.789227
+  type: 'test'
+  ...
+# Subtest: model failure exposes no provider message or false completion
+ok 232 - model failure exposes no provider message or false completion
+  ---
+  duration_ms: 1.073658
+  type: 'test'
+  ...
+# Subtest: a newly created case survives an unconfirmed first message (database error) and an explicit retry
+ok 233 - a newly created case survives an unconfirmed first message (database error) and an explicit retry
+  ---
+  duration_ms: 1.762025
+  type: 'test'
+  ...
+# Subtest: a newly created case survives an unconfirmed first message (missing receipt) and an explicit retry
+ok 234 - a newly created case survives an unconfirmed first message (missing receipt) and an explicit retry
+  ---
+  duration_ms: 1.450805
+  type: 'test'
+  ...
+# Subtest: an existing case failure never advertises a replacement conversation
+ok 235 - an existing case failure never advertises a replacement conversation
+  ---
+  duration_ms: 0.793503
+  type: 'test'
+  ...
+# Subtest: an invalid created case identity "not-a-uuid" cannot be returned or reused
+ok 236 - an invalid created case identity "not-a-uuid" cannot be returned or reused
+  ---
+  duration_ms: 0.787634
+  type: 'test'
+  ...
+# Subtest: an invalid created case identity "/chat/elsewhere" cannot be returned or reused
+ok 237 - an invalid created case identity "/chat/elsewhere" cannot be returned or reused
+  ---
+  duration_ms: 0.633997
+  type: 'test'
+  ...
+# Subtest: an invalid created case identity 42 cannot be returned or reused
+ok 238 - an invalid created case identity 42 cannot be returned or reused
+  ---
+  duration_ms: 0.509203
+  type: 'test'
+  ...
+# (node:161) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/app/api/ai/chat/route.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: metadata tag juris-meta is hidden in streaming and storage even across one-character chunks
+ok 239 - metadata tag juris-meta is hidden in streaming and storage even across one-character chunks
+  ---
+  duration_ms: 16.740863
+  type: 'test'
+  ...
+# Subtest: metadata tag JURIS-META is hidden in streaming and storage even across one-character chunks
+ok 240 - metadata tag JURIS-META is hidden in streaming and storage even across one-character chunks
+  ---
+  duration_ms: 7.791661
+  type: 'test'
+  ...
+# Subtest: metadata tag JuRiS-MeTa is hidden in streaming and storage even across one-character chunks
+ok 241 - metadata tag JuRiS-MeTa is hidden in streaming and storage even across one-character chunks
+  ---
+  duration_ms: 2.384335
+  type: 'test'
+  ...
+# Subtest: truncated or repeated metadata stays outside visible and persisted text: <JURIS-META>{"phase":"analyse"
+ok 242 - truncated or repeated metadata stays outside visible and persisted text: <JURIS-META>{"phase":"analyse"
+  ---
+  duration_ms: 2.033397
+  type: 'test'
+  ...
+# Subtest: truncated or repeated metadata stays outside visible and persisted text: <JURIS-ME
+ok 243 - truncated or repeated metadata stays outside visible and persisted text: <JURIS-ME
+  ---
+  duration_ms: 1.801504
+  type: 'test'
+  ...
+# Subtest: truncated or repeated metadata stays outside visible and persisted text: <juris-meta>{bad-json}</juris-meta>
+ok 244 - truncated or repeated metadata stays outside visible and persisted text: <juris-meta>{bad-json}</juris-meta>
+  ---
+  duration_ms: 1.443595
+  type: 'test'
+  ...
+# Subtest: truncated or repeated metadata stays outside visible and persisted text: <juris-meta>{"phase":"analyse"}</juris-meta><juris-meta>{"private":"not-visible"}</juris-meta>
+ok 245 - truncated or repeated metadata stays outside visible and persisted text: <juris-meta>{"phase":"analyse"}</juris-meta><juris-meta>{"private":"not-visible"}</juris-meta>
+  ---
+  duration_ms: 1.600497
+  type: 'test'
+  ...
+# Subtest: empty public model output is not persisted or confirmed: []
+ok 246 - empty public model output is not persisted or confirmed: []
+  ---
+  duration_ms: 1.431196
+  type: 'test'
+  ...
+# Subtest: empty public model output is not persisted or confirmed: [""]
+ok 247 - empty public model output is not persisted or confirmed: [""]
+  ---
+  duration_ms: 3.891974
+  type: 'test'
+  ...
+# Subtest: empty public model output is not persisted or confirmed: [" \\n\\t "]
+ok 248 - empty public model output is not persisted or confirmed: [" \\n\\t "]
+  ---
+  duration_ms: 1.510914
+  type: 'test'
+  ...
+# Subtest: empty public model output is not persisted or confirmed: ["<juris-meta>{\\"phase\\":\\"analyse\\"}</juris-meta>"]
+ok 249 - empty public model output is not persisted or confirmed: ["<juris-meta>{\\"phase\\":\\"analyse\\"}</juris-meta>"]
+  ---
+  duration_ms: 0.864539
+  type: 'test'
+  ...
+# Subtest: a new case has no history to read and cannot fail because that unnecessary read is unavailable
+ok 250 - a new case has no history to read and cannot fail because that unnecessary read is unavailable
+  ---
+  duration_ms: 1.2036
+  type: 'test'
+  ...
+# Subtest: a cancelled POST success cannot mutate a departed conversation
+ok 251 - a cancelled POST success cannot mutate a departed conversation
+  ---
+  duration_ms: 46.749745
+  type: 'test'
+  ...
+# Subtest: a cancelled POST failure cannot mutate a departed conversation
+ok 252 - a cancelled POST failure cannot mutate a departed conversation
+  ---
+  duration_ms: 1.37275
+  type: 'test'
+  ...
+# Subtest: late stream chunks cannot change the case ID or append text after cancellation
+ok 253 - late stream chunks cannot change the case ID or append text after cancellation
+  ---
+  duration_ms: 1.367041
+  type: 'test'
+  ...
+# Subtest: a cancelled refresh ignores late transport, including history and loaded identity
+ok 254 - a cancelled refresh ignores late transport, including history and loaded identity
+  ---
+  duration_ms: 12.751655
+  type: 'test'
+  ...
+# Subtest: a cancelled refresh ignores late json, including history and loaded identity
+ok 255 - a cancelled refresh ignores late json, including history and loaded identity
+  ---
+  duration_ms: 2.587746
+  type: 'test'
+  ...
+# Subtest: a new conversation preserves its request, streamed actions and created identity
+ok 256 - a new conversation preserves its request, streamed actions and created identity
+  ---
+  duration_ms: 2.484925
+  type: 'test'
+  ...
+# Subtest: a failed final refresh leaves the created case eligible for loading after adoption
+ok 257 - a failed final refresh leaves the created case eligible for loading after adoption
+  ---
+  duration_ms: 1.63707
+  type: 'test'
+  ...
+# Subtest: HTTP failure adopts a confirmed new dossier and the same send callback reuses it only on an explicit retry
+ok 258 - HTTP failure adopts a confirmed new dossier and the same send callback reuses it only on an explicit retry
+  ---
+  duration_ms: 2.747602
+  type: 'test'
+  ...
+# Subtest: HTTP failure refuses invalid recovery identity "invalid"
+ok 259 - HTTP failure refuses invalid recovery identity "invalid"
+  ---
+  duration_ms: 1.524464
+  type: 'test'
+  ...
+# Subtest: HTTP failure refuses invalid recovery identity "//example.invalid"
+ok 260 - HTTP failure refuses invalid recovery identity "//example.invalid"
+  ---
+  duration_ms: 1.223609
+  type: 'test'
+  ...
+# Subtest: HTTP failure refuses invalid recovery identity 42
+ok 261 - HTTP failure refuses invalid recovery identity 42
+  ---
+  duration_ms: 1.414011
+  type: 'test'
+  ...
+# Subtest: HTTP failure refuses invalid recovery identity null
+ok 262 - HTTP failure refuses invalid recovery identity null
+  ---
+  duration_ms: 1.079917
+  type: 'test'
+  ...
+# Subtest: an HTTP recovery identity never replaces an existing conversation
+ok 263 - an HTTP recovery identity never replaces an existing conversation
+  ---
+  duration_ms: 1.023263
+  type: 'test'
+  ...
+# Subtest: cancellation during error JSON parsing cannot adopt the recovery dossier or notify
+ok 264 - cancellation during error JSON parsing cannot adopt the recovery dossier or notify
+  ---
+  duration_ms: 0.981602
+  type: 'test'
+  ...
+# Subtest: a recovered dossier cannot rewrite a page reached while its HTTP error was pending
+ok 265 - a recovered dossier cannot rewrite a page reached while its HTTP error was pending
+  ---
+  duration_ms: 0.903836
+  type: 'test'
+  ...
+# Subtest: the actual reader preserves split UTF-8 text and the existing SSE events
+ok 266 - the actual reader preserves split UTF-8 text and the existing SSE events
+  ---
+  duration_ms: 5.876989
+  type: 'test'
+  ...
+# Subtest: an already-aborted scope cancels and releases the body without observing an event
+ok 267 - an already-aborted scope cancels and releases the body without observing an event
+  ---
+  duration_ms: 1.119405
+  type: 'test'
+  ...
+# Subtest: aborting a pending native read settles it and releases its reader
+ok 268 - aborting a pending native read settles it and releases its reader
+  ---
+  duration_ms: 0.759092
+  type: 'test'
+  ...
+# Subtest: aborting from an event handler prevents the next event in the same chunk
+ok 269 - aborting from an event handler prevents the next event in the same chunk
+  ---
+  duration_ms: 0.691593
+  type: 'test'
+  ...
+# Subtest: a handler error cancels remaining stream data and keeps the original error
+ok 270 - a handler error cancels remaining stream data and keeps the original error
+  ---
+  duration_ms: 1.884917
+  type: 'test'
+  ...
+# Subtest: invalid event JSON rejects and releases the stream
+ok 271 - invalid event JSON rejects and releases the stream
+  ---
+  duration_ms: 0.467601
+  type: 'test'
+  ...
+# Subtest: transport read failures retain their error and release the reader
+ok 272 - transport read failures retain their error and release the reader
+  ---
+  duration_ms: 0.566478
+  type: 'test'
+  ...
+# Subtest: a failing cancellation does not replace the abort result or leak a rejection
+ok 273 - a failing cancellation does not replace the abort result or leak a rejection
+  ---
+  duration_ms: 6.923137
+  type: 'test'
+  ...
+# Subtest: EOF without the route terminal event is an explicit interrupted response
+ok 274 - EOF without the route terminal event is an explicit interrupted response
+  ---
+  duration_ms: 0.93995
+  type: 'test'
+  ...
+# Subtest: a confirmed terminal event settles without waiting for the transport to close
+ok 275 - a confirmed terminal event settles without waiting for the transport to close
+  ---
+  duration_ms: 1.449413
+  type: 'test'
+  ...
+# Subtest: a native AbortSignal without throwIfAborted can read the existing SSE protocol
+ok 276 - a native AbortSignal without throwIfAborted can read the existing SSE protocol
+  ---
+  duration_ms: 0.5949
+  type: 'test'
+  ...
+# Subtest: an older native signal without reason retains explicit cancellation and releases the reader
+ok 277 - an older native signal without reason retains explicit cancellation and releases the reader
+  ---
+  duration_ms: 0.459559
+  type: 'test'
+  ...
+# (node:185) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:185) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# Subtest: AR24 checkout disabled refuses before authentication, database or payment
+ok 278 - AR24 checkout disabled refuses before authentication, database or payment
+  ---
+  duration_ms: 77.553352
+  type: 'test'
+  ...
+# Subtest: AR24 checkout key alone refuses before authentication, database or payment
+ok 279 - AR24 checkout key alone refuses before authentication, database or payment
+  ---
+  duration_ms: 11.475418
+  type: 'test'
+  ...
+# Subtest: AR24 checkout enabled without key refuses before authentication, database or payment
+ok 280 - AR24 checkout enabled without key refuses before authentication, database or payment
+  ---
+  duration_ms: 5.791573
+  type: 'test'
+  ...
+# Subtest: even complete transport credentials cannot enable unqualified AR24 checkout
+ok 281 - even complete transport credentials cannot enable unqualified AR24 checkout
+  ---
+  duration_ms: 6.038659
+  type: 'test'
+  ...
+# Subtest: another unit type retains its authentication check when AR24 is unavailable
+ok 282 - another unit type retains its authentication check when AR24 is unavailable
+  ---
+  duration_ms: 8.992246
+  type: 'test'
+  ...
+# Subtest: AR24 catalogue description does not promise legal qualification from the repealed reference
+ok 283 - AR24 catalogue description does not promise legal qualification from the repealed reference
+  ---
+  duration_ms: 2.51591
+  type: 'test'
+  ...
+# (node:192) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/scratch/000b9c211231/juris-chat-context/src/lib/claude.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/scratch/000b9c211231/juris-chat-context/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: the installed Anthropic SDK preserves the normal stream and existing request payload
+ok 284 - the installed Anthropic SDK preserves the normal stream and existing request payload
+  ---
+  duration_ms: 14.110594
+  type: 'test'
+  ...
+# Subtest: pre-aborted work never starts an SDK request
+ok 285 - pre-aborted work never starts an SDK request
+  ---
+  duration_ms: 0.960771
+  type: 'test'
+  ...
+# Subtest: request signal aborts a pending SDK fetch without retry
+ok 286 - request signal aborts a pending SDK fetch without retry
+  ---
+  duration_ms: 2.08962
+  type: 'test'
+  ...
+# Subtest: early generator return aborts the actual SDK response transport
+ok 287 - early generator return aborts the actual SDK response transport
+  ---
+  duration_ms: 4.459244
+  type: 'test'
+  ...
+# Subtest: abort during the SDK response stops subsequent chunks and drains its reader
+ok 288 - abort during the SDK response stops subsequent chunks and drains its reader
+  ---
+  duration_ms: 2.636198
+  type: 'test'
+  ...
+# (node:201) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:201) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# Subtest: actual chat schema accepts ten attachments and rejects overflow before parsing each item
+ok 289 - actual chat schema accepts ten attachments and rejects overflow before parsing each item
+  ---
+  duration_ms: 79.408194
+  type: 'test'
+  ...
+# Subtest: actual notification PATCH accepts 100 IDs and refuses 101 before database update
+ok 290 - actual notification PATCH accepts 100 IDs and refuses 101 before database update
+  ---
+  duration_ms: 11.431152
+  type: 'test'
+  ...
+# Subtest: actual legal POST preserves four types/single acceptance and rejects overflow before upsert
+ok 291 - actual legal POST preserves four types/single acceptance and rejects overflow before upsert
+  ---
+  duration_ms: 8.366601
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: current GET finishes loading and preserves every response field
+ok 292 - admin/ambassadeurs: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 120.149784
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: cancelled read cannot clear the current loader or report an error
+ok 293 - admin/ambassadeurs: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.006869
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: a late decoded body cannot replace a more recent refresh
+ok 294 - admin/ambassadeurs: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 2.19132
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: unmount aborts transport and ignores late JSON
+ok 295 - admin/ambassadeurs: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 1.228737
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: network failure ends loading and reports only the safe message
+ok 296 - admin/ambassadeurs: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.851097
+  type: 'test'
+  ...
+# Subtest: admin/ambassadeurs: json failure ends loading and reports only the safe message
+ok 297 - admin/ambassadeurs: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.70384
+  type: 'test'
+  ...
+# Subtest: gratitude: current GET finishes loading and preserves every response field
+ok 298 - gratitude: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 26.227792
+  type: 'test'
+  ...
+# Subtest: gratitude: cancelled read cannot clear the current loader or report an error
+ok 299 - gratitude: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.228326
+  type: 'test'
+  ...
+# Subtest: gratitude: a late decoded body cannot replace a more recent refresh
+ok 300 - gratitude: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 1.303207
+  type: 'test'
+  ...
+# Subtest: gratitude: unmount aborts transport and ignores late JSON
+ok 301 - gratitude: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 1.340532
+  type: 'test'
+  ...
+# Subtest: gratitude: network failure ends loading and reports only the safe message
+ok 302 - gratitude: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 0.944366
+  type: 'test'
+  ...
+# Subtest: gratitude: json failure ends loading and reports only the safe message
+ok 303 - gratitude: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 0.851269
+  type: 'test'
+  ...
+# Subtest: points: current GET finishes loading and preserves every response field
+ok 304 - points: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 35.755989
+  type: 'test'
+  ...
+# Subtest: points: cancelled read cannot clear the current loader or report an error
+ok 305 - points: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.221876
+  type: 'test'
+  ...
+# Subtest: points: a late decoded body cannot replace a more recent refresh
+ok 306 - points: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 1.047289
+  type: 'test'
+  ...
+# Subtest: points: unmount aborts transport and ignores late JSON
+ok 307 - points: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 1.023453
+  type: 'test'
+  ...
+# Subtest: points: network failure ends loading and reports only the safe message
+ok 308 - points: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 0.946028
+  type: 'test'
+  ...
+# Subtest: points: json failure ends loading and reports only the safe message
+ok 309 - points: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.391387
+  type: 'test'
+  ...
+# Subtest: wallet: current GET finishes loading and preserves every response field
+ok 310 - wallet: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 27.835479
+  type: 'test'
+  ...
+# Subtest: wallet: cancelled read cannot clear the current loader or report an error
+ok 311 - wallet: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.127117
+  type: 'test'
+  ...
+# Subtest: wallet: a late decoded body cannot replace a more recent refresh
+ok 312 - wallet: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 1.063383
+  type: 'test'
+  ...
+# Subtest: wallet: unmount aborts transport and ignores late JSON
+ok 313 - wallet: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 0.92681
+  type: 'test'
+  ...
+# Subtest: wallet: network failure ends loading and reports only the safe message
+ok 314 - wallet: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 7.578596
+  type: 'test'
+  ...
+# Subtest: wallet: json failure ends loading and reports only the safe message
+ok 315 - wallet: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.027088
+  type: 'test'
+  ...
+# Subtest: parrainage: current GET finishes loading and preserves every response field
+ok 316 - parrainage: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 28.356017
+  type: 'test'
+  ...
+# Subtest: parrainage: cancelled read cannot clear the current loader or report an error
+ok 317 - parrainage: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.065556
+  type: 'test'
+  ...
+# Subtest: parrainage: a late decoded body cannot replace a more recent refresh
+ok 318 - parrainage: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 1.015672
+  type: 'test'
+  ...
+# Subtest: parrainage: unmount aborts transport and ignores late JSON
+ok 319 - parrainage: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 1.126065
+  type: 'test'
+  ...
+# Subtest: parrainage: network failure ends loading and reports only the safe message
+ok 320 - parrainage: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 0.918198
+  type: 'test'
+  ...
+# Subtest: parrainage: json failure ends loading and reports only the safe message
+ok 321 - parrainage: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.24482
+  type: 'test'
+  ...
+# Subtest: ambassadeur: current GET finishes loading and preserves every response field
+ok 322 - ambassadeur: current GET finishes loading and preserves every response field
+  ---
+  duration_ms: 20.91861
+  type: 'test'
+  ...
+# Subtest: ambassadeur: cancelled read cannot clear the current loader or report an error
+ok 323 - ambassadeur: cancelled read cannot clear the current loader or report an error
+  ---
+  duration_ms: 1.324709
+  type: 'test'
+  ...
+# Subtest: ambassadeur: a late decoded body cannot replace a more recent refresh
+ok 324 - ambassadeur: a late decoded body cannot replace a more recent refresh
+  ---
+  duration_ms: 1.277649
+  type: 'test'
+  ...
+# Subtest: ambassadeur: unmount aborts transport and ignores late JSON
+ok 325 - ambassadeur: unmount aborts transport and ignores late JSON
+  ---
+  duration_ms: 1.044134
+  type: 'test'
+  ...
+# Subtest: ambassadeur: network failure ends loading and reports only the safe message
+ok 326 - ambassadeur: network failure ends loading and reports only the safe message
+  ---
+  duration_ms: 0.953219
+  type: 'test'
+  ...
+# Subtest: ambassadeur: json failure ends loading and reports only the safe message
+ok 327 - ambassadeur: json failure ends loading and reports only the safe message
+  ---
+  duration_ms: 1.157261
+  type: 'test'
+  ...
+# Subtest: document deep link \#sign with pending status opens only its intended modal
+ok 328 - document deep link \#sign with pending status opens only its intended modal
+  ---
+  duration_ms: 117.314613
+  type: 'test'
+  ...
+# Subtest: document deep link \#sign with signed status opens only its intended modal
+ok 329 - document deep link \#sign with signed status opens only its intended modal
+  ---
+  duration_ms: 1.188578
+  type: 'test'
+  ...
+# Subtest: document deep link \#send-email with signed status opens only its intended modal
+ok 330 - document deep link \#send-email with signed status opens only its intended modal
+  ---
+  duration_ms: 0.995362
+  type: 'test'
+  ...
+# Subtest: document deep link \#send-recommande with signed status opens only its intended modal
+ok 331 - document deep link \#send-recommande with signed status opens only its intended modal
+  ---
+  duration_ms: 0.868204
+  type: 'test'
+  ...
+# Subtest: document deep link (none) with pending status opens only its intended modal
+ok 332 - document deep link (none) with pending status opens only its intended modal
+  ---
+  duration_ms: 1.162359
+  type: 'test'
+  ...
+# Subtest: a late 404 cannot redirect after leaving the document
+ok 333 - a late 404 cannot redirect after leaving the document
+  ---
+  duration_ms: 1.422524
+  type: 'test'
+  ...
+# Subtest: the current 404 keeps the existing missing-document message and redirect
+ok 334 - the current 404 keeps the existing missing-document message and redirect
+  ---
+  duration_ms: 1.847081
+  type: 'test'
+  ...
+# Subtest: late decoded data cannot reopen a modal after navigation or overwrite a refresh
+ok 335 - late decoded data cannot reopen a modal after navigation or overwrite a refresh
+  ---
+  duration_ms: 1.950234
+  type: 'test'
+  ...
+# Subtest: does not fetch outside the existing gate: {"step":1,"profil":"salarie","situation":"litige"}
+ok 336 - does not fetch outside the existing gate: {"step":1,"profil":"salarie","situation":"litige"}
+  ---
+  duration_ms: 88.466558
+  type: 'test'
+  ...
+# Subtest: does not fetch outside the existing gate: {"step":3,"profil":"salarie","situation":"litige"}
+ok 337 - does not fetch outside the existing gate: {"step":3,"profil":"salarie","situation":"litige"}
+  ---
+  duration_ms: 1.037444
+  type: 'test'
+  ...
+# Subtest: does not fetch outside the existing gate: {"step":4,"profil":"salarie","situation":"litige"}
+ok 338 - does not fetch outside the existing gate: {"step":4,"profil":"salarie","situation":"litige"}
+  ---
+  duration_ms: 3.19903
+  type: 'test'
+  ...
+# Subtest: does not fetch outside the existing gate: {"step":2,"profil":"","situation":""}
+ok 339 - does not fetch outside the existing gate: {"step":2,"profil":"","situation":""}
+  ---
+  duration_ms: 0.87264
+  type: 'test'
+  ...
+# Subtest: preserves GET parameters and completes the current read: {"step":2,"profil":"salarie","situation":"litige"}
+ok 340 - preserves GET parameters and completes the current read: {"step":2,"profil":"salarie","situation":"litige"}
+  ---
+  duration_ms: 2.405987
+  type: 'test'
+  ...
+# Subtest: preserves GET parameters and completes the current read: {"step":2,"profil":"","situation":"litige"}
+ok 341 - preserves GET parameters and completes the current read: {"step":2,"profil":"","situation":"litige"}
+  ---
+  duration_ms: 1.602159
+  type: 'test'
+  ...
+# Subtest: preserves GET parameters and completes the current read: {"step":2,"profil":"salarie","situation":""}
+ok 342 - preserves GET parameters and completes the current read: {"step":2,"profil":"salarie","situation":""}
+  ---
+  duration_ms: 3.425104
+  type: 'test'
+  ...
+# Subtest: an obsolete response cannot overwrite a changed profil
+ok 343 - an obsolete response cannot overwrite a changed profil
+  ---
+  duration_ms: 2.604241
+  type: 'test'
+  ...
+# Subtest: an obsolete response cannot overwrite a changed situation
+ok 344 - an obsolete response cannot overwrite a changed situation
+  ---
+  duration_ms: 1.762486
+  type: 'test'
+  ...
+# Subtest: a cancelled request cannot clear active loading or show an obsolete error
+ok 345 - a cancelled request cannot clear active loading or show an obsolete error
+  ---
+  duration_ms: 2.232772
+  type: 'test'
+  ...
+# Subtest: an old JSON body is ignored even when transport completed before cancellation
+ok 346 - an old JSON body is ignored even when transport completed before cancellation
+  ---
+  duration_ms: 1.77177
+  type: 'test'
+  ...
+# Subtest: leaving step two aborts the read and returning starts a fresh one
+ok 347 - leaving step two aborts the read and returning starts a fresh one
+  ---
+  duration_ms: 2.411876
+  type: 'test'
+  ...
+# Subtest: unmount cleanup prevents late decoding from updating state
+ok 348 - unmount cleanup prevents late decoding from updating state
+  ---
+  duration_ms: 0.94711
+  type: 'test'
+  ...
+# Subtest: a current network failure preserves the French message and ends loading
+ok 349 - a current network failure preserves the French message and ends loading
+  ---
+  duration_ms: 0.816407
+  type: 'test'
+  ...
+# Subtest: a current http failure preserves the French message and ends loading
+ok 350 - a current http failure preserves the French message and ends loading
+  ---
+  duration_ms: 1.006468
+  type: 'test'
+  ...
+# Subtest: an absent list remains an empty result
+ok 351 - an absent list remains an empty result
+  ---
+  duration_ms: 0.966479
+  type: 'test'
+  ...
+# Subtest: reading aids preserves the existing selection and toggle behavior
+ok 352 - reading aids preserves the existing selection and toggle behavior
+  ---
+  duration_ms: 0.942975
+  type: 'test'
+  ...
+# Subtest: the navigation event starts loading before entering step two, without a request
+ok 353 - the navigation event starts loading before entering step two, without a request
+  ---
+  duration_ms: 0.717831
+  type: 'test'
+  ...
+# Subtest: an empty profile enters step two without leaving a loading indicator stuck
+ok 354 - an empty profile enters step two without leaving a loading indicator stuck
+  ---
+  duration_ms: 2.29287
+  type: 'test'
+  ...
+# Subtest: real React screen decodes text and reuses its dossier on a second send
+ok 355 - real React screen decodes text and reuses its dossier on a second send
+  ---
+  duration_ms: 368.924265
+  type: 'test'
+  ...
+# Subtest: StrictMode and two immediate clicks send only one request while session lookup is pending
+ok 356 - StrictMode and two immediate clicks send only one request while session lookup is pending
+  ---
+  duration_ms: 93.780124
+  type: 'test'
+  ...
+# Subtest: actual auth-store account change unmounts the old conversation before token lookup settles
+ok 357 - actual auth-store account change unmounts the old conversation before token lookup settles
+  ---
+  duration_ms: 73.427241
+  type: 'test'
+  ...
+# Subtest: account change cancels an active stream and the next owner gets a new dossier
+ok 358 - account change cancels an active stream and the next owner gets a new dossier
+  ---
+  duration_ms: 50.012019
+  type: 'test'
+  ...
+# Subtest: unmount while fetching cancels the request and discards a late successful response
+ok 359 - unmount while fetching cancels the request and discards a late successful response
+  ---
+  duration_ms: 55.390381
+  type: 'test'
+  ...
+# Subtest: partial EOF preserves received text with an error and releases sending state
+ok 360 - partial EOF preserves received text with an error and releases sending state
+  ---
+  duration_ms: 125.825967
+  type: 'test'
+  ...
+# Subtest: signed-out state clears account content and prevents transport
+ok 361 - signed-out state clears account content and prevents transport
+  ---
+  duration_ms: 49.856017
+  type: 'test'
+  ...
+# Subtest: explicit stop removes the pending placeholder and a late reply cannot overwrite a new answer
+ok 362 - explicit stop removes the pending placeholder and a late reply cannot overwrite a new answer
+  ---
+  duration_ms: 79.27734
+  type: 'test'
+  ...
+# Subtest: explicit stop retains partial output as unconfirmed and cancels the active stream
+ok 363 - explicit stop retains partial output as unconfirmed and cancels the active stream
+  ---
+  duration_ms: 42.548563
+  type: 'test'
+  ...
+# Subtest: the native deadline releases a stalled response and never clears a newer request
+ok 364 - the native deadline releases a stalled response and never clears a newer request
+  ---
+  duration_ms: 47.816632
+  type: 'test'
+  ...
+# Subtest: unmount clears the visible conversation and cancels an open response in StrictMode
+ok 365 - unmount clears the visible conversation and cancels an open response in StrictMode
+  ---
+  duration_ms: 43.771561
+  type: 'test'
+  ...
+# Subtest: an auth event during initialization wins over the older session snapshot
+ok 366 - an auth event during initialization wins over the older session snapshot
+  ---
+  duration_ms: 35.683653
+  type: 'test'
+  ...
+# Subtest: concurrent initialization calls share one snapshot and one auth subscription
+ok 367 - concurrent initialization calls share one snapshot and one auth subscription
+  ---
+  duration_ms: 57.264863
+  type: 'test'
+  ...
+# Subtest: a StrictMode recovery callback consumes its code once and reaches password entry
+ok 368 - a StrictMode recovery callback consumes its code once and reaches password entry
+  ---
+  duration_ms: 28.771702
+  type: 'test'
+  ...
+# Subtest: leaving a pending recovery callback prevents a late ready state or navigation
+ok 369 - leaving a pending recovery callback prevents a late ready state or navigation
+  ---
+  duration_ms: 25.369091
+  type: 'test'
+  ...
+# Subtest: an authenticated user can request another recovery link without a dashboard redirect
+ok 370 - an authenticated user can request another recovery link without a dashboard redirect
+  ---
+  duration_ms: 11.059823
+  type: 'test'
+  ...
+# Subtest: a late isolated recovery exchange cannot replace a newer primary account
+ok 371 - a late isolated recovery exchange cannot replace a newer primary account
+  ---
+  duration_ms: 22.714556
+  type: 'test'
+  ...
+# Subtest: StrictMode callback hands recovery to the actual form and a double submit updates once
+ok 372 - StrictMode callback hands recovery to the actual form and a double submit updates once
+  ---
+  duration_ms: 58.191653
+  type: 'test'
+  ...
+# Subtest: leaving the update form clears recovery and ignores an already dispatched late response
+ok 373 - leaving the update form clears recovery and ignores an already dispatched late response
+  ---
+  duration_ms: 68.184078
+  type: 'test'
+  ...
+# Subtest: actual mobile send uses the server request and displays decoded text
+ok 374 - actual mobile send uses the server request and displays decoded text
+  ---
+  duration_ms: 85.798002
+  type: 'test'
+  ...
+# Subtest: a follow-up mobile message reuses the same dossier
+ok 375 - a follow-up mobile message reuses the same dossier
+  ---
+  duration_ms: 29.509173
+  type: 'test'
+  ...
+# Subtest: two immediate send presses cannot duplicate a pending request
+ok 376 - two immediate send presses cannot duplicate a pending request
+  ---
+  duration_ms: 72.916906
+  type: 'test'
+  ...
+# Subtest: a changed account during token lookup cannot send the old question
+ok 377 - a changed account during token lookup cannot send the old question
+  ---
+  duration_ms: 37.155809
+  type: 'test'
+  ...
+# Subtest: a token belonging to a different account is rejected before POST
+ok 378 - a token belonging to a different account is rejected before POST
+  ---
+  duration_ms: 42.556274
+  type: 'test'
+  ...
+# Subtest: unmount cancellation discards a late successful POST
+ok 379 - unmount cancellation discards a late successful POST
+  ---
+  duration_ms: 32.466976
+  type: 'test'
+  ...
+# Subtest: an interrupted stream keeps partial text and exposes its failure
+ok 380 - an interrupted stream keeps partial text and exposes its failure
+  ---
+  duration_ms: 35.251964
+  type: 'test'
+  ...
+# Subtest: oversized messages do not reach the transport
+ok 381 - oversized messages do not reach the transport
+  ---
+  duration_ms: 38.519866
+  type: 'test'
+  ...
+# Subtest: explicit stop releases the loading state and ignores a late response
+ok 382 - explicit stop releases the loading state and ignores a late response
+  ---
+  duration_ms: 59.178291
+  type: 'test'
+  ...
+# Subtest: a stalled request has a finite deadline without confirming any response
+ok 383 - a stalled request has a finite deadline without confirming any response
+  ---
+  duration_ms: 38.162418
+  type: 'test'
+  ...
+# Subtest: an old cancelled request cannot stop a new request or clear its loading state
+ok 384 - an old cancelled request cannot stop a new request or clear its loading state
+  ---
+  duration_ms: 19.871673
+  type: 'test'
+  ...
+# Subtest: native transport reuses the shared decoder across individual UTF-8 bytes
+ok 385 - native transport reuses the shared decoder across individual UTF-8 bytes
+  ---
+  duration_ms: 11.051591
+  type: 'test'
+  ...
+# Subtest: a confirmed terminal message settles without waiting for HTTP close
+ok 386 - a confirmed terminal message settles without waiting for HTTP close
+  ---
+  duration_ms: 8.522122
+  type: 'test'
+  ...
+# Subtest: HTTP 401 cannot be presented as an assistant response
+ok 387 - HTTP 401 cannot be presented as an assistant response
+  ---
+  duration_ms: 8.978826
+  type: 'test'
+  ...
+# Subtest: HTTP 402 cannot be presented as an assistant response
+ok 388 - HTTP 402 cannot be presented as an assistant response
+  ---
+  duration_ms: 9.415892
+  type: 'test'
+  ...
+# Subtest: HTTP 429 cannot be presented as an assistant response
+ok 389 - HTTP 429 cannot be presented as an assistant response
+  ---
+  duration_ms: 33.580693
+  type: 'test'
+  ...
+# Subtest: HTTP 500 cannot be presented as an assistant response
+ok 390 - HTTP 500 cannot be presented as an assistant response
+  ---
+  duration_ms: 7.74373
+  type: 'test'
+  ...
+# Subtest: a server persistence failure is not converted into completion
+ok 391 - a server persistence failure is not converted into completion
+  ---
+  duration_ms: 8.100137
+  type: 'test'
+  ...
+# Subtest: reject a malformed or unrelated event {"type":"done"}
+ok 392 - reject a malformed or unrelated event {"type":"done"}
+  ---
+  duration_ms: 7.441773
+  type: 'test'
+  ...
+# Subtest: reject a malformed or unrelated event {"type":"done","caseId":"22222222-2222-4222-8222-222222222222"}
+ok 393 - reject a malformed or unrelated event {"type":"done","caseId":"22222222-2222-4222-8222-222222222222"}
+  ---
+  duration_ms: 26.332736
+  type: 'test'
+  ...
+# Subtest: reject a malformed or unrelated event {"type":"text","content":42}
+ok 394 - reject a malformed or unrelated event {"type":"text","content":42}
+  ---
+  duration_ms: 15.952868
+  type: 'test'
+  ...
+# Subtest: reject a malformed or unrelated event {"type":"unexpected"}
+ok 395 - reject a malformed or unrelated event {"type":"unexpected"}
+  ---
+  duration_ms: 15.028001
+  type: 'test'
+  ...
+# Subtest: reject a malformed or unrelated event null
+ok 396 - reject a malformed or unrelated event null
+  ---
+  duration_ms: 10.41597
+  type: 'test'
+  ...
+# Subtest: HTML or a normal JSON response cannot appear as SSE chat text
+ok 397 - HTML or a normal JSON response cannot appear as SSE chat text
+  ---
+  duration_ms: 15.519808
+  type: 'test'
+  ...
+# Subtest: an already aborted request makes no network call
+ok 398 - an already aborted request makes no network call
+  ---
+  duration_ms: 14.75747
+  type: 'test'
+  ...
+# Subtest: invalid mobile request rejected locally: message
+ok 399 - invalid mobile request rejected locally: message
+  ---
+  duration_ms: 6.67564
+  type: 'test'
+  ...
+# Subtest: invalid mobile request rejected locally: message
+ok 400 - invalid mobile request rejected locally: message
+  ---
+  duration_ms: 6.937168
+  type: 'test'
+  ...
+# Subtest: invalid mobile request rejected locally: accessToken
+ok 401 - invalid mobile request rejected locally: accessToken
+  ---
+  duration_ms: 6.254498
+  type: 'test'
+  ...
+# Subtest: invalid mobile request rejected locally: caseId
+ok 402 - invalid mobile request rejected locally: caseId
+  ---
+  duration_ms: 7.302697
+  type: 'test'
+  ...
+# Subtest: mobile keeps the failed first message visible and explicitly reuses its confirmed dossier
+ok 403 - mobile keeps the failed first message visible and explicitly reuses its confirmed dossier
+  ---
+  duration_ms: 17.710467
+  type: 'test'
+  ...
+# Subtest: mobile refuses an invalid HTTP recovery identity "invalid"
+ok 404 - mobile refuses an invalid HTTP recovery identity "invalid"
+  ---
+  duration_ms: 12.165408
+  type: 'test'
+  ...
+# Subtest: mobile refuses an invalid HTTP recovery identity "//example.invalid"
+ok 405 - mobile refuses an invalid HTTP recovery identity "//example.invalid"
+  ---
+  duration_ms: 15.27797
+  type: 'test'
+  ...
+# Subtest: mobile refuses an invalid HTTP recovery identity 42
+ok 406 - mobile refuses an invalid HTTP recovery identity 42
+  ---
+  duration_ms: 11.932022
+  type: 'test'
+  ...
+# Subtest: mobile refuses an invalid HTTP recovery identity null
+ok 407 - mobile refuses an invalid HTTP recovery identity null
+  ---
+  duration_ms: 7.448964
+  type: 'test'
+  ...
+# Subtest: mobile cannot replace an existing conversation using an HTTP error identity
+ok 408 - mobile cannot replace an existing conversation using an HTTP error identity
+  ---
+  duration_ms: 7.35137
+  type: 'test'
+  ...
+# Subtest: mobile cancellation during error JSON parsing discards a late recovery identity
+ok 409 - mobile cancellation during error JSON parsing discards a late recovery identity
+  ---
+  duration_ms: 15.1767
+  type: 'test'
+  ...
+# Subtest: actual mobile essentiel checkout passes the actual API contract with a user Bearer
+ok 410 - actual mobile essentiel checkout passes the actual API contract with a user Bearer
+  ---
+  duration_ms: 187.767569
+  type: 'test'
+  ...
+# Subtest: actual mobile pro checkout passes the actual API contract with a user Bearer
+ok 411 - actual mobile pro checkout passes the actual API contract with a user Bearer
+  ---
+  duration_ms: 20.762675
+  type: 'test'
+  ...
+# Subtest: actual mobile avocat_virtuel checkout passes the actual API contract with a user Bearer
+ok 412 - actual mobile avocat_virtuel checkout passes the actual API contract with a user Bearer
+  ---
+  duration_ms: 21.978934
+  type: 'test'
+  ...
+# Subtest: mobile displays the existing canonical plan prices and descriptions
+ok 413 - mobile displays the existing canonical plan prices and descriptions
+  ---
+  duration_ms: 11.80848
+  type: 'test'
+  ...
+# Subtest: a lost checkout response keeps one intention key; changing plan or user creates a new key
+ok 414 - a lost checkout response keeps one intention key; changing plan or user creates a new key
+  ---
+  duration_ms: 19.249513
+  type: 'test'
+  ...
+# Subtest: synchronous double clicks across plans admit a single request before the rerender
+ok 415 - synchronous double clicks across plans admit a single request before the rerender
+  ---
+  duration_ms: 12.974524
+  type: 'test'
+  ...
+# Subtest: failing to open the browser retains the same checkout key on retry
+ok 416 - failing to open the browser retains the same checkout key on retry
+  ---
+  duration_ms: 11.651683
+  type: 'test'
+  ...
+# Subtest: actual dossiers list renders summary and all canonical statuses
+ok 417 - actual dossiers list renders summary and all canonical statuses
+  ---
+  duration_ms: 27.225986
+  type: 'test'
+  ...
+# Subtest: plan-cta-pro discards a late checkout or portal URL after the account changes
+ok 418 - plan-cta-pro discards a late checkout or portal URL after the account changes
+  ---
+  duration_ms: 19.262205
+  type: 'test'
+  ...
+# Subtest: plan-cta-pro aborts on unmount and suppresses a late error or fallback browser
+ok 419 - plan-cta-pro aborts on unmount and suppresses a late error or fallback browser
+  ---
+  duration_ms: 10.987026
+  type: 'test'
+  ...
+# Subtest: abo-portal discards a late checkout or portal URL after the account changes
+ok 420 - abo-portal discards a late checkout or portal URL after the account changes
+  ---
+  duration_ms: 10.969459
+  type: 'test'
+  ...
+# Subtest: abo-portal aborts on unmount and suppresses a late error or fallback browser
+ok 421 - abo-portal aborts on unmount and suppresses a late error or fallback browser
+  ---
+  duration_ms: 9.633455
+  type: 'test'
+  ...
+# Subtest: an old checkout completion cannot unlock the new account request
+ok 422 - an old checkout completion cannot unlock the new account request
+  ---
+  duration_ms: 23.554824
+  type: 'test'
+  ...
+# Subtest: dossiers are hidden immediately at account change and a stale response cannot replace new data
+ok 423 - dossiers are hidden immediately at account change and a stale response cannot replace new data
+  ---
+  duration_ms: 37.187676
+  type: 'test'
+  ...
+# Subtest: dossiers clear loaded data before refetch when the account changes, including signed out
+ok 424 - dossiers clear loaded data before refetch when the account changes, including signed out
+  ---
+  duration_ms: 29.928944
+  type: 'test'
+  ...
+# Subtest: cases read preserves cookie authentication and user ownership
+ok 425 - cases read preserves cookie authentication and user ownership
+  ---
+  duration_ms: 7.341585
+  type: 'test'
+  ...
+# Subtest: cases read preserves bearer authentication and user ownership
+ok 426 - cases read preserves bearer authentication and user ownership
+  ---
+  duration_ms: 7.44609
+  type: 'test'
+  ...
+# Subtest: cases read rejects an explicit invalid Bearer instead of using a valid cookie
+ok 427 - cases read rejects an explicit invalid Bearer instead of using a valid cookie
+  ---
+  duration_ms: 9.913378
+  type: 'test'
+  ...
+# Subtest: cases read rejects a getUser error before any data or payment effect
+ok 428 - cases read rejects a getUser error before any data or payment effect
+  ---
+  duration_ms: 16.108989
+  type: 'test'
+  ...
+# Subtest: case create preserves cookie authentication and user ownership
+ok 429 - case create preserves cookie authentication and user ownership
+  ---
+  duration_ms: 6.87862
+  type: 'test'
+  ...
+# Subtest: case create preserves bearer authentication and user ownership
+ok 430 - case create preserves bearer authentication and user ownership
+  ---
+  duration_ms: 10.324326
+  type: 'test'
+  ...
+# Subtest: case create rejects an explicit invalid Bearer instead of using a valid cookie
+ok 431 - case create rejects an explicit invalid Bearer instead of using a valid cookie
+  ---
+  duration_ms: 5.324083
+  type: 'test'
+  ...
+# Subtest: case create rejects a getUser error before any data or payment effect
+ok 432 - case create rejects a getUser error before any data or payment effect
+  ---
+  duration_ms: 4.914457
+  type: 'test'
+  ...
+# Subtest: checkout preserves cookie authentication and user ownership
+ok 433 - checkout preserves cookie authentication and user ownership
+  ---
+  duration_ms: 10.600865
+  type: 'test'
+  ...
+# Subtest: checkout preserves bearer authentication and user ownership
+ok 434 - checkout preserves bearer authentication and user ownership
+  ---
+  duration_ms: 9.0022
+  type: 'test'
+  ...
+# Subtest: checkout rejects an explicit invalid Bearer instead of using a valid cookie
+ok 435 - checkout rejects an explicit invalid Bearer instead of using a valid cookie
+  ---
+  duration_ms: 14.998206
+  type: 'test'
+  ...
+# Subtest: checkout rejects a getUser error before any data or payment effect
+ok 436 - checkout rejects a getUser error before any data or payment effect
+  ---
+  duration_ms: 13.031809
+  type: 'test'
+  ...
+# Subtest: portal status preserves cookie authentication and user ownership
+ok 437 - portal status preserves cookie authentication and user ownership
+  ---
+  duration_ms: 8.306853
+  type: 'test'
+  ...
+# Subtest: portal status preserves bearer authentication and user ownership
+ok 438 - portal status preserves bearer authentication and user ownership
+  ---
+  duration_ms: 12.053232
+  type: 'test'
+  ...
+# Subtest: portal status rejects an explicit invalid Bearer instead of using a valid cookie
+ok 439 - portal status rejects an explicit invalid Bearer instead of using a valid cookie
+  ---
+  duration_ms: 9.352258
+  type: 'test'
+  ...
+# Subtest: portal status rejects a getUser error before any data or payment effect
+ok 440 - portal status rejects a getUser error before any data or payment effect
+  ---
+  duration_ms: 15.327719
+  type: 'test'
+  ...
+# Subtest: portal open preserves cookie authentication and user ownership
+ok 441 - portal open preserves cookie authentication and user ownership
+  ---
+  duration_ms: 11.26068
+  type: 'test'
+  ...
+# Subtest: portal open preserves bearer authentication and user ownership
+ok 442 - portal open preserves bearer authentication and user ownership
+  ---
+  duration_ms: 6.699185
+  type: 'test'
+  ...
+# Subtest: portal open rejects an explicit invalid Bearer instead of using a valid cookie
+ok 443 - portal open rejects an explicit invalid Bearer instead of using a valid cookie
+  ---
+  duration_ms: 4.701552
+  type: 'test'
+  ...
+# Subtest: portal open rejects a getUser error before any data or payment effect
+ok 444 - portal open rejects a getUser error before any data or payment effect
+  ---
+  duration_ms: 4.167953
+  type: 'test'
+  ...
+# Subtest: native reset screen sends its native callback with the real SDK PKCE challenge
+ok 445 - native reset screen sends its native callback with the real SDK PKCE challenge
+  ---
+  duration_ms: 246.572364
+  type: 'test'
+  ...
+# Subtest: real SDK cannot exchange on another storage owner, then the actual native callback succeeds
+ok 446 - real SDK cannot exchange on another storage owner, then the actual native callback succeeds
+  ---
+  duration_ms: 96.693042
+  type: 'test'
+  ...
+# Subtest: native callback validates scheme, origin, path, duplicate parameters and code before auth
+ok 447 - native callback validates scheme, origin, path, duplicate parameters and code before auth
+  ---
+  duration_ms: 34.876378
+  type: 'test'
+  ...
+# Subtest: invalid or consumed PKCE code cannot create a recovery form
+ok 448 - invalid or consumed PKCE code cannot create a recovery form
+  ---
+  duration_ms: 51.017445
+  type: 'test'
+  ...
+# Subtest: actual password screen updates through the real isolated SDK and keeps shared storage unchanged
+ok 449 - actual password screen updates through the real isolated SDK and keeps shared storage unchanged
+  ---
+  duration_ms: 98.604558
+  type: 'test'
+  ...
+# Subtest: password mismatch or short input cannot call updateUser
+ok 450 - password mismatch or short input cannot call updateUser
+  ---
+  duration_ms: 86.382406
+  type: 'test'
+  ...
+# Subtest: real updateUser HTTP error is visible, unlocks the form and can be retried
+ok 451 - real updateUser HTTP error is visible, unlocks the form and can be retried
+  ---
+  duration_ms: 40.425483
+  type: 'test'
+  ...
+# Subtest: untrusted or rejected getUser results prevent any password mutation
+ok 452 - untrusted or rejected getUser results prevent any password mutation
+  ---
+  duration_ms: 40.131718
+  type: 'test'
+  ...
+# Subtest: account change while the remote identity is being validated prevents updateUser
+ok 453 - account change while the remote identity is being validated prevents updateUser
+  ---
+  duration_ms: 51.262787
+  type: 'test'
+  ...
+# Subtest: a different session of the same account is rejected before any mutation
+ok 454 - a different session of the same account is rejected before any mutation
+  ---
+  duration_ms: 19.159139
+  type: 'test'
+  ...
+# Subtest: account change during the real updateUser HTTP call cannot redirect it or overwrite the new shared session
+ok 455 - account change during the real updateUser HTTP call cannot redirect it or overwrite the new shared session
+  ---
+  duration_ms: 27.984399
+  type: 'test'
+  ...
+# Subtest: unmount while updating suppresses all late navigation and success feedback
+ok 456 - unmount while updating suppresses all late navigation and success feedback
+  ---
+  duration_ms: 40.399315
+  type: 'test'
+  ...
+# Subtest: missing recovery session renders a restart action and never exposes a password submit
+ok 457 - missing recovery session renders a restart action and never exposes a password submit
+  ---
+  duration_ms: 18.820949
+  type: 'test'
+  ...
+# Subtest: cold native callback owns the stored verifier, keeps the login signed out and updates from its memory-only session
+ok 458 - cold native callback owns the stored verifier, keeps the login signed out and updates from its memory-only session
+  ---
+  duration_ms: 229.103129
+  type: 'test'
+  ...
+# Subtest: an obsolete real SDK code exchange never overwrites the account that signed in while it was pending
+ok 459 - an obsolete real SDK code exchange never overwrites the account that signed in while it was pending
+  ---
+  duration_ms: 26.854117
+  type: 'test'
+  ...
+# Subtest: leaving while real SDK exchange is pending suppresses navigation and stores no shared login
+ok 460 - leaving while real SDK exchange is pending suppresses navigation and stores no shared login
+  ---
+  duration_ms: 27.42447
+  type: 'test'
+  ...
+# Subtest: a late abandoned exchange cannot remove the verifier of a newer reset request
+ok 461 - a late abandoned exchange cannot remove the verifier of a newer reset request
+  ---
+  duration_ms: 42.039381
+  type: 'test'
+  ...
+# Subtest: changing the main account during a native password update keeps the new account and suppresses old feedback
+ok 462 - changing the main account during a native password update keeps the new account and suppresses old feedback
+  ---
+  duration_ms: 35.516696
+  type: 'test'
+  ...
+# Subtest: the Expo web screen hands off to the existing browser recovery without producing a native PKCE email
+ok 463 - the Expo web screen hands off to the existing browser recovery without producing a native PKCE email
+  ---
+  duration_ms: 21.808155
+  type: 'test'
+  ...
+# Subtest: cancel of the update form releases the temporary recovery session without changing a password
+ok 464 - cancel of the update form releases the temporary recovery session without changing a password
+  ---
+  duration_ms: 21.993209
+  type: 'test'
+  ...
+# Subtest: close of the update form releases the temporary recovery session without changing a password
+ok 465 - close of the update form releases the temporary recovery session without changing a password
+  ---
+  duration_ms: 27.30932
+  type: 'test'
+  ...
+# Subtest: PATCH HTTP failure preserves unread notifications
+ok 466 - PATCH HTTP failure preserves unread notifications
+  ---
+  duration_ms: 98.561685
+  type: 'test'
+  ...
+# Subtest: a GET started before marking read cannot restore old unread badges
+ok 467 - a GET started before marking read cannot restore old unread badges
+  ---
+  duration_ms: 8.173065
+  type: 'test'
+  ...
+# Subtest: confirmed PATCH refreshes server state and retains a newly arrived unread notification
+ok 468 - confirmed PATCH refreshes server state and retains a newly arrived unread notification
+  ---
+  duration_ms: 2.254944
+  type: 'test'
+  ...
+# Subtest: PATCH network failure preserves state and permits a later retry
+ok 469 - PATCH network failure preserves state and permits a later retry
+  ---
+  duration_ms: 1.309987
+  type: 'test'
+  ...
+# Subtest: PATCH json failure preserves state and permits a later retry
+ok 470 - PATCH json failure preserves state and permits a later retry
+  ---
+  duration_ms: 1.223439
+  type: 'test'
+  ...
+# Subtest: PATCH negative-acknowledgement failure preserves state and permits a later retry
+ok 471 - PATCH negative-acknowledgement failure preserves state and permits a later retry
+  ---
+  duration_ms: 1.033749
+  type: 'test'
+  ...
+# Subtest: pending PATCH prevents duplicate mutations and polling against pre-mutation state
+ok 472 - pending PATCH prevents duplicate mutations and polling against pre-mutation state
+  ---
+  duration_ms: 0.956434
+  type: 'test'
+  ...
+# Subtest: current GET preserves the server notification list and count
+ok 473 - current GET preserves the server notification list and count
+  ---
+  duration_ms: 1.024294
+  type: 'test'
+  ...
+# Subtest: GET http failure does not erase the previously known notifications
+ok 474 - GET http failure does not erase the previously known notifications
+  ---
+  duration_ms: 1.060478
+  type: 'test'
+  ...
+# Subtest: GET json failure does not erase the previously known notifications
+ok 475 - GET json failure does not erase the previously known notifications
+  ---
+  duration_ms: 1.414091
+  type: 'test'
+  ...
+# Subtest: GET invalid-shape failure does not erase the previously known notifications
+ok 476 - GET invalid-shape failure does not erase the previously known notifications
+  ---
+  duration_ms: 0.914993
+  type: 'test'
+  ...
+# Subtest: a late decoded GET cannot replace a newer GET
+ok 477 - a late decoded GET cannot replace a newer GET
+  ---
+  duration_ms: 3.797965
+  type: 'test'
+  ...
+# Subtest: unmount aborts the read, clears polling and ignores its late JSON
+ok 478 - unmount aborts the read, clears polling and ignores its late JSON
+  ---
+  duration_ms: 1.584042
+  type: 'test'
+  ...
+# Subtest: unmount ignores a late PATCH acknowledgement without starting another GET
+ok 479 - unmount ignores a late PATCH acknowledgement without starting another GET
+  ---
+  duration_ms: 1.54216
+  type: 'test'
+  ...
+# Subtest: an unmounted initial microtask or retained callback cannot start any request
+ok 480 - an unmounted initial microtask or retained callback cannot start any request
+  ---
+  duration_ms: 1.267504
+  type: 'test'
+  ...
+# Subtest: unmount during post-PATCH refresh ignores its late body
+ok 481 - unmount during post-PATCH refresh ignores its late body
+  ---
+  duration_ms: 1.466609
+  type: 'test'
+  ...
+# Subtest: GET: returned profile lookup failure produces an explicit generic error
+ok 482 - GET: returned profile lookup failure produces an explicit generic error
+  ---
+  duration_ms: 7.45322
+  type: 'test'
+  ...
+# Subtest: PATCH: returned profile lookup failure produces an explicit generic error
+ok 483 - PATCH: returned profile lookup failure produces an explicit generic error
+  ---
+  duration_ms: 1.383346
+  type: 'test'
+  ...
+# Subtest: GET: returned list failure does not become an empty notification list
+ok 484 - GET: returned list failure does not become an empty notification list
+  ---
+  duration_ms: 1.183409
+  type: 'test'
+  ...
+# Subtest: PATCH allRead: returned update failure never reports success
+ok 485 - PATCH allRead: returned update failure never reports success
+  ---
+  duration_ms: 2.589079
+  type: 'test'
+  ...
+# Subtest: PATCH ids: returned update failure never reports success
+ok 486 - PATCH ids: returned update failure never reports success
+  ---
+  duration_ms: 1.916834
+  type: 'test'
+  ...
+# Subtest: GET: thrown profile lookup failure produces an explicit generic error
+ok 487 - GET: thrown profile lookup failure produces an explicit generic error
+  ---
+  duration_ms: 0.889064
+  type: 'test'
+  ...
+# Subtest: PATCH: thrown profile lookup failure produces an explicit generic error
+ok 488 - PATCH: thrown profile lookup failure produces an explicit generic error
+  ---
+  duration_ms: 0.846142
+  type: 'test'
+  ...
+# Subtest: GET: thrown list failure does not become an empty notification list
+ok 489 - GET: thrown list failure does not become an empty notification list
+  ---
+  duration_ms: 0.976864
+  type: 'test'
+  ...
+# Subtest: PATCH allRead: thrown update failure never reports success
+ok 490 - PATCH allRead: thrown update failure never reports success
+  ---
+  duration_ms: 1.069511
+  type: 'test'
+  ...
+# Subtest: PATCH ids: thrown update failure never reports success
+ok 491 - PATCH ids: thrown update failure never reports success
+  ---
+  duration_ms: 1.148047
+  type: 'test'
+  ...
+# Subtest: GET: client network exception becomes a generic JSON failure
+ok 492 - GET: client network exception becomes a generic JSON failure
+  ---
+  duration_ms: 1.108008
+  type: 'test'
+  ...
+# Subtest: PATCH: client network exception becomes a generic JSON failure
+ok 493 - PATCH: client network exception becomes a generic JSON failure
+  ---
+  duration_ms: 0.97394
+  type: 'test'
+  ...
+# Subtest: GET: auth network exception becomes a generic JSON failure
+ok 494 - GET: auth network exception becomes a generic JSON failure
+  ---
+  duration_ms: 1.231441
+  type: 'test'
+  ...
+# Subtest: PATCH: auth network exception becomes a generic JSON failure
+ok 495 - PATCH: auth network exception becomes a generic JSON failure
+  ---
+  duration_ms: 0.636431
+  type: 'test'
+  ...
+# Subtest: GET: service network exception becomes a generic JSON failure
+ok 496 - GET: service network exception becomes a generic JSON failure
+  ---
+  duration_ms: 0.83868
+  type: 'test'
+  ...
+# Subtest: PATCH: service network exception becomes a generic JSON failure
+ok 497 - PATCH: service network exception becomes a generic JSON failure
+  ---
+  duration_ms: 0.956655
+  type: 'test'
+  ...
+# Subtest: GET preserves success shape and lists only the authenticated profile notifications
+ok 498 - GET preserves success shape and lists only the authenticated profile notifications
+  ---
+  duration_ms: 1.007479
+  type: 'test'
+  ...
+# Subtest: PATCH allRead: success keeps both identity filters and cannot alter another profile
+ok 499 - PATCH allRead: success keeps both identity filters and cannot alter another profile
+  ---
+  duration_ms: 1.036062
+  type: 'test'
+  ...
+# Subtest: PATCH ids: success keeps both identity filters and cannot alter another profile
+ok 500 - PATCH ids: success keeps both identity filters and cannot alter another profile
+  ---
+  duration_ms: 0.834093
+  type: 'test'
+  ...
+# Subtest: GET: unauthenticated caller remains denied before any table access
+ok 501 - GET: unauthenticated caller remains denied before any table access
+  ---
+  duration_ms: 0.78445
+  type: 'test'
+  ...
+# Subtest: PATCH: unauthenticated caller remains denied before any table access
+ok 502 - PATCH: unauthenticated caller remains denied before any table access
+  ---
+  duration_ms: 0.591755
+  type: 'test'
+  ...
+# Subtest: missing profile retains the existing GET empty and PATCH not-found contracts
+ok 503 - missing profile retains the existing GET empty and PATCH not-found contracts
+  ---
+  duration_ms: 3.398585
+  type: 'test'
+  ...
+# Subtest: PATCH invalid-json retains validation failure before any write
+ok 504 - PATCH invalid-json retains validation failure before any write
+  ---
+  duration_ms: 1.166665
+  type: 'test'
+  ...
+# Subtest: PATCH invalid-ids retains validation failure before any write
+ok 505 - PATCH invalid-ids retains validation failure before any write
+  ---
+  duration_ms: 1.733714
+  type: 'test'
+  ...
+# Unknown operation tag:  00
+# Unknown operation tag:  00
+# Unknown operation tag:  00
+# Unknown operation tag:  00
+# Unknown operation tag:  00
+# (node:334) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:334) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# Subtest: official .ots fixture hello-world preserves digest and all serialized attestations
+ok 506 - official .ots fixture hello-world preserves digest and all serialized attestations
+  ---
+  duration_ms: 7.90567
+  type: 'test'
+  ...
+# Subtest: official .ots fixture incomplete preserves digest and all serialized attestations
+ok 507 - official .ots fixture incomplete preserves digest and all serialized attestations
+  ---
+  duration_ms: 0.967681
+  type: 'test'
+  ...
+# Subtest: official .ots fixture merkle1 preserves digest and all serialized attestations
+ok 508 - official .ots fixture merkle1 preserves digest and all serialized attestations
+  ---
+  duration_ms: 0.859181
+  type: 'test'
+  ...
+# Subtest: official .ots fixture two-calendars preserves digest and all serialized attestations
+ok 509 - official .ots fixture two-calendars preserves digest and all serialized attestations
+  ---
+  duration_ms: 0.79774
+  type: 'test'
+  ...
+# Subtest: official .ots fixture known-and-unknown-notary preserves digest and all serialized attestations
+ok 510 - official .ots fixture known-and-unknown-notary preserves digest and all serialized attestations
+  ---
+  duration_ms: 1.552827
+  type: 'test'
+  ...
+# Subtest: stampHash and stampDocument preserve UTF-8 content and legacy hex-string semantics
+ok 511 - stampHash and stampDocument preserve UTF-8 content and legacy hex-string semantics
+  ---
+  duration_ms: 128.744863
+  type: 'test'
+  ...
+# Subtest: Buffer view is copied before asynchronous calendar work and excludes surrounding bytes
+ok 512 - Buffer view is copied before asynchronous calendar work and excludes surrounding bytes
+  ---
+  duration_ms: 22.810548
+  type: 'test'
+  ...
+# Subtest: stamp refuses success when calendars return all fail
+ok 513 - stamp refuses success when calendars return all fail
+  ---
+  duration_ms: 18.982097
+  type: 'test'
+  ...
+# Subtest: stamp refuses success when calendars return only one accepts
+ok 514 - stamp refuses success when calendars return only one accepts
+  ---
+  duration_ms: 15.604683
+  type: 'test'
+  ...
+# Subtest: stamp refuses success when calendars return unattested trees
+ok 515 - stamp refuses success when calendars return unattested trees
+  ---
+  duration_ms: 11.481647
+  type: 'test'
+  ...
+# Subtest: verification refuses malformed, oversize, altered and unattested proofs before HTTP
+ok 516 - verification refuses malformed, oversize, altered and unattested proofs before HTTP
+  ---
+  duration_ms: 13.578757
+  type: 'test'
+  ...
+# Subtest: verification checks Bitcoin height, block identity and Merkle root without claiming live anchoring
+ok 517 - verification checks Bitcoin height, block identity and Merkle root without claiming live anchoring
+  ---
+  duration_ms: 45.523702
+  type: 'test'
+  ...
+# Subtest: untrusted calendars and redirects cannot select an external verification destination
+ok 518 - untrusted calendars and redirects cannot select an external verification destination
+  ---
+  duration_ms: 16.085444
+  type: 'test'
+  ...
+# Subtest: response streaming stops at its byte limit and cancels an oversized body
+ok 519 - response streaming stops at its byte limit and cancels an oversized body
+  ---
+  duration_ms: 13.794667
+  type: 'test'
+  ...
+# Subtest: total timeout rejects an adapter ignoring AbortSignal and cancels its late response
+ok 520 - total timeout rejects an adapter ignoring AbortSignal and cancels its late response
+  ---
+  duration_ms: 26.74137
+  type: 'test'
+  ...
+# Subtest: same-major bn.js patch keeps endian/arithmetic behavior and fixes maskn(0)
+ok 521 - same-major bn.js patch keeps endian/arithmetic behavior and fixes maskn(0)
+  ---
+  duration_ms: 1.511825
+  type: 'test'
+  ...
+# Subtest: proof paths never invoke ECDSA signing or load legacy request transport
+ok 522 - proof paths never invoke ECDSA signing or load legacy request transport
+  ---
+  duration_ms: 12.611488
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: outer payload overrun
+ok 523 - malformed internal proof lengths are rejected: outer payload overrun
+  ---
+  duration_ms: 10.370874
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: inner URI overrun
+ok 524 - malformed internal proof lengths are rejected: inner URI overrun
+  ---
+  duration_ms: 10.774071
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: ignored pending payload byte
+ok 525 - malformed internal proof lengths are rejected: ignored pending payload byte
+  ---
+  duration_ms: 10.078703
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: non-minimal outer length
+ok 526 - malformed internal proof lengths are rejected: non-minimal outer length
+  ---
+  duration_ms: 12.157666
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: non-minimal URI length
+ok 527 - malformed internal proof lengths are rejected: non-minimal URI length
+  ---
+  duration_ms: 10.96304
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: empty Bitcoin payload
+ok 528 - malformed internal proof lengths are rejected: empty Bitcoin payload
+  ---
+  duration_ms: 9.658011
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: unterminated Bitcoin height
+ok 529 - malformed internal proof lengths are rejected: unterminated Bitcoin height
+  ---
+  duration_ms: 8.90743
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: ignored Bitcoin payload byte
+ok 530 - malformed internal proof lengths are rejected: ignored Bitcoin payload byte
+  ---
+  duration_ms: 9.322544
+  type: 'test'
+  ...
+# Subtest: malformed internal proof lengths are rejected: non-minimal operation length
+ok 531 - malformed internal proof lengths are rejected: non-minimal operation length
+  ---
+  duration_ms: 8.821103
+  type: 'test'
+  ...
+# Subtest: truncated or noncanonical stored receipts are rejected before calendar or Bitcoin HTTP
+ok 532 - truncated or noncanonical stored receipts are rejected before calendar or Bitcoin HTTP
+  ---
+  duration_ms: 7.550925
+  type: 'test'
+  ...
+# Subtest: successive image selections release the previous URL even before a React render
+ok 533 - successive image selections release the previous URL even before a React render
+  ---
+  duration_ms: 72.254737
+  type: 'test'
+  ...
+# Subtest: selecting a PDF removes the old image preview without creating another URL
+ok 534 - selecting a PDF removes the old image preview without creating another URL
+  ---
+  duration_ms: 1.23769
+  type: 'test'
+  ...
+# Subtest: reset clears file, preview, analysis and context while releasing its URL
+ok 535 - reset clears file, preview, analysis and context while releasing its URL
+  ---
+  duration_ms: 1.040939
+  type: 'test'
+  ...
+# Subtest: each analysis starts at its first step and preserves the OCR request contract
+ok 536 - each analysis starts at its first step and preserves the OCR request contract
+  ---
+  duration_ms: 11.735161
+  type: 'test'
+  ...
+# Subtest: reset cancels analysis during transport and ignores its late result
+ok 537 - reset cancels analysis during transport and ignores its late result
+  ---
+  duration_ms: 6.76307
+  type: 'test'
+  ...
+# Subtest: reset cancels analysis during json and ignores its late result
+ok 538 - reset cancels analysis during json and ignores its late result
+  ---
+  duration_ms: 1.396946
+  type: 'test'
+  ...
+# Subtest: select cancels analysis during transport and ignores its late result
+ok 539 - select cancels analysis during transport and ignores its late result
+  ---
+  duration_ms: 1.566756
+  type: 'test'
+  ...
+# Subtest: select cancels analysis during json and ignores its late result
+ok 540 - select cancels analysis during json and ignores its late result
+  ---
+  duration_ms: 1.074829
+  type: 'test'
+  ...
+# Subtest: unmount cancels analysis during transport and ignores its late result
+ok 541 - unmount cancels analysis during transport and ignores its late result
+  ---
+  duration_ms: 1.092245
+  type: 'test'
+  ...
+# Subtest: unmount cancels analysis during json and ignores its late result
+ok 542 - unmount cancels analysis during json and ignores its late result
+  ---
+  duration_ms: 1.242337
+  type: 'test'
+  ...
+# Subtest: an older analysis cannot clear loading or replace the current file result
+ok 543 - an older analysis cannot clear loading or replace the current file result
+  ---
+  duration_ms: 1.789636
+  type: 'test'
+  ...
+# (node:348) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:348) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# Subtest: disabled Connect route imports without a Stripe key and returns 503 before auth or DB
+ok 544 - disabled Connect route imports without a Stripe key and returns 503 before auth or DB
+  ---
+  duration_ms: 56.01191
+  type: 'test'
+  ...
+# Subtest: enabled Connect route rejects an unauthenticated request before requiring Stripe configuration
+ok 545 - enabled Connect route rejects an unauthenticated request before requiring Stripe configuration
+  ---
+  duration_ms: 6.24239
+  type: 'test'
+  ...
+# Subtest: enabled authenticated Connect route without a key fails instead of returning a fake session
+ok 546 - enabled authenticated Connect route without a key fails instead of returning a fake session
+  ---
+  duration_ms: 3.861691
+  type: 'test'
+  ...
+# Subtest: profile completion keeps one client and one subscription without effect resubscription
+ok 547 - profile completion keeps one client and one subscription without effect resubscription
+  ---
+  duration_ms: 161.346972
+  type: 'test'
+  ...
+# Subtest: auth callbacks return synchronously and profile work starts outside the SDK callback
+ok 548 - auth callbacks return synchronously and profile work starts outside the SDK callback
+  ---
+  duration_ms: 54.073563
+  type: 'test'
+  ...
+# Subtest: late profile A cannot replace current account B or expose the previous profile
+ok 549 - late profile A cannot replace current account B or expose the previous profile
+  ---
+  duration_ms: 37.64396
+  type: 'test'
+  ...
+# Subtest: sign-out discards a pending previous profile and does not recreate it
+ok 550 - sign-out discards a pending previous profile and does not recreate it
+  ---
+  duration_ms: 31.908585
+  type: 'test'
+  ...
+# Subtest: a profile read failure never becomes a create-profile operation
+ok 551 - a profile read failure never becomes a create-profile operation
+  ---
+  duration_ms: 26.81573
+  type: 'test'
+  ...
+# Subtest: unmount before a missing-profile result prevents later database writes
+ok 552 - unmount before a missing-profile result prevents later database writes
+  ---
+  duration_ms: 154.677089
+  type: 'test'
+  ...
+# Subtest: token refresh updates the session without refetching the same profile
+ok 553 - token refresh updates the session without refetching the same profile
+  ---
+  duration_ms: 26.92723
+  type: 'test'
+  ...
+# Subtest: a more recent auth event supersedes a delayed initialization snapshot
+ok 554 - a more recent auth event supersedes a delayed initialization snapshot
+  ---
+  duration_ms: 71.532633
+  type: 'test'
+  ...
+# Subtest: a confirmed missing profile is created with the existing default fields
+ok 555 - a confirmed missing profile is created with the existing default fields
+  ---
+  duration_ms: 25.001938
+  type: 'test'
+  ...
+# Subtest: a concurrent profile creator is recovered by rereading the existing row
+ok 556 - a concurrent profile creator is recovered by rereading the existing row
+  ---
+  duration_ms: 22.876264
+  type: 'test'
+  ...
+# Subtest: StrictMode preserves one active subscription and does not duplicate profile creation
+ok 557 - StrictMode preserves one active subscription and does not duplicate profile creation
+  ---
+  duration_ms: 29.766102
+  type: 'test'
+  ...
+# Subtest: the hook retains its password recovery redirect to the new form
+ok 558 - the hook retains its password recovery redirect to the new form
+  ---
+  duration_ms: 24.636867
+  type: 'test'
+  ...
+# Subtest: a rejected initial session settles loading without inventing a user
+ok 559 - a rejected initial session settles loading without inventing a user
+  ---
+  duration_ms: 23.856214
+  type: 'test'
+  ...
+# Subtest: a rejected profile read settles loading and remains eligible for later auth recovery
+ok 560 - a rejected profile read settles loading and remains eligible for later auth recovery
+  ---
+  duration_ms: 27.126599
+  type: 'test'
+  ...
+# Subtest: an already dispatched profile insertion cannot replace a later account
+ok 561 - an already dispatched profile insertion cannot replace a later account
+  ---
+  duration_ms: 37.437916
+  type: 'test'
+  ...
+# Subtest: sign-out prevents a stale initial snapshot from restoring the account
+ok 562 - sign-out prevents a stale initial snapshot from restoring the account
+  ---
+  duration_ms: 28.440622
+  type: 'test'
+  ...
+# Subtest: actual reset callback sends the browser PKCE link to the password form
+ok 563 - actual reset callback sends the browser PKCE link to the password form
+  ---
+  duration_ms: 73.154717
+  type: 'test'
+  ...
+# Subtest: expired link shows a recovery action and never submits a password
+ok 564 - expired link shows a recovery action and never submits a password
+  ---
+  duration_ms: 136.991285
+  type: 'test'
+  ...
+# Subtest: identity rejected by the server cannot expose the update form
+ok 565 - identity rejected by the server cannot expose the update form
+  ---
+  duration_ms: 224.947317
+  type: 'test'
+  ...
+# Subtest: actual page completes one update under StrictMode and two same-tick submits
+ok 566 - actual page completes one update under StrictMode and two same-tick submits
+  ---
+  duration_ms: 91.878867
+  type: 'test'
+  ...
+# Subtest: mismatched confirmation remains an actionable error without a provider call
+ok 567 - mismatched confirmation remains an actionable error without a provider call
+  ---
+  duration_ms: 31.95628
+  type: 'test'
+  ...
+# Subtest: password below the existing signup minimum is refused before remote work
+ok 568 - password below the existing signup minimum is refused before remote work
+  ---
+  duration_ms: 26.455537
+  type: 'test'
+  ...
+# Subtest: provider failure never produces a success and permits an explicit retry
+ok 569 - provider failure never produces a success and permits an explicit retry
+  ---
+  duration_ms: 45.505164
+  type: 'test'
+  ...
+# Subtest: new account during identity lookup blocks the old form and late result
+ok 570 - new account during identity lookup blocks the old form and late result
+  ---
+  duration_ms: 18.928458
+  type: 'test'
+  ...
+# Subtest: sign-out during update clears the form and ignores late success
+ok 571 - sign-out during update clears the form and ignores late success
+  ---
+  duration_ms: 22.116371
+  type: 'test'
+  ...
+# Subtest: account change cannot redirect an in-flight password update to another identity
+ok 572 - account change cannot redirect an in-flight password update to another identity
+  ---
+  duration_ms: 33.997828
+  type: 'test'
+  ...
+# Subtest: late initial session cannot override a more recent auth event
+ok 573 - late initial session cannot override a more recent auth event
+  ---
+  duration_ms: 23.439217
+  type: 'test'
+  ...
+# Subtest: refresh of the same account revalidates the token and preserves the draft
+ok 574 - refresh of the same account revalidates the token and preserves the draft
+  ---
+  duration_ms: 30.862953
+  type: 'test'
+  ...
+# Subtest: old update completion after token refresh cannot unlock or confirm a newer request
+ok 575 - old update completion after token refresh cannot unlock or confirm a newer request
+  ---
+  duration_ms: 23.336265
+  type: 'test'
+  ...
+# Subtest: unmount removes subscription and prevents late confirmation
+ok 576 - unmount removes subscription and prevents late confirmation
+  ---
+  duration_ms: 23.14394
+  type: 'test'
+  ...
+# Subtest: forgot-password ignores repeated submits and handles a network rejection
+ok 577 - forgot-password ignores repeated submits and handles a network rejection
+  ---
+  duration_ms: 49.991276
+  type: 'test'
+  ...
+# Subtest: forgot-password ignores a late response after leaving the page
+ok 578 - forgot-password ignores a late response after leaving the page
+  ---
+  duration_ms: 14.126768
+  type: 'test'
+  ...
+1..578
+# tests 578
+# suites 0
+# pass 578
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7441.003958

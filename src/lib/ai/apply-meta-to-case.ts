@@ -1,15 +1,17 @@
 import { createServiceClient } from '@/lib/supabase'
 import type { CaseStatus, CaseType } from '@/types'
 import type { JurisMeta } from '@/lib/prompts/jurisia'
-import { VALID_CASE_TYPES, VALID_STATUSES } from './chat-constants'
+import { ChatPersistenceError, VALID_CASE_TYPES, VALID_STATUSES } from './chat-constants'
 
 type ServiceClient = ReturnType<typeof createServiceClient>
 
 export async function applyMetaToCase(
   admin: ServiceClient,
   caseId: string,
-  meta: JurisMeta
+  meta: JurisMeta,
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted()
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
 
   if (meta.case_type && VALID_CASE_TYPES.includes(meta.case_type as CaseType)) {
@@ -46,5 +48,11 @@ export async function applyMetaToCase(
     patch.money_saved = meta.estimated_savings
   }
 
-  await admin.from('jurispurama_cases').update(patch).eq('id', caseId)
+  const query = admin.from('jurispurama_cases').update(patch).eq('id', caseId).select('id')
+  if (signal) query.abortSignal(signal)
+  const { data, error } = await query.maybeSingle()
+  signal?.throwIfAborted()
+  if (error || !data?.id) {
+    throw new ChatPersistenceError('case')
+  }
 }

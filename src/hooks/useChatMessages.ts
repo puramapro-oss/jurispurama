@@ -38,6 +38,7 @@ export function useChatMessages(
 
   const scopeRef = useRef<AbortController | null>(null)
   const streamRef = useRef<AbortController | null>(null)
+  const caseIdRef = useRef(caseId)
   const messageSequence = useRef(0)
   const loadedCaseRef = useRef<string | null>(null)
 
@@ -55,6 +56,8 @@ export function useChatMessages(
       setErrored(null)
     }
   }
+
+  useEffect(() => { caseIdRef.current = caseId }, [caseId])
 
   useEffect(() => {
     loadedCaseRef.current = null
@@ -158,7 +161,8 @@ export function useChatMessages(
       ])
 
       let assistantText = ''
-      let finalCaseId = caseId
+      const requestCaseId = caseIdRef.current
+      let finalCaseId = requestCaseId
 
       try {
         const res = await fetch('/api/ai/chat', {
@@ -166,7 +170,7 @@ export function useChatMessages(
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            caseId: caseId ?? undefined,
+            caseId: requestCaseId ?? undefined,
             message: text,
           }),
         })
@@ -179,8 +183,17 @@ export function useChatMessages(
           const err = await res.json().catch(() => ({
             error: 'JurisIA est indisponible pour le moment.',
           }))
+          if (!current()) return
+          if (res.status === 500 && initialCaseId === 'new' && !requestCaseId && !caseIdRef.current &&
+            typeof err?.caseId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(err.caseId)) {
+            caseIdRef.current = err.caseId
+            setCaseId(err.caseId)
+            if (window.location.pathname === initialPath) {
+              window.history.replaceState(window.history.state, '', `/chat/${err.caseId}`)
+            }
+          }
           throw new Error(
-            err.error ?? `Erreur ${res.status}. Réessaie dans un instant.`
+            typeof err?.error === 'string' ? err.error : `Erreur ${res.status}. Réessaie dans un instant.`
           )
         }
 
@@ -188,6 +201,7 @@ export function useChatMessages(
           if (!current()) return
           if (evt.type === 'case_created' && evt.caseId) {
             finalCaseId = evt.caseId
+            caseIdRef.current = evt.caseId
             setCaseId(evt.caseId)
           } else if (evt.type === 'text' && evt.content) {
             assistantText += evt.content
@@ -264,7 +278,7 @@ export function useChatMessages(
         if (streamRef.current === controller) streamRef.current = null
       }
     },
-    [caseId, initialCaseId, loading]
+    [initialCaseId, loading]
   )
 
   return {

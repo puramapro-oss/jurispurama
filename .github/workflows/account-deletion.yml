@@ -69,6 +69,12 @@ jobs:
       - name: AR24 protocol, safety and route regressions
         run: node --test tests/ar24-*.test.mjs
 
+      - name: Chat history, persistence, request authentication and stream cancellation
+        run: node --test tests/chat-route-context.test.mjs tests/chat-route-cancellation.test.mjs tests/chat-route-output.test.mjs tests/chat-request-auth.test.mjs tests/claude-stream-transport.test.mjs
+
+      - name: PKCE callback only permits normalized internal destinations
+        run: node --test tests/auth-callback.test.mjs
+
   native-postgres-rls:
     runs-on: ubuntu-24.04
     timeout-minutes: 3
@@ -171,6 +177,45 @@ jobs:
 
       - name: Chat readers cancel abandoned streams and release resources
         run: node --test tests/chat-stream.test.mjs tests/chat-page-admission.test.mjs
+
+      - name: Mobile chat, subscriptions and case list match the server contracts
+        run: node --test tests/mobile-chat.test.mjs tests/mobile-contracts.test.mjs
+
+      - name: Password recovery through the locked web SDK and isolated native storage
+        run: node --test tests/mobile-password-recovery.test.mjs tests/mobile-recovery-isolation.test.mjs
+
+      - name: Install the isolated mobile React lifecycle dependencies
+        env:
+          JURIS_REACT_TEST_DEPENDENCY_ROOT: ${{ runner.temp }}/juris-mobile-react-deps
+        run: |
+          mkdir -p "$JURIS_REACT_TEST_DEPENDENCY_ROOT"
+          cp tests/mobile-react-deps/package*.json "$JURIS_REACT_TEST_DEPENDENCY_ROOT/"
+          npm ci --prefix "$JURIS_REACT_TEST_DEPENDENCY_ROOT" --ignore-scripts --no-audit --no-fund
+          printf 'JURIS_REACT_TEST_DEPENDENCY_ROOT=%s\n' "$JURIS_REACT_TEST_DEPENDENCY_ROOT" >> "$GITHUB_ENV"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
+          const mobile = JSON.parse(readFileSync('mobile/package-lock.json', 'utf8')).packages
+          const tests = JSON.parse(readFileSync('tests/mobile-react-deps/package.json', 'utf8'))
+          for (const name of ['react', 'zustand', '@supabase/supabase-js']) {
+            assert.equal(tests.dependencies[name], mobile[`node_modules/${name}`].version, `${name}: mobile lockfile drift`)
+          }
+          assert.equal(tests.dependencies['react-dom'], tests.dependencies.react, 'React renderer version drift')
+          for (const [name, version] of Object.entries(tests.dependencies)) {
+            const installed = JSON.parse(readFileSync(resolve(process.env.JURIS_REACT_TEST_DEPENDENCY_ROOT, 'node_modules', name, 'package.json'), 'utf8'))
+            assert.equal(installed.version, version, `${name}: installed version mismatch`)
+          }
+          NODE
+
+      - name: Mobile chat and auth lifecycle with the locked React and Zustand versions
+        run: node --test tests/mobile-chat-react.test.mjs
+
+      - name: Recovery with the exact SDK locked by the mobile application
+        run: JURIS_RECOVERY_TEST_SDK_ROOT="$JURIS_REACT_TEST_DEPENDENCY_ROOT" node --test tests/mobile-password-recovery.test.mjs tests/mobile-recovery-isolation.test.mjs
+
+      - name: Browser password recovery, identity changes and provider failures
+        run: node --test tests/web-password-recovery.test.mjs tests/web-auth-hook.test.mjs
 
       - name: Dashboard, document, scanner and chat lifecycle regressions
         run: node --test tests/dashboard-read-lifecycle.test.mjs tests/document-read-lifecycle.test.mjs tests/scan-preview-lifecycle.test.mjs tests/chat-stream-lifecycle.test.mjs

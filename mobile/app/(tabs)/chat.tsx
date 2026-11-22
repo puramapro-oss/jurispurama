@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Text,
@@ -13,102 +13,139 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Send } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { supabase } from "@/lib/supabase";
-import { API_BASE } from "@/lib/api";
+import { sendChatMessage } from "@/lib/chat";
+import { useAuth } from "@/store/auth";
 
-type Msg = { id: string; role: "user" | "assistant"; content: string };
+type Msg = { id: string; role: "user" | "assistant"; content: string; pending?: boolean };
 
 export default function ChatScreen() {
+  const ownerId = useAuth((state) => state.user?.id ?? null);
+  // A different signed-in account must never inherit the previous conversation.
+  return <ChatConversation key={ownerId ?? "signed-out"} ownerId={ownerId} />;
+}
+
+function ChatConversation({ ownerId }: { ownerId: string | null }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
     {
       id: "intro",
       role: "assistant",
       content:
-        "Bonjour. Je suis JurisIA, ton avocat virtuel. Décris-moi ta situation juridique en quelques phrases, je t'oriente.",
+        "Bonjour. Je suis JurisIA, ton assistant juridique. Décris-moi ta situation en quelques phrases pour préparer les points à vérifier.",
     },
   ]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<Msg>>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const requestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const caseRef = useRef<string | null>(null);
+  const messageSequence = useRef(0);
+
+  useEffect(() => () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+    if (requestTimeoutRef.current !== null) clearTimeout(requestTimeoutRef.current);
+    requestTimeoutRef.current = null;
+  }, []);
+
+  function stop(message = "La réponse a été arrêtée.") {
+    const request = requestRef.current;
+    if (!request) return;
+    request.abort();
+    requestRef.current = null;
+    if (requestTimeoutRef.current !== null) clearTimeout(requestTimeoutRef.current);
+    requestTimeoutRef.current = null;
+    if (useAuth.getState().user?.id !== ownerId) return;
+    setLoading(false);
+    setMessages((previous) => previous.filter((entry) => !entry.pending));
+    setError(message);
+  }
 
   async function send() {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || requestRef.current || !ownerId) return;
+    if (text.length > 8000) {
+      setError("Ton message est limité à 8 000 caractères.");
+      return;
+    }
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const isActive = () => requestRef.current === controller
+      && !controller.signal.aborted
+      && useAuth.getState().user?.id === ownerId;
+    const timeout = setTimeout(() => {
+      if (requestRef.current === controller) {
+        stop("Le délai de réponse est dépassé. Réessaie.");
+      }
+    }, 130_000);
+    requestTimeoutRef.current = timeout;
+    const sequence = ++messageSequence.current;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const userMsg: Msg = {
-      id: `u-${Date.now()}`,
+      id: `u-${sequence}`,
       role: "user",
       content: text,
     };
-    const placeholderId = `a-${Date.now()}`;
+    const placeholderId = `a-${sequence}`;
     setMessages((prev) => [
       ...prev,
       userMsg,
-      { id: placeholderId, role: "assistant", content: "…" },
+      { id: placeholderId, role: "assistant", content: "…", pending: true },
     ]);
     setInput("");
     setLoading(true);
+    setError(null);
+    let responseText = "";
 
     try {
-      const { data } = await supabase.auth.getSession();
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (!isActive()) return;
       const token = data.session?.access_token;
-      const res = await fetch(`${API_BASE}/api/ai/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/plain",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
-
-      if (!res.ok) {
-        let msg = "JurisIA est temporairement indisponible. Réessaie.";
-        if (res.status === 401)
-          msg = "Reconnecte-toi pour discuter avec JurisIA.";
-        if (res.status === 429)
-          msg = "Limite atteinte. Passe à Pro pour des messages illimités.";
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === placeholderId ? { ...m, content: msg } : m
-          )
-        );
-        return;
+      if (sessionError || !token || data.session?.user?.id !== ownerId) {
+        throw new Error("Reconnecte-toi pour discuter avec JurisIA.");
       }
-
-      const fullText = await res.text();
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === placeholderId
-            ? {
-                ...m,
-                content:
-                  fullText && fullText.trim().length > 0
-                    ? fullText
-                    : "Réponse vide. Reformule ta question.",
-              }
-            : m
-        )
-      );
-    } catch {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === placeholderId
-            ? {
-                ...m,
-                content:
-                  "Connexion impossible. Vérifie ton réseau et réessaie.",
-              }
-            : m
-        )
-      );
+      await sendChatMessage({
+        message: text,
+        caseId: caseRef.current,
+        accessToken: token,
+        signal: controller.signal,
+        onEvent(event) {
+          if (!isActive()) {
+            controller.abort();
+            return;
+          }
+          if (event.type === "case_created" || event.type === "done") {
+            caseRef.current = event.caseId!;
+          }
+          if (event.type === "text") {
+            responseText += event.content!;
+            setMessages((previous) => previous.map((message) => message.id === placeholderId
+              ? { ...message, content: responseText, pending: false }
+              : message));
+          }
+        },
+      });
+      if (isActive() && !responseText.trim()) {
+        setMessages((previous) => previous.filter((message) => message.id !== placeholderId));
+        setError("Aucune réponse exploitable n’a été reçue. Reformule ta question.");
+      }
+    } catch (failure) {
+      if (!isActive()) return;
+      if (!responseText) {
+        setMessages((previous) => previous.filter((message) => message.id !== placeholderId));
+      }
+      setError(failure instanceof Error
+        ? failure.message
+        : "Connexion impossible. Vérifie ton réseau et réessaie.");
     } finally {
-      setLoading(false);
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 60);
+      clearTimeout(timeout);
+      if (requestTimeoutRef.current === timeout) requestTimeoutRef.current = null;
+      if (requestRef.current === controller) {
+        const active = isActive();
+        requestRef.current = null;
+        if (active) setLoading(false);
+      }
     }
   }
 
@@ -121,7 +158,7 @@ export default function ChatScreen() {
         <Text
           style={{ color: "#F5F5F7", fontSize: 22, fontWeight: "700" }}
         >
-          Avocat IA — 30 ans d'expérience
+          Assistant juridique
         </Text>
       </View>
       <KeyboardAvoidingView
@@ -165,6 +202,17 @@ export default function ChatScreen() {
             listRef.current?.scrollToEnd({ animated: true })
           }
         />
+        {loading && (
+          <Pressable testID="chat-cancel" accessibilityRole="button" accessibilityLabel="Arrêter la réponse"
+            onPress={() => stop()} style={{ paddingHorizontal: 16, paddingVertical: 12, minHeight: 44 }}>
+            <Text style={{ color: "#C9A84C" }}>Arrêter la réponse</Text>
+          </Pressable>
+        )}
+        {error && (
+          <Text testID="chat-error" accessibilityRole="alert" style={{ color: "#FCA5A5", paddingHorizontal: 16, paddingBottom: 8 }}>
+            {error}{messages[messages.length - 1]?.role === "assistant" ? " Le texte reçu reste à confirmer." : ""}
+          </Text>
+        )}
         <View
           style={{
             flexDirection: "row",
@@ -185,6 +233,8 @@ export default function ChatScreen() {
             placeholder="Décris ta situation juridique…"
             placeholderTextColor="#6B7280"
             multiline
+            maxLength={8000}
+            accessibilityLabel="Message à JurisIA"
             style={{
               flex: 1,
               maxHeight: 120,
@@ -202,7 +252,9 @@ export default function ChatScreen() {
           <Pressable
             testID="chat-send"
             onPress={send}
-            disabled={loading || !input.trim()}
+            disabled={!ownerId || loading || !input.trim()}
+            accessibilityRole="button"
+            accessibilityLabel="Envoyer à JurisIA"
             style={{
               width: 44,
               height: 44,

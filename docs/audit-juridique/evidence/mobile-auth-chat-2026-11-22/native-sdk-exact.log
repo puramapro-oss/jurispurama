@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: native reset screen sends its native callback with the real SDK PKCE challenge
+ok 1 - native reset screen sends its native callback with the real SDK PKCE challenge
+  ---
+  duration_ms: 167.505669
+  type: 'test'
+  ...
+# Subtest: real SDK cannot exchange on another storage owner, then the actual native callback succeeds
+ok 2 - real SDK cannot exchange on another storage owner, then the actual native callback succeeds
+  ---
+  duration_ms: 100.201944
+  type: 'test'
+  ...
+# Subtest: native callback validates scheme, origin, path, duplicate parameters and code before auth
+ok 3 - native callback validates scheme, origin, path, duplicate parameters and code before auth
+  ---
+  duration_ms: 31.039275
+  type: 'test'
+  ...
+# Subtest: invalid or consumed PKCE code cannot create a recovery form
+ok 4 - invalid or consumed PKCE code cannot create a recovery form
+  ---
+  duration_ms: 39.980155
+  type: 'test'
+  ...
+# Subtest: actual password screen updates through the real isolated SDK and keeps shared storage unchanged
+ok 5 - actual password screen updates through the real isolated SDK and keeps shared storage unchanged
+  ---
+  duration_ms: 23.570186
+  type: 'test'
+  ...
+# Subtest: password mismatch or short input cannot call updateUser
+ok 6 - password mismatch or short input cannot call updateUser
+  ---
+  duration_ms: 21.911814
+  type: 'test'
+  ...
+# Subtest: real updateUser HTTP error is visible, unlocks the form and can be retried
+ok 7 - real updateUser HTTP error is visible, unlocks the form and can be retried
+  ---
+  duration_ms: 28.707242
+  type: 'test'
+  ...
+# Subtest: untrusted or rejected getUser results prevent any password mutation
+ok 8 - untrusted or rejected getUser results prevent any password mutation
+  ---
+  duration_ms: 45.314752
+  type: 'test'
+  ...
+# Subtest: account change while the remote identity is being validated prevents updateUser
+ok 9 - account change while the remote identity is being validated prevents updateUser
+  ---
+  duration_ms: 36.258882
+  type: 'test'
+  ...
+# Subtest: a different session of the same account is rejected before any mutation
+ok 10 - a different session of the same account is rejected before any mutation
+  ---
+  duration_ms: 36.868689
+  type: 'test'
+  ...
+# Subtest: account change during the real updateUser HTTP call cannot redirect it or overwrite the new shared session
+ok 11 - account change during the real updateUser HTTP call cannot redirect it or overwrite the new shared session
+  ---
+  duration_ms: 24.253701
+  type: 'test'
+  ...
+# Subtest: unmount while updating suppresses all late navigation and success feedback
+ok 12 - unmount while updating suppresses all late navigation and success feedback
+  ---
+  duration_ms: 31.274893
+  type: 'test'
+  ...
+# Subtest: missing recovery session renders a restart action and never exposes a password submit
+ok 13 - missing recovery session renders a restart action and never exposes a password submit
+  ---
+  duration_ms: 32.115971
+  type: 'test'
+  ...
+# Subtest: cold native callback owns the stored verifier, keeps the login signed out and updates from its memory-only session
+ok 14 - cold native callback owns the stored verifier, keeps the login signed out and updates from its memory-only session
+  ---
+  duration_ms: 189.271802
+  type: 'test'
+  ...
+# Subtest: an obsolete real SDK code exchange never overwrites the account that signed in while it was pending
+ok 15 - an obsolete real SDK code exchange never overwrites the account that signed in while it was pending
+  ---
+  duration_ms: 48.309801
+  type: 'test'
+  ...
+# Subtest: leaving while real SDK exchange is pending suppresses navigation and stores no shared login
+ok 16 - leaving while real SDK exchange is pending suppresses navigation and stores no shared login
+  ---
+  duration_ms: 48.994854
+  type: 'test'
+  ...
+# Subtest: a late abandoned exchange cannot remove the verifier of a newer reset request
+ok 17 - a late abandoned exchange cannot remove the verifier of a newer reset request
+  ---
+  duration_ms: 23.249407
+  type: 'test'
+  ...
+# Subtest: changing the main account during a native password update keeps the new account and suppresses old feedback
+ok 18 - changing the main account during a native password update keeps the new account and suppresses old feedback
+  ---
+  duration_ms: 31.353128
+  type: 'test'
+  ...
+# Subtest: the Expo web screen hands off to the existing browser recovery without producing a native PKCE email
+ok 19 - the Expo web screen hands off to the existing browser recovery without producing a native PKCE email
+  ---
+  duration_ms: 26.846205
+  type: 'test'
+  ...
+# Subtest: cancel of the update form releases the temporary recovery session without changing a password
+ok 20 - cancel of the update form releases the temporary recovery session without changing a password
+  ---
+  duration_ms: 27.873113
+  type: 'test'
+  ...
+# Subtest: close of the update form releases the temporary recovery session without changing a password
+ok 21 - close of the update form releases the temporary recovery session without changing a password
+  ---
+  duration_ms: 38.736401
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 925.627136

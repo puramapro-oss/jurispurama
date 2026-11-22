@@ -18,7 +18,8 @@ mobile/
 ├── app/                  expo-router (file-based)
 │   ├── _layout.tsx       Auth gate + theme + safe area + gestures
 │   ├── index.tsx         Splash → redirect
-│   ├── (auth)/           login, signup, forgot-password
+│   ├── (auth)/           login, signup, forgot-password, update-password
+│   ├── auth/callback     Retour PKCE natif de récupération
 │   └── (tabs)/           dashboard, chat, dossiers, profil, abonnement
 ├── components/           Button, Card, Input, Screen
 ├── lib/                  supabase (SecureStore adapter), api, theme
@@ -33,6 +34,52 @@ mobile/
 
 ## Auth — pattern critique
 Adaptateur Supabase storage : `SecureStore` sur natif, `localStorage` sur web (`Platform.OS === "web"`). Sans ça → crash au boot. Voir `lib/supabase.ts`.
+
+### Récupération du mot de passe
+
+Le parcours iOS/Android demande le retour `jurispurama://auth/callback?flow=recovery`.
+Le lien doit être ouvert sur l’appareil et dans l’application qui ont demandé la
+réinitialisation : le vérificateur PKCE est conservé dans leur SecureStore, sous
+un espace dédié à la récupération. Le callback vérifie le scheme, le chemin et
+les paramètres avant tout échange. Il refuse les redirections et jetons ajoutés
+au lien.
+
+La session obtenue reste en mémoire et ne remplace jamais le compte connecté.
+Le formulaire vérifie la session et son utilisateur auprès de Supabase avant de
+modifier le mot de passe, avec un client isolé. Un changement de compte, une
+fermeture ou une annulation invalident la tentative. Une réponse ancienne ne
+peut pas effacer le vérificateur d’une nouvelle demande. Après un redémarrage
+pendant le formulaire, il faut demander un nouveau lien ; aucun jeton de session
+de récupération n’est enregistré sur disque. L’utilisateur initialement
+déconnecté revient à la connexion après avoir enregistré son mot de passe.
+
+La version Expo Web ouvre le parcours `/forgot-password` du site JurisPurama :
+elle ne crée pas de lien natif dont le vérificateur serait stocké dans un autre
+navigateur.
+
+**Configuration externe NON TESTÉE :** l’allowlist de redirection Supabase doit
+autoriser l’URL native ci-dessus. Aucun réglage de fournisseur ni envoi d’email
+réel n’a été effectué dans cette correction. La réception d’un email, le retour
+OS dans un binaire iOS/Android et les règles du fournisseur restent à qualifier
+avec un compte de test autorisé. La configuration du scheme existe déjà dans
+`app.json`. Un lien issu de l’ancien parcours web doit être remplacé par une
+nouvelle demande depuis l’application mise à jour.
+
+Références : [Supabase, liens natifs](https://supabase.com/docs/guides/auth/native-mobile-deep-linking)
+et [Expo, liens entrants](https://docs.expo.dev/linking/into-your-app/).
+
+Tests ciblés hors réseau, depuis la racine du dépôt :
+
+```bash
+node --test tests/mobile-contracts.test.mjs
+node --test tests/mobile-password-recovery.test.mjs tests/mobile-recovery-isolation.test.mjs
+```
+
+Les tests de récupération exécutent le SDK Supabase réel avec HTTP et stockage
+natif simulés. `JURIS_RECOVERY_TEST_SDK_ROOT` permet de sélectionner un dossier
+contenant la version du SDK à qualifier ; sans cette option ils utilisent les
+dépendances de la racine. Ils ne constituent pas une preuve de livraison native
+ou de disponibilité du fournisseur.
 
 ## Dev local
 ```bash
