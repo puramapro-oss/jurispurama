@@ -178,6 +178,9 @@ jobs:
       - name: Auth sessions isolate profiles and release the Supabase callback
         run: node --test tests/auth-session-lifecycle.test.mjs
 
+      - name: Notification acknowledgements and request lifecycle
+        run: node --test tests/notification-bell-lifecycle.test.mjs tests/notifications-route.test.mjs
+
       - name: Install the locked Chromium browser
         run: node_modules/.bin/playwright install --with-deps chromium
 

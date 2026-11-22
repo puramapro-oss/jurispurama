@@ -8,6 +8,8 @@
     ]
   },
   "include": [
+    "../../src/components/layout/NotificationBell.tsx",
+    "../../src/app/api/notifications/route.ts",
     "../auth-session-state.spec.ts",
     "../fixtures/auth-session.tsx",
     "../sign-modal-state.spec.ts",
